@@ -1,12 +1,24 @@
 package com.websecurity.websecurity.services;
 
 import com.websecurity.websecurity.models.Certificate;
+<<<<<<< HEAD
+import com.websecurity.websecurity.models.CertificateRequest;
+import com.websecurity.websecurity.models.User;
+import com.websecurity.websecurity.repositories.ICertificateRepository;
+import com.websecurity.websecurity.repositories.ICertificateRequestRepository;
+import com.websecurity.websecurity.repositories.IUserRepository;
+=======
 import com.websecurity.websecurity.models.SubjectData;
 import com.websecurity.websecurity.repositories.ICertificateRepository;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+>>>>>>> development
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Optional;
 
 import java.security.*;
 import java.text.ParseException;
@@ -21,6 +33,12 @@ public class CertificateService implements ICertificateService {
     private ICertificateRepository certificateRepository;
 
     @Autowired
+    private ICertificateRequestRepository certificateRequestRepository;
+
+    @Autowired
+    private IUserRepository userRepository;
+
+    @Autowired
     private IHelperService helperService;
 
     public Certificate createNewCertificate(Long requestId) {
@@ -30,7 +48,7 @@ public class CertificateService implements ICertificateService {
     private SubjectData getSubjectData(Long requestId) {
         try {
 
-            Optional<CertificateRequest> request = CertificateRequestRepository.findById(requestId);
+            Optional<CertificateRequest> request = certificateRequestRepository.findById(requestId);
 
             PublicKey subjectPublicKey = helperService.getKey();
 
@@ -80,5 +98,4 @@ public class CertificateService implements ICertificateService {
         }
         return null;
     }
-
 }
