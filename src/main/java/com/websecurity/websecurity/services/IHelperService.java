@@ -4,5 +4,9 @@ import java.security.PublicKey;
 
 public interface IHelperService {
 
-    PublicKey getKey(String keyString);
+    PublicKey convertStringToPublicKey(String keyString);
+
+    PublicKey convertBytesToPublicKey(byte[] keyBytes);
+
+    Object getConfigValue(String keyName);
 }

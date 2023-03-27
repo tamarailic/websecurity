@@ -3,21 +3,21 @@ package com.websecurity.websecurity.models;
 import org.bouncycastle.asn1.x500.X500Name;
 
 import java.security.PublicKey;
-import java.util.Date;
+import java.time.LocalDate;
 
 public class SubjectData {
 
     private PublicKey publicKey;
     private X500Name x500name;
     private String serialNumber;
-    private Date startDate;
-    private Date endDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
 
     public SubjectData() {
 
     }
 
-    public SubjectData(PublicKey publicKey, X500Name x500name, String serialNumber, Date startDate, Date endDate) {
+    public SubjectData(PublicKey publicKey, X500Name x500name, String serialNumber, LocalDate startDate, LocalDate endDate) {
         this.publicKey = publicKey;
         this.x500name = x500name;
         this.serialNumber = serialNumber;
@@ -49,19 +49,19 @@ public class SubjectData {
         this.serialNumber = serialNumber;
     }
 
-    public Date getStartDate() {
+    public LocalDate getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
+    public void setStartDate(LocalDate startDate) {
         this.startDate = startDate;
     }
 
-    public Date getEndDate() {
+    public LocalDate getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Date endDate) {
+    public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
 }
