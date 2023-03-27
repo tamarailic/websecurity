@@ -13,14 +13,20 @@ public class CertificateController {
     @Autowired
     private ICertificateService certificateService;
 
-    @PostMapping
-    public Certificate createNew() {
-        return certificateService.createNewCertificate();
-    }
 
-    @PostMapping("/request")
-    public CertificateRequest createCertificateRequestUser(@RequestParam(name = "id") Long userId,
+    @PostMapping("/request/{userId}")
+    public CertificateRequest createCertificateRequestUser(@PathVariable Long userId,
             @RequestBody CertificateRequest certificateRequest){
             return certificateService.createCertificateRequest(userId, certificateRequest);
     }
+    @PutMapping("/approve/{requestId}")
+    public Certificate approveRequest(@PathVariable Long requestId) {
+        return certificateService.createNewCertificate();
+    }
+
+    @PutMapping()
+    public Certificate denyRequest(){
+
+    }
+
 }
