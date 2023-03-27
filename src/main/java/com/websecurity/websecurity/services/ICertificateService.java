@@ -4,6 +4,6 @@ import com.websecurity.websecurity.models.Certificate;
 
 public interface ICertificateService {
 
-    Certificate createNewCertificate();
+    Certificate createNewCertificate(Long requestId);
 
 }
