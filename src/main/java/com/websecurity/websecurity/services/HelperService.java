@@ -2,6 +2,7 @@ package com.websecurity.websecurity.services;
 
 import org.bouncycastle.util.encoders.Base64;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.yaml.snakeyaml.Yaml;
 
@@ -14,6 +15,7 @@ import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Map;
 
+@Service
 public class HelperService implements IHelperService {
 
     @Override
