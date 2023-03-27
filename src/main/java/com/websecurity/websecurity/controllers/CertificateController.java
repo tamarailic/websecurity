@@ -16,16 +16,17 @@ public class CertificateController {
 
     @PostMapping("/request/{userId}")
     public CertificateRequest createCertificateRequestUser(@PathVariable Long userId,
-            @RequestBody CertificateRequest certificateRequest){
-            return certificateService.createCertificateRequest(userId, certificateRequest);
-    }
-    @PutMapping("/approve/{requestId}")
-    public Certificate approveRequest(@PathVariable Long requestId) {
-        return certificateService.createNewCertificate();
+                                                           @RequestBody CertificateRequest certificateRequest) {
+        return certificateService.createCertificateRequest(userId, certificateRequest);
     }
 
-    @PutMapping()
-    public Certificate denyRequest(){
+    @PutMapping("/approve/{requestId}")
+    public Certificate approveRequest(@PathVariable Long requestId) {
+        return certificateService.createNewCertificate(requestId);
+    }
+
+    @PutMapping("/deny/{requestId}")
+    public void denyRequest(@PathVariable Long requestId) {
 
     }
 
