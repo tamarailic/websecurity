@@ -48,9 +48,9 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
     @Autowired
     private IHelperService helperService;
 
+    @Override
     public Certificate createNewCertificate(Long requestId) {
         KeyPair keyPairSubject = helperService.generateKeyPair();
-        markRequestAsApproved(requestId);
         Certificate newCertificate = createNewCertificateInstance(requestId, keyPairSubject.getPublic());
         SubjectData requesterData = getSubjectData(newCertificate);
         IssuerData issuerData = generateIssuerData(newCertificate, keyPairSubject.getPrivate());
@@ -58,12 +58,6 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
         saveCertificateToDB(newCertificate);
         saveCertificateToFileSystem(newCertificateSigned, keyPairSubject.getPrivate());
         return newCertificate;
-    }
-
-    private void markRequestAsApproved(Long requestId) {
-        CertificateRequest request = certificateRequestRepository.findById(requestId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request with that id does not exist."));
-        request.setStatus("APPROVED");
-        certificateRequestRepository.save(request);
     }
 
     private Certificate createNewCertificateInstance(Long requestId, PublicKey subjectPublicKey) {

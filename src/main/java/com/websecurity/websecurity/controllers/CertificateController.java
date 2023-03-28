@@ -2,7 +2,7 @@ package com.websecurity.websecurity.controllers;
 
 import com.websecurity.websecurity.models.Certificate;
 import com.websecurity.websecurity.models.CertificateRequest;
-import com.websecurity.websecurity.services.ICertificateGeneratorService;
+import com.websecurity.websecurity.services.ICertificateRequestService;
 import com.websecurity.websecurity.services.ICertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +14,7 @@ public class CertificateController {
     @Autowired
     ICertificateService certificateService;
     @Autowired
-    private ICertificateGeneratorService certificateGeneratorService;
+    private ICertificateRequestService certificateRequestService;
 
 
     @PostMapping("/request/{userId}")
@@ -25,12 +25,12 @@ public class CertificateController {
 
     @PutMapping("/approve/{requestId}")
     public Certificate approveRequest(@PathVariable Long requestId) {
-        return certificateGeneratorService.createNewCertificate(requestId);
+        return certificateRequestService.approveSigningRequest(requestId);
     }
 
     @PutMapping("/deny/{requestId}")
     public void denyRequest(@PathVariable Long requestId) {
-
+        certificateRequestService.denySigningRequest(requestId);
     }
 
 }
