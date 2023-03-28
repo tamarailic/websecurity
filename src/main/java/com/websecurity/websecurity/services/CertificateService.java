@@ -98,4 +98,32 @@ public class CertificateService implements ICertificateService {
         }
         return null;
     }
+    @Override
+    public CertificateRequest createCertificateRequestForUser(Long userId, CertificateRequest certificateRequest) {
+        Optional<User> potentialUser = userRepository.findById(userId);
+        if(potentialUser.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist.");
+        }
+
+        User user = potentialUser.get();
+
+        if(!certificateRequest.getCertificateType().equals("INTERMEDIATE") | !certificateRequest.getCertificateType().equals("END")){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid certificate type.");
+
+        }
+
+        Optional<Certificate> potentialCertificate = certificateRepository.findById(certificateRequest.getIssuerCertificateId());
+        if(potentialCertificate.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate with that ID doesn't exist.");
+        }
+
+        Long issuerId = potentialCertificate.get().getIssuer().getIssuerId();
+
+        if(userId == issuerId){
+            approveCertficate()
+        }
+        certificateRequestRepository.save(certificateRequest);
+        return certificateRequest;
+        
+    }
 }
