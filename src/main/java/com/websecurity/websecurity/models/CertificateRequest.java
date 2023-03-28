@@ -3,7 +3,6 @@ package com.websecurity.websecurity.models;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Document("certificate_request")
@@ -13,7 +12,7 @@ public class CertificateRequest {
 
     private Long subjectId;
 
-    private Long issuerCertificateId;
+    private String issuerCertificateId;
 
     private LocalDateTime requestedDate;
 
@@ -35,11 +34,11 @@ public class CertificateRequest {
         this.subjectId = subjectId;
     }
 
-    public Long getIssuerCertificateId() {
+    public String getIssuerCertificateId() {
         return issuerCertificateId;
     }
 
-    public void setIssuerCertificateId(Long issuerCertificateId) {
+    public void setIssuerCertificateId(String issuerCertificateId) {
         this.issuerCertificateId = issuerCertificateId;
     }
 
