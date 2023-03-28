@@ -1,12 +1,18 @@
 package com.websecurity.websecurity.services;
 
+import com.websecurity.websecurity.DTO.CertificateRequestDTO;
 import com.websecurity.websecurity.models.Certificate;
-import com.websecurity.websecurity.models.CertificateRequest;
+
+import java.util.Collection;
 
 public interface ICertificateService {
 
     Certificate createNewCertificate(Long requestId);
 
-    CertificateRequest createCertificateRequest(Long userId, CertificateRequest certificateRequest);
+    CertificateRequestDTO createCertificateRequestForUser(Long userId, CertificateRequestDTO certificateRequestDTO);
+
+    CertificateRequestDTO createCertificateRequestForAdmin(Long adminId, CertificateRequestDTO certificateRequestDTO);
+
+    Collection<CertificateRequestDTO> getAllUsersCertificateRequests(Long userId);
 
 }
