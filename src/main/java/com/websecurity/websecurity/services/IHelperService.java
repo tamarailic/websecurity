@@ -1,5 +1,7 @@
 package com.websecurity.websecurity.services;
 
+import java.security.KeyPair;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.time.LocalDate;
 import java.util.Date;
@@ -13,4 +15,8 @@ public interface IHelperService {
     Object getConfigValue(String keyName);
 
     Date convertLocalDateToDate(LocalDate localDate);
+
+    PrivateKey getPrivateKey(String signingCertificateId);
+
+    KeyPair generateKeyPair();
 }

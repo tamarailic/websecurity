@@ -2,6 +2,7 @@ package com.websecurity.websecurity.controllers;
 
 import com.websecurity.websecurity.models.Certificate;
 import com.websecurity.websecurity.models.CertificateRequest;
+import com.websecurity.websecurity.services.ICertificateGeneratorService;
 import com.websecurity.websecurity.services.ICertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -11,7 +12,9 @@ import org.springframework.web.bind.annotation.*;
 public class CertificateController {
 
     @Autowired
-    private ICertificateService certificateService;
+    ICertificateService certificateService;
+    @Autowired
+    private ICertificateGeneratorService certificateGeneratorService;
 
 
     @PostMapping("/request/{userId}")
@@ -22,7 +25,7 @@ public class CertificateController {
 
     @PutMapping("/approve/{requestId}")
     public Certificate approveRequest(@PathVariable Long requestId) {
-        return certificateService.createNewCertificate(requestId);
+        return certificateGeneratorService.createNewCertificate(requestId);
     }
 
     @PutMapping("/deny/{requestId}")
