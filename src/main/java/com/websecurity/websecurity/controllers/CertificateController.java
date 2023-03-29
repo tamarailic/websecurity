@@ -24,12 +24,12 @@ public class CertificateController {
 
     @PostMapping("/request/admin/{adminId}")
     public CertificateRequestDTO createCertificateRequestAdmin(@PathVariable Long adminId,
-                                                              @RequestBody CertificateRequestDTO certificateRequestDTO) {
+                                                               @RequestBody CertificateRequestDTO certificateRequestDTO) {
         return certificateRequestService.createCertificateRequestForAdmin(adminId, certificateRequestDTO);
     }
 
     @GetMapping("/all-certificate-requests/{userId}")
-    public Collection<CertificateRequestDTO> getAllUsersCertificateRequests(@PathVariable Long userId){
+    public Collection<CertificateRequestDTO> getAllUsersCertificateRequests(@PathVariable Long userId) {
         return certificateRequestService.getAllUsersCertificateRequests(userId);
     }
 

@@ -14,14 +14,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collection;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 public class CertificateRequestService implements ICertificateRequestService {
 
     @Autowired
     private ICertificateGeneratorService certificateGeneratorService;
-
     @Autowired
     private ICertificateRepository certificateRepository;
     @Autowired
@@ -33,13 +31,13 @@ public class CertificateRequestService implements ICertificateRequestService {
 
     @Override
     public CertificateRequestDTO createCertificateRequestForUser(Long userId, CertificateRequestDTO certificateRequestDTO) {
-        User user = userRepository.findById(userId).orElseThrow(() ->  new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
 
         if (!certificateRequestDTO.getCertificateType().equals("INTERMEDIATE") & !certificateRequestDTO.getCertificateType().equals("END")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid certificate type.");
         }
 
-        Certificate certificate = certificateRepository.findById(certificateRequestDTO.getIssuerCertificateId()).orElseThrow(() ->  new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate with that ID doesn't exist."));
+        Certificate certificate = certificateRepository.findById(certificateRequestDTO.getIssuerCertificateId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate with that ID doesn't exist."));
 
         certificateRequestDTO.setStatus("PENDING");
         CertificateRequest certificateRequest = new CertificateRequest(certificateRequestDTO);
@@ -51,7 +49,7 @@ public class CertificateRequestService implements ICertificateRequestService {
             approveSigningRequest(certificateRequest.getId());
         }
 
-        CertificateRequest approvedCertificateRequest = certificateRequestRepository.findById(certificateRequest.getId()).orElseThrow(() ->  new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate request with that ID doesn't exist."));
+        CertificateRequest approvedCertificateRequest = certificateRequestRepository.findById(certificateRequest.getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate request with that ID doesn't exist."));
 
         return new CertificateRequestDTO(approvedCertificateRequest);
     }
@@ -66,17 +64,18 @@ public class CertificateRequestService implements ICertificateRequestService {
         certificateRequestRepository.save(certificateRequest);
 
         approveSigningRequest(certificateRequest.getId());
-        CertificateRequest approvedCertificateRequest = certificateRequestRepository.findById(certificateRequest.getId()).orElseThrow(() ->  new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate request with that ID doesn't exist."));
+        CertificateRequest approvedCertificateRequest = certificateRequestRepository.findById(certificateRequest.getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate request with that ID doesn't exist."));
 
         return new CertificateRequestDTO(approvedCertificateRequest);
     }
 
     @Override
     public Collection<CertificateRequestDTO> getAllUsersCertificateRequests(Long userId) {
-       userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
+        userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
 
         return certificateRequestRepository.findAllBySubjectId(userId);
     }
+
     @Override
     public Certificate approveSigningRequest(Long requestId) {
         markRequestAsApproved(requestId);

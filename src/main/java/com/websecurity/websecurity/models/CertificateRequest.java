@@ -26,10 +26,11 @@ public class CertificateRequest {
 
     public CertificateRequest(CertificateRequestDTO certificateRequestDTO) {
         this.subjectId = certificateRequestDTO.getSubjectId();
-        this.issuerCertificateId = certificateRequestDTO.getIssuerCertificateId();;
-        this.requestedDate = certificateRequestDTO.getRequestedDate();;
-        this.certificateType = certificateRequestDTO.getCertificateType();;
-        this.status = certificateRequestDTO.getStatus();;
+        this.issuerCertificateId = certificateRequestDTO.getIssuerCertificateId();
+        this.requestedDate = certificateRequestDTO.getRequestedDate();
+        this.certificateType = certificateRequestDTO.getCertificateType();
+        this.status = certificateRequestDTO.getStatus();
+
     }
 
     public Long getId() {
@@ -79,7 +80,6 @@ public class CertificateRequest {
     public void setStatus(String status) {
         this.status = status;
     }
-
 
 
 }
