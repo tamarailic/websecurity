@@ -1,15 +1,10 @@
-package com.websecurity.websecurity.models;
+package com.websecurity.websecurity.DTO;
 
-import com.websecurity.websecurity.DTO.CertificateRequestDTO;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import com.websecurity.websecurity.models.CertificateRequest;
 
 import java.time.LocalDateTime;
 
-@Document("certificate_request")
-public class CertificateRequest {
-    @Id
-    private Long id;
+public class CertificateRequestDTO {
 
     private Long subjectId;
 
@@ -21,23 +16,14 @@ public class CertificateRequest {
     private String status;
 
 
-    public CertificateRequest() {
+    public CertificateRequestDTO() {
     }
 
-    public CertificateRequest(CertificateRequestDTO certificateRequestDTO) {
-        this.subjectId = certificateRequestDTO.getSubjectId();
-        this.issuerCertificateId = certificateRequestDTO.getIssuerCertificateId();;
-        this.requestedDate = certificateRequestDTO.getRequestedDate();;
-        this.certificateType = certificateRequestDTO.getCertificateType();;
-        this.status = certificateRequestDTO.getStatus();;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    public CertificateRequestDTO(CertificateRequest certificateRequest) {
+        this.issuerCertificateId = certificateRequest.getIssuerCertificateId();
+        this.requestedDate = certificateRequest.getRequestedDate();
+        this.certificateType = certificateRequest.getCertificateType();
+        this.status = certificateRequest.getStatus();
     }
 
     public Long getSubjectId() {
@@ -79,7 +65,4 @@ public class CertificateRequest {
     public void setStatus(String status) {
         this.status = status;
     }
-
-
-
 }
