@@ -1,6 +1,7 @@
 package com.websecurity.websecurity.controllers;
 
 import com.websecurity.websecurity.DTO.CertificateRequestDTO;
+import com.websecurity.websecurity.DTO.CertificateRequestResponseDTO;
 import com.websecurity.websecurity.models.Certificate;
 import com.websecurity.websecurity.services.ICertificateRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,19 +18,19 @@ public class CertificateController {
 
 
     @PostMapping("/request/user/{userId}")
-    public CertificateRequestDTO createCertificateRequestUser(@PathVariable Long userId,
+    public CertificateRequestResponseDTO createCertificateRequestUser(@PathVariable Long userId,
                                                               @RequestBody CertificateRequestDTO certificateRequestDTO) {
         return certificateRequestService.createCertificateRequestForUser(userId, certificateRequestDTO);
     }
 
     @PostMapping("/request/admin/{adminId}")
-    public CertificateRequestDTO createCertificateRequestAdmin(@PathVariable Long adminId,
-                                                               @RequestBody CertificateRequestDTO certificateRequestDTO) {
+    public CertificateRequestResponseDTO createCertificateRequestAdmin(@PathVariable Long adminId,
+                                                                       @RequestBody CertificateRequestDTO certificateRequestDTO) {
         return certificateRequestService.createCertificateRequestForAdmin(adminId, certificateRequestDTO);
     }
 
     @GetMapping("/all-certificate-requests/{userId}")
-    public Collection<CertificateRequestDTO> getAllUsersCertificateRequests(@PathVariable Long userId) {
+    public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequests(@PathVariable Long userId) {
         return certificateRequestService.getAllUsersCertificateRequests(userId);
     }
 

@@ -10,20 +10,9 @@ public class CertificateRequestDTO {
 
     private String issuerCertificateId;
 
-    private LocalDateTime requestedDate;
-
     private String certificateType;
-    private String status;
-
 
     public CertificateRequestDTO() {
-    }
-
-    public CertificateRequestDTO(CertificateRequest certificateRequest) {
-        this.issuerCertificateId = certificateRequest.getIssuerCertificateId();
-        this.requestedDate = certificateRequest.getRequestedDate();
-        this.certificateType = certificateRequest.getCertificateType();
-        this.status = certificateRequest.getStatus();
     }
 
     public Long getSubjectId() {
@@ -42,14 +31,6 @@ public class CertificateRequestDTO {
         this.issuerCertificateId = issuerCertificateId;
     }
 
-    public LocalDateTime getRequestedDate() {
-        return requestedDate;
-    }
-
-    public void setRequestedDate(LocalDateTime requestedDate) {
-        this.requestedDate = requestedDate;
-    }
-
     public String getCertificateType() {
         return certificateType;
     }
@@ -58,11 +39,4 @@ public class CertificateRequestDTO {
         this.certificateType = certificateType;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
 }
