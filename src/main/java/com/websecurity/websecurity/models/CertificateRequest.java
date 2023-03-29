@@ -24,8 +24,8 @@ public class CertificateRequest {
     public CertificateRequest() {
     }
 
-    public CertificateRequest(CertificateRequestDTO certificateRequestDTO) {
-        this.subjectId = certificateRequestDTO.getSubjectId();
+    public CertificateRequest(CertificateRequestDTO certificateRequestDTO, Long subjectId) {
+        this.subjectId = subjectId;
         this.issuerCertificateId = certificateRequestDTO.getIssuerCertificateId();
         this.certificateType = certificateRequestDTO.getCertificateType();
     }

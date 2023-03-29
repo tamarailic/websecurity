@@ -6,8 +6,6 @@ import java.time.LocalDateTime;
 
 public class CertificateRequestDTO {
 
-    private Long subjectId;
-
     private String issuerCertificateId;
 
     private String certificateType;
@@ -15,13 +13,6 @@ public class CertificateRequestDTO {
     public CertificateRequestDTO() {
     }
 
-    public Long getSubjectId() {
-        return subjectId;
-    }
-
-    public void setSubjectId(Long subjectId) {
-        this.subjectId = subjectId;
-    }
 
     public String getIssuerCertificateId() {
         return issuerCertificateId;

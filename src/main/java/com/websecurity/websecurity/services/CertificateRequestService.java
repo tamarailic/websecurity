@@ -40,7 +40,7 @@ public class CertificateRequestService implements ICertificateRequestService {
 
         Certificate certificate = certificateRepository.findById(certificateRequestDTO.getIssuerCertificateId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate with that ID doesn't exist."));
 
-        CertificateRequest certificateRequest = new CertificateRequest(certificateRequestDTO);
+        CertificateRequest certificateRequest = new CertificateRequest(certificateRequestDTO, userId);
         certificateRequest.setStatus("PENDING");
         certificateRequestRepository.save(certificateRequest);
 
@@ -62,7 +62,7 @@ public class CertificateRequestService implements ICertificateRequestService {
             certificateRepository.findById(certificateRequestDTO.getIssuerCertificateId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate with that ID doesn't exist."));
         }
 
-        CertificateRequest certificateRequest = new CertificateRequest(certificateRequestDTO);
+        CertificateRequest certificateRequest = new CertificateRequest(certificateRequestDTO, adminId);
         certificateRequest.setStatus("PENDING");
         certificateRequestRepository.save(certificateRequest);
 
