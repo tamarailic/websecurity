@@ -5,14 +5,17 @@ import com.websecurity.websecurity.models.Certificate;
 
 import java.util.Collection;
 
-public interface ICertificateService {
+public interface ICertificateRequestService {
 
-    Certificate createNewCertificate(Long requestId);
 
     CertificateRequestDTO createCertificateRequestForUser(Long userId, CertificateRequestDTO certificateRequestDTO);
 
     CertificateRequestDTO createCertificateRequestForAdmin(Long adminId, CertificateRequestDTO certificateRequestDTO);
 
     Collection<CertificateRequestDTO> getAllUsersCertificateRequests(Long userId);
+
+    Certificate approveSigningRequest(Long requestId);
+
+    void denySigningRequest(Long requestId);
 
 }

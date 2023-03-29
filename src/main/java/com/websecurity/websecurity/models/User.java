@@ -9,7 +9,6 @@ import java.security.PublicKey;
 public class User {
     @Id
     private Long id;
-    private PublicKey publicKey;
     private String firstName;
     private String lastName;
     private String username;
@@ -24,14 +23,6 @@ public class User {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public PublicKey getPublicKey() {
-        return publicKey;
-    }
-
-    public void setPublicKey(PublicKey publicKey) {
-        this.publicKey = publicKey;
     }
 
     public String getUsername() {

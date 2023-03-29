@@ -8,7 +8,7 @@ public class CertificateRequestDTO {
 
     private Long subjectId;
 
-    private Long issuerCertificateId;
+    private String issuerCertificateId;
 
     private LocalDateTime requestedDate;
 
@@ -34,11 +34,11 @@ public class CertificateRequestDTO {
         this.subjectId = subjectId;
     }
 
-    public Long getIssuerCertificateId() {
+    public String getIssuerCertificateId() {
         return issuerCertificateId;
     }
 
-    public void setIssuerCertificateId(Long issuerCertificateId) {
+    public void setIssuerCertificateId(String issuerCertificateId) {
         this.issuerCertificateId = issuerCertificateId;
     }
 
