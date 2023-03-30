@@ -1,6 +1,7 @@
 package com.websecurity.websecurity.services;
 
 import com.websecurity.websecurity.DTO.CertificateRequestDTO;
+import com.websecurity.websecurity.DTO.CertificateRequestResponseDTO;
 import com.websecurity.websecurity.models.Certificate;
 import com.websecurity.websecurity.models.CertificateRequest;
 import com.websecurity.websecurity.models.User;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -30,7 +32,7 @@ public class CertificateRequestService implements ICertificateRequestService {
 
 
     @Override
-    public CertificateRequestDTO createCertificateRequestForUser(Long userId, CertificateRequestDTO certificateRequestDTO) {
+    public CertificateRequestResponseDTO createCertificateRequestForUser(String userId, CertificateRequestDTO certificateRequestDTO) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
 
         if (!certificateRequestDTO.getCertificateType().equals("INTERMEDIATE") & !certificateRequestDTO.getCertificateType().equals("END")) {
@@ -39,11 +41,10 @@ public class CertificateRequestService implements ICertificateRequestService {
 
         Certificate certificate = certificateRepository.findById(certificateRequestDTO.getIssuerCertificateId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate with that ID doesn't exist."));
 
-        certificateRequestDTO.setStatus("PENDING");
-        CertificateRequest certificateRequest = new CertificateRequest(certificateRequestDTO);
+        CertificateRequest certificateRequest = new CertificateRequest(certificateRequestDTO, userId, LocalDateTime.now(), "PENDING");
         certificateRequestRepository.save(certificateRequest);
 
-        Long issuerId = certificate.getIssuer().getId();
+        String issuerId = certificate.getIssuer().getId();
 
         if (Objects.equals(user.getId(), issuerId)) {
             approveSigningRequest(certificateRequest.getId());
@@ -51,49 +52,50 @@ public class CertificateRequestService implements ICertificateRequestService {
 
         CertificateRequest approvedCertificateRequest = certificateRequestRepository.findById(certificateRequest.getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate request with that ID doesn't exist."));
 
-        return new CertificateRequestDTO(approvedCertificateRequest);
+        return new CertificateRequestResponseDTO(approvedCertificateRequest);
     }
 
     @Override
-    public CertificateRequestDTO createCertificateRequestForAdmin(Long adminId, CertificateRequestDTO certificateRequestDTO) {
+    public CertificateRequestResponseDTO createCertificateRequestForAdmin(String adminId, CertificateRequestDTO certificateRequestDTO) {
         userRepository.findById(adminId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
-        certificateRepository.findById(certificateRequestDTO.getIssuerCertificateId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate with that ID doesn't exist."));
+        if (!certificateRequestDTO.getCertificateType().equals("ROOT")) {
+            certificateRepository.findById(certificateRequestDTO.getIssuerCertificateId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate with that ID doesn't exist."));
+        }
 
-        certificateRequestDTO.setStatus("PENDING");
-        CertificateRequest certificateRequest = new CertificateRequest(certificateRequestDTO);
+        CertificateRequest certificateRequest = new CertificateRequest(certificateRequestDTO, adminId, LocalDateTime.now(), "PENDING");
         certificateRequestRepository.save(certificateRequest);
 
         approveSigningRequest(certificateRequest.getId());
         CertificateRequest approvedCertificateRequest = certificateRequestRepository.findById(certificateRequest.getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate request with that ID doesn't exist."));
 
-        return new CertificateRequestDTO(approvedCertificateRequest);
+        return new CertificateRequestResponseDTO(approvedCertificateRequest);
     }
 
     @Override
-    public Collection<CertificateRequestDTO> getAllUsersCertificateRequests(Long userId) {
+    public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequests(String userId) {
         userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
 
         return certificateRequestRepository.findAllBySubjectId(userId);
     }
 
     @Override
-    public Certificate approveSigningRequest(Long requestId) {
+    public Certificate approveSigningRequest(String requestId) {
         markRequestAsApproved(requestId);
         return certificateGeneratorService.createNewCertificate(requestId);
     }
 
     @Override
-    public void denySigningRequest(Long requestId) {
+    public void denySigningRequest(String requestId) {
         markRequestAsDenied(requestId);
     }
 
-    private void markRequestAsApproved(Long requestId) {
+    private void markRequestAsApproved(String requestId) {
         CertificateRequest request = certificateRequestRepository.findById(requestId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request with that id does not exist."));
         request.setStatus("APPROVED");
         certificateRequestRepository.save(request);
     }
 
-    private void markRequestAsDenied(Long requestId) {
+    private void markRequestAsDenied(String requestId) {
         CertificateRequest request = certificateRequestRepository.findById(requestId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request with that id does not exist."));
         request.setStatus("DENIED");
         certificateRequestRepository.save(request);

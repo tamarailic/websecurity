@@ -32,6 +32,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -49,7 +50,7 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
     private IHelperService helperService;
 
     @Override
-    public Certificate createNewCertificate(Long requestId) {
+    public Certificate createNewCertificate(String requestId) {
         KeyPair keyPairSubject = helperService.generateKeyPair();
         Certificate newCertificate = createNewCertificateInstance(requestId, keyPairSubject.getPublic());
         SubjectData requesterData = getSubjectData(newCertificate);
@@ -60,7 +61,7 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
         return newCertificate;
     }
 
-    private Certificate createNewCertificateInstance(Long requestId, PublicKey subjectPublicKey) {
+    private Certificate createNewCertificateInstance(String requestId, PublicKey subjectPublicKey) {
         CertificateRequest request = certificateRequestRepository.findById(requestId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request with that id does not exist."));
         User requester = userRepository.findById(request.getSubjectId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User with that id does not exist."));
         LocalDate startDate = LocalDate.now();
@@ -79,13 +80,13 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
         LocalDate expirationDate;
         switch (certificateType) {
             case "END":
-                expirationDate = notBefore.plusDays((Long) helperService.getConfigValue("END_CERTIFICATE_DURATION_IN_DAYS"));
+                expirationDate = notBefore.plusDays((Integer) helperService.getConfigValue("END_CERTIFICATE_DURATION_IN_DAYS"));
                 break;
             case "INTERMEDIATE":
-                expirationDate = notBefore.plusDays((Long) helperService.getConfigValue("INTERMEDIATE_CERTIFICATE_DURATION_IN_DAYS"));
+                expirationDate = notBefore.plusDays((Integer) helperService.getConfigValue("INTERMEDIATE_CERTIFICATE_DURATION_IN_DAYS"));
                 break;
             case "ROOT":
-                expirationDate = notBefore.plusDays((Long) helperService.getConfigValue("ROOT_CERTIFICATE_DURATION_IN_DAYS"));
+                expirationDate = notBefore.plusDays((Integer) helperService.getConfigValue("ROOT_CERTIFICATE_DURATION_IN_DAYS"));
                 break;
             default:
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate type does not exist");
@@ -111,7 +112,7 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
         builder.addRDN(BCStyle.GIVENNAME, certificate.getIssuer().getFirstName());
         builder.addRDN(BCStyle.UID, String.valueOf(certificate.getIssuer().getId()));
 
-        if (certificate.getIssuer() == null) {
+        if (Objects.equals(certificate.getOwner().getId(), certificate.getIssuer().getId())) {
             issuerKey = subjectPrivateKey;
         } else {
             issuerKey = helperService.getPrivateKey(certificate.getSigningCertificateSerialNumber());
@@ -132,7 +133,7 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
         try {
             X509CertificateHolder certHolder = new JcaX509CertificateHolder(certificateToPersist);
 
-            FileOutputStream fos = new FileOutputStream("certs/" + certificateToPersist.getSerialNumber().toString() + ".crt");
+            FileOutputStream fos = new FileOutputStream("src/main/java/security/certs/" + certificateToPersist.getSerialNumber().toString() + ".crt");
             fos.write(certHolder.getEncoded());
             fos.close();
         } catch (CertificateEncodingException | IOException e) {
@@ -142,7 +143,7 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
 
     private void savePrivatePartOfCertificate(X509Certificate certificateToPersist, PrivateKey privateKeyToPersist) {
         try {
-            JcaPEMWriter pemWriter = new JcaPEMWriter(new FileWriter("keys/" + certificateToPersist.getSerialNumber().toString() + ".key"));
+            JcaPEMWriter pemWriter = new JcaPEMWriter(new FileWriter("src/main/java/security/keys/" + certificateToPersist.getSerialNumber().toString() + ".key"));
             pemWriter.writeObject(privateKeyToPersist);
             pemWriter.close();
         } catch (IOException e) {
@@ -152,18 +153,18 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
 
     public X509Certificate generateSignedCertificate(SubjectData subjectData, IssuerData issuerData) {
         try {
-            JcaContentSignerBuilder builder = new JcaContentSignerBuilder((String) helperService.getConfigValue("SHA256WithRSAEncryption"));
+            JcaContentSignerBuilder builder = new JcaContentSignerBuilder((String) helperService.getConfigValue("SIGNATURE_ALGORITHM"));
             builder = builder.setProvider("BC");
             ContentSigner contentSigner = builder.build(issuerData.getPrivateKey());
-            String certificateVersion = (String) helperService.getConfigValue("CERTIFICATE_VERSION");
+            Object certificateVersion = helperService.getConfigValue("CERTIFICATE_VERSION");
 
-            if (certificateVersion.equals("v3")) {
+            if (!certificateVersion.equals("v3")) {
                 throw new ExecutionControl.NotImplementedException("Only " + certificateVersion + " is implemented!");
             }
 
             X509v3CertificateBuilder certGen = new JcaX509v3CertificateBuilder(
                     issuerData.getX500name(),
-                    new BigInteger(subjectData.getSerialNumber()),
+                    new BigInteger(subjectData.getSerialNumber().replace("-", ""), 16),
                     helperService.convertLocalDateToDate(subjectData.getStartDate()),
                     helperService.convertLocalDateToDate(subjectData.getEndDate()),
                     subjectData.getX500name(),

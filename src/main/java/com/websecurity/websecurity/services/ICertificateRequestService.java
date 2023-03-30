@@ -1,6 +1,7 @@
 package com.websecurity.websecurity.services;
 
 import com.websecurity.websecurity.DTO.CertificateRequestDTO;
+import com.websecurity.websecurity.DTO.CertificateRequestResponseDTO;
 import com.websecurity.websecurity.models.Certificate;
 
 import java.util.Collection;
@@ -8,14 +9,14 @@ import java.util.Collection;
 public interface ICertificateRequestService {
 
 
-    CertificateRequestDTO createCertificateRequestForUser(Long userId, CertificateRequestDTO certificateRequestDTO);
+    CertificateRequestResponseDTO createCertificateRequestForUser(String userId, CertificateRequestDTO certificateRequestDTO);
 
-    CertificateRequestDTO createCertificateRequestForAdmin(Long adminId, CertificateRequestDTO certificateRequestDTO);
+    CertificateRequestResponseDTO createCertificateRequestForAdmin(String adminId, CertificateRequestDTO certificateRequestDTO);
 
-    Collection<CertificateRequestDTO> getAllUsersCertificateRequests(Long userId);
+    Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequests(String userId);
 
-    Certificate approveSigningRequest(Long requestId);
+    Certificate approveSigningRequest(String requestId);
 
-    void denySigningRequest(Long requestId);
+    void denySigningRequest(String requestId);
 
 }

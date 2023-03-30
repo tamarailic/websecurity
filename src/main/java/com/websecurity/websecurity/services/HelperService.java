@@ -1,12 +1,11 @@
 package com.websecurity.websecurity.services;
 
 import org.bouncycastle.util.encoders.Base64;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -62,16 +61,8 @@ public class HelperService implements IHelperService {
         InputStream inputStream;
         try {
             inputStream = new FileInputStream("src/main/resources/config.yaml");
-        } catch (IOException e) {
-            try {
-                inputStream = new FileInputStream("cruise-back/src/main/resources/config.yaml");
-            } catch (IOException ex) {
-                try {
-                    inputStream = new FileInputStream("target/classes/config.yaml");
-                } catch (IOException exx) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.toString());
-                }
-            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
         }
         Yaml yaml = new Yaml();
         Map<String, Object> data = yaml.load(inputStream);
@@ -81,7 +72,7 @@ public class HelperService implements IHelperService {
     @Override
     public PrivateKey getPrivateKey(String signingCertificateId) {
         try {
-            byte[] key = Files.readAllBytes(Paths.get("keys/" + signingCertificateId + ".key"));
+            byte[] key = Files.readAllBytes(Paths.get("src/main/java/security/keys/" + signingCertificateId + ".key"));
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(key);
             return keyFactory.generatePrivate(keySpec);

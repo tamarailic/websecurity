@@ -1,6 +1,7 @@
 package com.websecurity.websecurity.controllers;
 
 import com.websecurity.websecurity.DTO.CertificateRequestDTO;
+import com.websecurity.websecurity.DTO.CertificateRequestResponseDTO;
 import com.websecurity.websecurity.models.Certificate;
 import com.websecurity.websecurity.services.ICertificateRequestService;
 import com.websecurity.websecurity.services.ICertificateValidityService;
@@ -20,29 +21,29 @@ public class CertificateController {
 
 
     @PostMapping("/request/user/{userId}")
-    public CertificateRequestDTO createCertificateRequestUser(@PathVariable Long userId,
-                                                              @RequestBody CertificateRequestDTO certificateRequestDTO) {
+    public CertificateRequestResponseDTO createCertificateRequestUser(@PathVariable String userId,
+                                                                      @RequestBody CertificateRequestDTO certificateRequestDTO) {
         return certificateRequestService.createCertificateRequestForUser(userId, certificateRequestDTO);
     }
 
     @PostMapping("/request/admin/{adminId}")
-    public CertificateRequestDTO createCertificateRequestAdmin(@PathVariable Long adminId,
-                                                               @RequestBody CertificateRequestDTO certificateRequestDTO) {
+    public CertificateRequestResponseDTO createCertificateRequestAdmin(@PathVariable String adminId,
+                                                                       @RequestBody CertificateRequestDTO certificateRequestDTO) {
         return certificateRequestService.createCertificateRequestForAdmin(adminId, certificateRequestDTO);
     }
 
     @GetMapping("/all-certificate-requests/{userId}")
-    public Collection<CertificateRequestDTO> getAllUsersCertificateRequests(@PathVariable Long userId) {
+    public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequests(@PathVariable String userId) {
         return certificateRequestService.getAllUsersCertificateRequests(userId);
     }
 
     @PutMapping("/approve/{requestId}")
-    public Certificate approveRequest(@PathVariable Long requestId) {
+    public Certificate approveRequest(@PathVariable String requestId) {
         return certificateRequestService.approveSigningRequest(requestId);
     }
 
     @PutMapping("/deny/{requestId}")
-    public void denyRequest(@PathVariable Long requestId) {
+    public void denyRequest(@PathVariable String requestId) {
         certificateRequestService.denySigningRequest(requestId);
     }
 
