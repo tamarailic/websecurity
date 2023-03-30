@@ -9,40 +9,51 @@ import java.time.LocalDateTime;
 @Document("certificate_request")
 public class CertificateRequest {
     @Id
-    private Long id;
+    private String id;
 
-    private Long subjectId;
+    private String subjectId;
 
     private String issuerCertificateId;
 
     private LocalDateTime requestedDate;
 
     private String certificateType;
+
     private String status;
 
 
     public CertificateRequest() {
     }
 
-    public CertificateRequest(CertificateRequestDTO certificateRequestDTO, Long subjectId) {
+    public CertificateRequest(String subjectId, String issuerCertificateId, LocalDateTime requestedDate, String certificateType, String status) {
         this.subjectId = subjectId;
-        this.issuerCertificateId = certificateRequestDTO.getIssuerCertificateId();
-        this.certificateType = certificateRequestDTO.getCertificateType();
+        this.issuerCertificateId = issuerCertificateId;
+        this.requestedDate = requestedDate;
+        this.certificateType = certificateType;
+        this.status = status;
     }
 
-    public Long getId() {
+    public CertificateRequest(CertificateRequestDTO requestDTO, String subjectId, LocalDateTime requestedDate, String status) {
+        this.subjectId = subjectId;
+        this.issuerCertificateId = requestDTO.getIssuerCertificateId();
+        this.requestedDate = requestedDate;
+        this.certificateType = requestDTO.getCertificateType();
+        this.status = status;
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public Long getSubjectId() {
+    public String getSubjectId() {
         return subjectId;
     }
 
-    public void setSubjectId(Long subjectId) {
+    public void setSubjectId(String subjectId) {
         this.subjectId = subjectId;
     }
 

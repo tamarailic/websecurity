@@ -5,7 +5,7 @@ import com.websecurity.websecurity.models.CertificateRequest;
 import java.time.LocalDateTime;
 
 public class CertificateRequestResponseDTO {
-    private Long subjectId;
+    private String subjectId;
 
     private String issuerCertificateId;
 
@@ -26,11 +26,11 @@ public class CertificateRequestResponseDTO {
         this.status = certificateRequest.getStatus();
     }
 
-    public Long getSubjectId() {
+    public String getSubjectId() {
         return subjectId;
     }
 
-    public void setSubjectId(Long subjectId) {
+    public void setSubjectId(String subjectId) {
         this.subjectId = subjectId;
     }
 

@@ -18,29 +18,29 @@ public class CertificateController {
 
 
     @PostMapping("/request/user/{userId}")
-    public CertificateRequestResponseDTO createCertificateRequestUser(@PathVariable Long userId,
-                                                              @RequestBody CertificateRequestDTO certificateRequestDTO) {
+    public CertificateRequestResponseDTO createCertificateRequestUser(@PathVariable String userId,
+                                                                      @RequestBody CertificateRequestDTO certificateRequestDTO) {
         return certificateRequestService.createCertificateRequestForUser(userId, certificateRequestDTO);
     }
 
     @PostMapping("/request/admin/{adminId}")
-    public CertificateRequestResponseDTO createCertificateRequestAdmin(@PathVariable Long adminId,
+    public CertificateRequestResponseDTO createCertificateRequestAdmin(@PathVariable String adminId,
                                                                        @RequestBody CertificateRequestDTO certificateRequestDTO) {
         return certificateRequestService.createCertificateRequestForAdmin(adminId, certificateRequestDTO);
     }
 
     @GetMapping("/all-certificate-requests/{userId}")
-    public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequests(@PathVariable Long userId) {
+    public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequests(@PathVariable String userId) {
         return certificateRequestService.getAllUsersCertificateRequests(userId);
     }
 
     @PutMapping("/approve/{requestId}")
-    public Certificate approveRequest(@PathVariable Long requestId) {
+    public Certificate approveRequest(@PathVariable String requestId) {
         return certificateRequestService.approveSigningRequest(requestId);
     }
 
     @PutMapping("/deny/{requestId}")
-    public void denyRequest(@PathVariable Long requestId) {
+    public void denyRequest(@PathVariable String requestId) {
         certificateRequestService.denySigningRequest(requestId);
     }
 

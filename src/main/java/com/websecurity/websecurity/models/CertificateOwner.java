@@ -2,7 +2,7 @@ package com.websecurity.websecurity.models;
 
 public class CertificateOwner {
 
-    private Long id;
+    private String id;
     private String username;
     private String firstName;
     private String lastName;
@@ -10,18 +10,18 @@ public class CertificateOwner {
     public CertificateOwner() {
     }
 
-    public CertificateOwner(Long Id, String username, String firstName, String lastName) {
+    public CertificateOwner(String Id, String username, String firstName, String lastName) {
         this.id = Id;
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

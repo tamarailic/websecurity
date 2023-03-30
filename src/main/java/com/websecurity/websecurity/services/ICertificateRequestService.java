@@ -9,14 +9,14 @@ import java.util.Collection;
 public interface ICertificateRequestService {
 
 
-    CertificateRequestResponseDTO createCertificateRequestForUser(Long userId, CertificateRequestDTO certificateRequestDTO);
+    CertificateRequestResponseDTO createCertificateRequestForUser(String userId, CertificateRequestDTO certificateRequestDTO);
 
-    CertificateRequestResponseDTO createCertificateRequestForAdmin(Long adminId, CertificateRequestDTO certificateRequestDTO);
+    CertificateRequestResponseDTO createCertificateRequestForAdmin(String adminId, CertificateRequestDTO certificateRequestDTO);
 
-    Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequests(Long userId);
+    Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequests(String userId);
 
-    Certificate approveSigningRequest(Long requestId);
+    Certificate approveSigningRequest(String requestId);
 
-    void denySigningRequest(Long requestId);
+    void denySigningRequest(String requestId);
 
 }

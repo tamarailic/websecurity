@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
 
-public interface ICertificateRequestRepository extends MongoRepository<CertificateRequest, Long> {
+public interface ICertificateRequestRepository extends MongoRepository<CertificateRequest, String> {
 
-    List<CertificateRequestResponseDTO> findAllBySubjectId(Long subjectId);
+    List<CertificateRequestResponseDTO> findAllBySubjectId(String subjectId);
 }
