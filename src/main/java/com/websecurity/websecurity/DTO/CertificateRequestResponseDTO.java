@@ -12,7 +12,10 @@ public class CertificateRequestResponseDTO {
     private LocalDateTime requestedDate;
 
     private String certificateType;
+
     private String status;
+
+    private String denyReason;
 
 
     public CertificateRequestResponseDTO() {
@@ -24,6 +27,7 @@ public class CertificateRequestResponseDTO {
         this.requestedDate = certificateRequest.getRequestedDate();
         this.certificateType = certificateRequest.getCertificateType();
         this.status = certificateRequest.getStatus();
+        this.denyReason = certificateRequest.getDenyReason();
     }
 
     public String getSubjectId() {
@@ -64,5 +68,13 @@ public class CertificateRequestResponseDTO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getDenyReason() {
+        return denyReason;
+    }
+
+    public void setDenyReason(String denyReason) {
+        this.denyReason = denyReason;
     }
 }

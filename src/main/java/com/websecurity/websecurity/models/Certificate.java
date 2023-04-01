@@ -3,7 +3,6 @@ package com.websecurity.websecurity.models;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.security.PublicKey;
 import java.time.LocalDate;
 
 @Document("certificate")
@@ -12,7 +11,7 @@ public class Certificate {
     @Id
     private String serialNumber;
     private String signingCertificateSerialNumber;
-    private PublicKey publicKey;
+    private String publicKey;
     private CertificateOwner owner;
     private CertificateIssuer issuer;
     private Boolean endCertificate;
@@ -25,7 +24,7 @@ public class Certificate {
     public Certificate() {
     }
 
-    public Certificate(String serialNumber, String signingCertificateSerialNumber, PublicKey publicKey, CertificateOwner owner, CertificateIssuer issuer, Boolean endCertificate, LocalDate notBefore, LocalDate notAfter, String version, String signatureAlgorithm, Boolean valid) {
+    public Certificate(String serialNumber, String signingCertificateSerialNumber, String publicKey, CertificateOwner owner, CertificateIssuer issuer, Boolean endCertificate, LocalDate notBefore, LocalDate notAfter, String version, String signatureAlgorithm, Boolean valid) {
         this.serialNumber = serialNumber;
         this.signingCertificateSerialNumber = signingCertificateSerialNumber;
         this.publicKey = publicKey;
@@ -63,11 +62,11 @@ public class Certificate {
         this.version = version;
     }
 
-    public PublicKey getPublicKey() {
+    public String getPublicKey() {
         return publicKey;
     }
 
-    public void setPublicKey(PublicKey publicKey) {
+    public void setPublicKey(String publicKey) {
         this.publicKey = publicKey;
     }
 

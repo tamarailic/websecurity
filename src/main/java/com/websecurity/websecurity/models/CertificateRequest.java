@@ -21,16 +21,10 @@ public class CertificateRequest {
 
     private String status;
 
+    private String denyReason;
+
 
     public CertificateRequest() {
-    }
-
-    public CertificateRequest(String subjectId, String issuerCertificateId, LocalDateTime requestedDate, String certificateType, String status) {
-        this.subjectId = subjectId;
-        this.issuerCertificateId = issuerCertificateId;
-        this.requestedDate = requestedDate;
-        this.certificateType = certificateType;
-        this.status = status;
     }
 
     public CertificateRequest(CertificateRequestDTO requestDTO, String subjectId, LocalDateTime requestedDate, String status) {
@@ -89,5 +83,11 @@ public class CertificateRequest {
         this.status = status;
     }
 
+    public String getDenyReason() {
+        return denyReason;
+    }
 
+    public void setDenyReason(String denyReason) {
+        this.denyReason = denyReason;
+    }
 }

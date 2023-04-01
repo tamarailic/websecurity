@@ -19,4 +19,8 @@ public interface IHelperService {
     PrivateKey getPrivateKey(String signingCertificateId);
 
     KeyPair generateKeyPair();
+
+    String convertKeyToString(PublicKey publicKey);
+
+    byte[] convertKeyToBytes(PublicKey publicKey);
 }

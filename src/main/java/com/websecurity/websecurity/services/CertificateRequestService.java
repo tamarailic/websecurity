@@ -2,6 +2,7 @@ package com.websecurity.websecurity.services;
 
 import com.websecurity.websecurity.DTO.CertificateRequestDTO;
 import com.websecurity.websecurity.DTO.CertificateRequestResponseDTO;
+import com.websecurity.websecurity.DTO.ReasonDTO;
 import com.websecurity.websecurity.models.Certificate;
 import com.websecurity.websecurity.models.CertificateRequest;
 import com.websecurity.websecurity.models.User;
@@ -44,9 +45,9 @@ public class CertificateRequestService implements ICertificateRequestService {
         CertificateRequest certificateRequest = new CertificateRequest(certificateRequestDTO, userId, LocalDateTime.now(), "PENDING");
         certificateRequestRepository.save(certificateRequest);
 
-        String issuerId = certificate.getIssuer().getId();
+        String ownerId = certificate.getOwner().getId();
 
-        if (Objects.equals(user.getId(), issuerId)) {
+        if (Objects.equals(user.getId(), ownerId)) {
             approveSigningRequest(certificateRequest.getId());
         }
 
@@ -74,30 +75,34 @@ public class CertificateRequestService implements ICertificateRequestService {
     @Override
     public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequests(String userId) {
         userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
-
         return certificateRequestRepository.findAllBySubjectId(userId);
     }
 
     @Override
     public Certificate approveSigningRequest(String requestId) {
-        markRequestAsApproved(requestId);
+        CertificateRequest request = certificateRequestRepository.findById(requestId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request with that id does not exist."));
+        if (!request.getStatus().equals("PENDING"))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate request was already processed");
+        markRequestAsApproved(request);
         return certificateGeneratorService.createNewCertificate(requestId);
     }
 
     @Override
-    public void denySigningRequest(String requestId) {
-        markRequestAsDenied(requestId);
+    public void denySigningRequest(String requestId, ReasonDTO denyReason) {
+        CertificateRequest request = certificateRequestRepository.findById(requestId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request with that id does not exist."));
+        if (!request.getStatus().equals("PENDING"))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate request was already processed");
+        markRequestAsDenied(request, denyReason.getReason());
     }
 
-    private void markRequestAsApproved(String requestId) {
-        CertificateRequest request = certificateRequestRepository.findById(requestId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request with that id does not exist."));
+    private void markRequestAsApproved(CertificateRequest request) {
         request.setStatus("APPROVED");
         certificateRequestRepository.save(request);
     }
 
-    private void markRequestAsDenied(String requestId) {
-        CertificateRequest request = certificateRequestRepository.findById(requestId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request with that id does not exist."));
+    private void markRequestAsDenied(CertificateRequest request, String denyReason) {
         request.setStatus("DENIED");
+        request.setDenyReason(denyReason);
         certificateRequestRepository.save(request);
     }
 }

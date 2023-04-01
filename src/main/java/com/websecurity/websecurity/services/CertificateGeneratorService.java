@@ -67,13 +67,14 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
         LocalDate startDate = LocalDate.now();
         LocalDate endDate = calculateExpirationDate(startDate, request.getCertificateType());
         String serialNumber = UUID.randomUUID().toString();
+        String publicKeyString = helperService.convertKeyToString(subjectPublicKey);
         if (request.getCertificateType().equals("ROOT")) {
-            return new Certificate(serialNumber, serialNumber, subjectPublicKey, new CertificateOwner(requester.getId(), requester.getUsername(), requester.getFirstName(), requester.getLastName()), new CertificateIssuer(requester.getId(), requester.getUsername(), requester.getFirstName(), requester.getLastName()), false, startDate, endDate, (String) helperService.getConfigValue("CERTIFICATE_VERSION"), (String) helperService.getConfigValue("SIGNATURE_ALGORITHM"), true);
+            return new Certificate(serialNumber, serialNumber, publicKeyString, new CertificateOwner(requester.getId(), requester.getUsername(), requester.getFirstName(), requester.getLastName()), new CertificateIssuer(requester.getId(), requester.getUsername(), requester.getFirstName(), requester.getLastName()), false, startDate, endDate, (String) helperService.getConfigValue("CERTIFICATE_VERSION"), (String) helperService.getConfigValue("SIGNATURE_ALGORITHM"), true);
         }
         Certificate issuerCertificate = certificateRepository.findById(request.getIssuerCertificateId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Certificate with that id does not exist."));
         User issuer = userRepository.findById(issuerCertificate.getOwner().getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User with that id does not exist."));
 
-        return new Certificate(serialNumber, request.getIssuerCertificateId(), subjectPublicKey, new CertificateOwner(requester.getId(), requester.getUsername(), requester.getFirstName(), requester.getLastName()), new CertificateIssuer(issuer.getId(), issuer.getUsername(), issuer.getFirstName(), issuer.getLastName()), request.getCertificateType().equals("END"), startDate, endDate, (String) helperService.getConfigValue("CERTIFICATE_VERSION"), (String) helperService.getConfigValue("SIGNATURE_ALGORITHM"), true);
+        return new Certificate(serialNumber, request.getIssuerCertificateId(), publicKeyString, new CertificateOwner(requester.getId(), requester.getUsername(), requester.getFirstName(), requester.getLastName()), new CertificateIssuer(issuer.getId(), issuer.getUsername(), issuer.getFirstName(), issuer.getLastName()), request.getCertificateType().equals("END"), startDate, endDate, (String) helperService.getConfigValue("CERTIFICATE_VERSION"), (String) helperService.getConfigValue("SIGNATURE_ALGORITHM"), true);
     }
 
     private LocalDate calculateExpirationDate(LocalDate notBefore, String certificateType) {
@@ -101,7 +102,7 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
         builder.addRDN(BCStyle.GIVENNAME, certificate.getOwner().getFirstName());
         builder.addRDN(BCStyle.UID, String.valueOf(certificate.getOwner().getId()));
 
-        return new SubjectData(certificate.getPublicKey(), builder.build(), certificate.getSerialNumber(), certificate.getNotBefore(), certificate.getNotAfter());
+        return new SubjectData(helperService.convertStringToPublicKey(certificate.getPublicKey()), builder.build(), certificate.getSerialNumber(), certificate.getNotBefore(), certificate.getNotAfter());
     }
 
     private IssuerData generateIssuerData(Certificate certificate, PrivateKey subjectPrivateKey) {
@@ -132,9 +133,6 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
     private void savePublicPartOfCertificate(X509Certificate certificateToPersist) {
         try {
             X509CertificateHolder certHolder = new JcaX509CertificateHolder(certificateToPersist);
-
-            System.out.println("Working Directory = " + System.getProperty("user.dir"));
-
             FileOutputStream fos = new FileOutputStream("src/main/java/com/websecurity/websecurity/security/certs/" + certificateToPersist.getSerialNumber().toString() + ".crt");
             fos.write(certHolder.getEncoded());
             fos.close();

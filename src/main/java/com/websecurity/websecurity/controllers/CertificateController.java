@@ -2,6 +2,7 @@ package com.websecurity.websecurity.controllers;
 
 import com.websecurity.websecurity.DTO.CertificateRequestDTO;
 import com.websecurity.websecurity.DTO.CertificateRequestResponseDTO;
+import com.websecurity.websecurity.DTO.ReasonDTO;
 import com.websecurity.websecurity.models.Certificate;
 import com.websecurity.websecurity.services.ICertificateRequestService;
 import com.websecurity.websecurity.services.ICertificateValidityService;
@@ -43,11 +44,11 @@ public class CertificateController {
     }
 
     @PutMapping("/deny/{requestId}")
-    public void denyRequest(@PathVariable String requestId) {
-        certificateRequestService.denySigningRequest(requestId);
+    public void denyRequest(@PathVariable String requestId, @RequestBody ReasonDTO reasonDTO) {
+        certificateRequestService.denySigningRequest(requestId, reasonDTO);
     }
 
-    @GetMapping("/vertify/{certificateSerialNumber}")
+    @GetMapping("/verify/{certificateSerialNumber}")
     public Boolean verifyCertificateValidity(@PathVariable String certificateSerialNumber) {
         return certificateValidityService.checkValidity(certificateSerialNumber);
     }

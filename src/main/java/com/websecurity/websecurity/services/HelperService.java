@@ -1,18 +1,16 @@
 package com.websecurity.websecurity.services;
 
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.util.encoders.Base64;
 import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.*;
+import java.math.BigInteger;
 import java.security.*;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -24,17 +22,18 @@ public class HelperService implements IHelperService {
 
     @Override
     public PublicKey convertStringToPublicKey(String keyString) {
-        try {
-            byte[] byteKey = Base64.decode(keyString.getBytes());
-            X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(byteKey);
-            KeyFactory kf = KeyFactory.getInstance("RSA");
+        byte[] byteKey = Base64.decode(keyString.getBytes());
+        return convertBytesToPublicKey(byteKey);
+    }
 
-            return kf.generatePublic(X509publicKey);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @Override
+    public String convertKeyToString(PublicKey publicKey) {
+        return Base64.toBase64String(convertKeyToBytes(publicKey));
+    }
 
-        return null;
+    @Override
+    public byte[] convertKeyToBytes(PublicKey publicKey) {
+        return publicKey.getEncoded();
     }
 
     @Override
@@ -72,11 +71,23 @@ public class HelperService implements IHelperService {
     @Override
     public PrivateKey getPrivateKey(String signingCertificateId) {
         try {
-            byte[] key = Files.readAllBytes(Paths.get("src/main/java/com/websecurity/websecurity/security/keys/" + signingCertificateId + ".key"));
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(key);
-            return keyFactory.generatePrivate(keySpec);
-        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+            BigInteger signingCertificateName = new BigInteger(signingCertificateId.replace("-", ""), 16);
+            // Read the private key from the file
+            File keyFile = new File("src/main/java/com/websecurity/websecurity/security/keys/" + signingCertificateName + ".key");
+            PEMParser pemParser = new PEMParser(new FileReader(keyFile));
+            Object obj = pemParser.readObject();
+            pemParser.close();
+
+            // Convert the parsed object to a private key
+            JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
+            PrivateKey privateKey = null;
+            if (obj instanceof PEMKeyPair) {
+                privateKey = converter.getPrivateKey(((PEMKeyPair) obj).getPrivateKeyInfo());
+            } else if (obj instanceof PrivateKeyInfo) {
+                privateKey = converter.getPrivateKey((PrivateKeyInfo) obj);
+            }
+            return privateKey;
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
