@@ -324,4 +324,8 @@ fabric.properties
 # Local History for Visual Studio Code
 .history/
 
+# Our custom ignores
+src/main/java/com/websecurity/websecurity/security/certs/*.crt
+src/main/java/com/websecurity/websecurity/security/keys/*.key
+
 # End of https://mrkandreev.name/snippets/gitignore-generator/#Java,Linux,react,macOS,Eclipse,Windows,WebStorm,Intellij,VisualStudioCode

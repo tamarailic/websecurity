@@ -133,7 +133,9 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
         try {
             X509CertificateHolder certHolder = new JcaX509CertificateHolder(certificateToPersist);
 
-            FileOutputStream fos = new FileOutputStream("src/main/java/security/certs/" + certificateToPersist.getSerialNumber().toString() + ".crt");
+            System.out.println("Working Directory = " + System.getProperty("user.dir"));
+
+            FileOutputStream fos = new FileOutputStream("src/main/java/com/websecurity/websecurity/security/certs/" + certificateToPersist.getSerialNumber().toString() + ".crt");
             fos.write(certHolder.getEncoded());
             fos.close();
         } catch (CertificateEncodingException | IOException e) {
@@ -143,7 +145,7 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
 
     private void savePrivatePartOfCertificate(X509Certificate certificateToPersist, PrivateKey privateKeyToPersist) {
         try {
-            JcaPEMWriter pemWriter = new JcaPEMWriter(new FileWriter("src/main/java/security/keys/" + certificateToPersist.getSerialNumber().toString() + ".key"));
+            JcaPEMWriter pemWriter = new JcaPEMWriter(new FileWriter("src/main/java/com/websecurity/websecurity/security/keys/" + certificateToPersist.getSerialNumber().toString() + ".key"));
             pemWriter.writeObject(privateKeyToPersist);
             pemWriter.close();
         } catch (IOException e) {

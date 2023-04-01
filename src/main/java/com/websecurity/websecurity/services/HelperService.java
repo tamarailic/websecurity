@@ -72,7 +72,7 @@ public class HelperService implements IHelperService {
     @Override
     public PrivateKey getPrivateKey(String signingCertificateId) {
         try {
-            byte[] key = Files.readAllBytes(Paths.get("src/main/java/security/keys/" + signingCertificateId + ".key"));
+            byte[] key = Files.readAllBytes(Paths.get("src/main/java/com/websecurity/websecurity/security/keys/" + signingCertificateId + ".key"));
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(key);
             return keyFactory.generatePrivate(keySpec);
