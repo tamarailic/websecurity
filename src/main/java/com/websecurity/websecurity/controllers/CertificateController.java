@@ -4,6 +4,7 @@ import com.websecurity.websecurity.DTO.CertificateRequestDTO;
 import com.websecurity.websecurity.DTO.CertificateRequestResponseDTO;
 import com.websecurity.websecurity.models.Certificate;
 import com.websecurity.websecurity.services.ICertificateRequestService;
+import com.websecurity.websecurity.services.ICertificateValidityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +16,8 @@ public class CertificateController {
 
     @Autowired
     private ICertificateRequestService certificateRequestService;
+    @Autowired
+    private ICertificateValidityService certificateValidityService;
 
 
     @PostMapping("/request/user/{userId}")
@@ -42,6 +45,11 @@ public class CertificateController {
     @PutMapping("/deny/{requestId}")
     public void denyRequest(@PathVariable String requestId) {
         certificateRequestService.denySigningRequest(requestId);
+    }
+
+    @GetMapping("/vertify/{certificateSerialNumber}")
+    public Boolean verifyCertificateValidity(@PathVariable String certificateSerialNumber) {
+        return certificateValidityService.checkValidity(certificateSerialNumber);
     }
 
 }
