@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Objects;
@@ -24,10 +25,13 @@ public class CertificateRequestService implements ICertificateRequestService {
     @Autowired
     private ICertificateGeneratorService certificateGeneratorService;
     @Autowired
+    private IHelperService helperService;
+    @Autowired
+    private ICertificateValidityService certificateValidityService;
+    @Autowired
     private ICertificateRepository certificateRepository;
     @Autowired
     private ICertificateRequestRepository certificateRequestRepository;
-
     @Autowired
     private IUserRepository userRepository;
 
@@ -41,6 +45,8 @@ public class CertificateRequestService implements ICertificateRequestService {
         }
 
         Certificate certificate = certificateRepository.findById(certificateRequestDTO.getIssuerCertificateId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate with that ID doesn't exist."));
+
+        validateCertificateRequest(certificateRequestDTO.getCertificateType(), certificate);
 
         CertificateRequest certificateRequest = new CertificateRequest(certificateRequestDTO, userId, LocalDateTime.now(), "PENDING");
         certificateRequestRepository.save(certificateRequest);
@@ -60,7 +66,8 @@ public class CertificateRequestService implements ICertificateRequestService {
     public CertificateRequestResponseDTO createCertificateRequestForAdmin(String adminId, CertificateRequestDTO certificateRequestDTO) {
         userRepository.findById(adminId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
         if (!certificateRequestDTO.getCertificateType().equals("ROOT")) {
-            certificateRepository.findById(certificateRequestDTO.getIssuerCertificateId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate with that ID doesn't exist."));
+            Certificate certificate = certificateRepository.findById(certificateRequestDTO.getIssuerCertificateId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate with that ID doesn't exist."));
+            validateCertificateRequest(certificateRequestDTO.getCertificateType(), certificate);
         }
 
         CertificateRequest certificateRequest = new CertificateRequest(certificateRequestDTO, adminId, LocalDateTime.now(), "PENDING");
@@ -70,6 +77,29 @@ public class CertificateRequestService implements ICertificateRequestService {
         CertificateRequest approvedCertificateRequest = certificateRequestRepository.findById(certificateRequest.getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate request with that ID doesn't exist."));
 
         return new CertificateRequestResponseDTO(approvedCertificateRequest);
+    }
+
+
+    private void validateCertificateRequest(String requestedCertificateType, Certificate certificate){
+        if(!certificateValidityService.checkValidity(certificate.getSerialNumber())){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Issuer certificate isn't valid.");
+        }
+
+        if(!canGenerateCertificate(certificate)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Issuer certificate doesn't have permission to generate new certificate.");
+        }
+
+        if(!isIssuerInValidPeriod(requestedCertificateType, certificate)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Issuer certificate isn't valid long enough to generate new certificate.");
+        }
+    }
+    private boolean canGenerateCertificate(Certificate certificate){
+        return !certificate.getEndCertificate();
+    }
+
+    private boolean isIssuerInValidPeriod(String requestedCertificateType, Certificate certificate){
+        LocalDate expirationDate = helperService.calculateExpirationDate(LocalDate.now(), requestedCertificateType);
+        return expirationDate.isBefore(certificate.getNotAfter());
     }
 
     @Override

@@ -5,7 +5,9 @@ import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.util.encoders.Base64;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
@@ -103,5 +105,24 @@ public class HelperService implements IHelperService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public LocalDate calculateExpirationDate(LocalDate notBefore, String certificateType) {
+        LocalDate expirationDate;
+        switch (certificateType) {
+            case "END":
+                expirationDate = notBefore.plusDays((Integer) getConfigValue("END_CERTIFICATE_DURATION_IN_DAYS"));
+                break;
+            case "INTERMEDIATE":
+                expirationDate = notBefore.plusDays((Integer) getConfigValue("INTERMEDIATE_CERTIFICATE_DURATION_IN_DAYS"));
+                break;
+            case "ROOT":
+                expirationDate = notBefore.plusDays((Integer) getConfigValue("ROOT_CERTIFICATE_DURATION_IN_DAYS"));
+                break;
+            default:
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate type does not exist");
+        }
+        return expirationDate;
     }
 }

@@ -65,7 +65,7 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
         CertificateRequest request = certificateRequestRepository.findById(requestId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request with that id does not exist."));
         User requester = userRepository.findById(request.getSubjectId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User with that id does not exist."));
         LocalDate startDate = LocalDate.now();
-        LocalDate endDate = calculateExpirationDate(startDate, request.getCertificateType());
+        LocalDate endDate = helperService.calculateExpirationDate(startDate, request.getCertificateType());
         String serialNumber = UUID.randomUUID().toString();
         String publicKeyString = helperService.convertKeyToString(subjectPublicKey);
         if (request.getCertificateType().equals("ROOT")) {
@@ -77,23 +77,7 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
         return new Certificate(serialNumber, request.getIssuerCertificateId(), publicKeyString, new CertificateOwner(requester.getId(), requester.getUsername(), requester.getFirstName(), requester.getLastName()), new CertificateIssuer(issuer.getId(), issuer.getUsername(), issuer.getFirstName(), issuer.getLastName()), request.getCertificateType().equals("END"), startDate, endDate, (String) helperService.getConfigValue("CERTIFICATE_VERSION"), (String) helperService.getConfigValue("SIGNATURE_ALGORITHM"), true);
     }
 
-    private LocalDate calculateExpirationDate(LocalDate notBefore, String certificateType) {
-        LocalDate expirationDate;
-        switch (certificateType) {
-            case "END":
-                expirationDate = notBefore.plusDays((Integer) helperService.getConfigValue("END_CERTIFICATE_DURATION_IN_DAYS"));
-                break;
-            case "INTERMEDIATE":
-                expirationDate = notBefore.plusDays((Integer) helperService.getConfigValue("INTERMEDIATE_CERTIFICATE_DURATION_IN_DAYS"));
-                break;
-            case "ROOT":
-                expirationDate = notBefore.plusDays((Integer) helperService.getConfigValue("ROOT_CERTIFICATE_DURATION_IN_DAYS"));
-                break;
-            default:
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate type does not exist");
-        }
-        return expirationDate;
-    }
+
 
     private SubjectData getSubjectData(Certificate certificate) {
         X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);

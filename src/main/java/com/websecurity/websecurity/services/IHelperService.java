@@ -23,4 +23,6 @@ public interface IHelperService {
     String convertKeyToString(PublicKey publicKey);
 
     byte[] convertKeyToBytes(PublicKey publicKey);
+
+    LocalDate calculateExpirationDate(LocalDate notBefore, String certificateType);
 }
