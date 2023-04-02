@@ -2,13 +2,15 @@ package com.websecurity.websecurity.models;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.PublicKey;
 import java.util.Collection;
 import java.util.List;
 
 @Document("user")
-public class User {
+public class User implements UserDetails {
     @Id
     private String id;
     private String firstName;

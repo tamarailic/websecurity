@@ -41,7 +41,7 @@ hs_err_pid*
 logs
 **/*.backup.*
 **/*.back.*
-
+target/**
 node_modules
 bower_components
 
