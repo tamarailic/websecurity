@@ -1,15 +1,18 @@
 package com.websecurity.websecurity.models;
 
+import com.websecurity.websecurity.security.Role;
+import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.security.PublicKey;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
 @Document("user")
+@Data
 public class User implements UserDetails {
     @Id
     private String id;
@@ -17,6 +20,19 @@ public class User implements UserDetails {
     private String lastName;
     private String username;
     private String password;
+    private Boolean active;
+
+    private Boolean enabled;
+    private LocalDateTime credentialsExpiry;
+    private Boolean nonLocked;
+    List<Role> roles;
+
+    public User(String firstName, String lastName, String username, String password) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.username = username;
+        this.password = password;
+    }
 
     public User() {
     }
@@ -28,7 +44,6 @@ public class User implements UserDetails {
     public void setId(String id) {
         this.id = id;
     }
-
 
     public String getUsername() {
         return username;
@@ -69,22 +84,22 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return nonLocked;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return credentialsExpiry.isBefore(LocalDateTime.now());
     }
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return enabled;
     }
 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return this.roles;
     }
 }

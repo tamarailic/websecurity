@@ -1,13 +1,17 @@
 package com.websecurity.websecurity.security;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 
-@Document("user")
+@Document("role")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Role implements GrantedAuthority {
     @Id
-    Long id;
+    String id;
     String name;
 
     public String getName() {
@@ -19,7 +23,7 @@ public class Role implements GrantedAuthority {
         return name;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 }

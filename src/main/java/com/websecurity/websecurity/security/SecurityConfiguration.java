@@ -26,7 +26,7 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable();
-        http.authorizeHttpRequests().antMatchers("/*").permitAll().anyRequest().authenticated();
+        http.authorizeHttpRequests().antMatchers("/*").permitAll();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.addFilterBefore(new JwtRequestFilter(tokenUtils, userDetailsService()), UsernamePasswordAuthenticationFilter.class);
         http.exceptionHandling().authenticationEntryPoint(restAuthenticationEntryPoint);
@@ -64,13 +64,11 @@ public class SecurityConfiguration {
     }
 
 //    TODO customize this
-//    @Bean
-//    public WebSecurityCustomizer webSecurityCustomizer() {
-//
-//        return (web) -> web.ignoring().requestMatchers(HttpMethod.POST, "/api/user/login", "/api/unregisteredUser/**", "/api/passenger", "/h2-console/**")
-//                .requestMatchers(HttpMethod.GET, "/**", "/", "/webjars/**", "/*.html", "favicon.ico",
-//                        "/**/*.html", "/**/*.css", "/**/*.js", "/h2-console/**")
-//                .requestMatchers(HttpMethod.PUT, "/api/user/*/resetPassword");
-//
-//    }
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+
+        return (web) -> web.ignoring().antMatchers(HttpMethod.POST, "/api/register","/api/login")
+                .antMatchers(HttpMethod.PUT, "/api/*/resetPassword");
+
+    }
 }
