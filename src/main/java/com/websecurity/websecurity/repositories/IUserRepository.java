@@ -5,7 +5,7 @@ import com.websecurity.websecurity.models.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
-public interface IUserRepository extends MongoRepository<User, Long> {
+public interface IUserRepository extends MongoRepository<User, String> { {
     User findByUsername(String username);
 
 }

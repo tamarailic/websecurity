@@ -1,16 +1,10 @@
-package com.websecurity.websecurity.models;
+package com.websecurity.websecurity.DTO;
 
-import com.websecurity.websecurity.DTO.CertificateRequestDTO;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import com.websecurity.websecurity.models.CertificateRequest;
 
 import java.time.LocalDateTime;
 
-@Document("certificate_request")
-public class CertificateRequest {
-    @Id
-    private String id;
-
+public class CertificateRequestResponseDTO {
     private String subjectId;
 
     private String issuerCertificateId;
@@ -24,23 +18,16 @@ public class CertificateRequest {
     private String denyReason;
 
 
-    public CertificateRequest() {
+    public CertificateRequestResponseDTO() {
     }
 
-    public CertificateRequest(CertificateRequestDTO requestDTO, String subjectId, LocalDateTime requestedDate, String status) {
-        this.subjectId = subjectId;
-        this.issuerCertificateId = requestDTO.getIssuerCertificateId();
-        this.requestedDate = requestedDate;
-        this.certificateType = requestDTO.getCertificateType();
-        this.status = status;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
+    public CertificateRequestResponseDTO(CertificateRequest certificateRequest) {
+        this.subjectId = certificateRequest.getSubjectId();
+        this.issuerCertificateId = certificateRequest.getIssuerCertificateId();
+        this.requestedDate = certificateRequest.getRequestedDate();
+        this.certificateType = certificateRequest.getCertificateType();
+        this.status = certificateRequest.getStatus();
+        this.denyReason = certificateRequest.getDenyReason();
     }
 
     public String getSubjectId() {

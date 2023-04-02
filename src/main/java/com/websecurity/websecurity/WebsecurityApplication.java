@@ -11,9 +11,9 @@ import java.security.Security;
 @EnableMongoRepositories
 public class WebsecurityApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(WebsecurityApplication.class, args);
-		Security.addProvider(new BouncyCastleProvider());
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(WebsecurityApplication.class, args);
+        Security.addProvider(new BouncyCastleProvider());
+    }
 
 }

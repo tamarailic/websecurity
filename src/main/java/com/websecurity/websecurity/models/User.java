@@ -1,49 +1,40 @@
 package com.websecurity.websecurity.models;
 
-import com.websecurity.websecurity.security.Role;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.PublicKey;
 import java.util.Collection;
 import java.util.List;
 
 @Document("user")
-public class User implements UserDetails {
+public class User {
     @Id
-    private Long id;
-    private PublicKey publicKey;
+    private String id;
     private String firstName;
     private String lastName;
     private String username;
     private String password;
-    private List<Role> roles;
 
     public User() {
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public PublicKey getPublicKey() {
-        return publicKey;
-    }
-
-    public void setPublicKey(PublicKey publicKey) {
-        this.publicKey = publicKey;
-    }
 
     public String getUsername() {
         return username;
     }
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public String getPassword() {
         return password;
@@ -87,10 +78,6 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return false;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
 

@@ -1,7 +1,13 @@
 package com.websecurity.websecurity.repositories;
 
+import com.websecurity.websecurity.DTO.CertificateRequestDTO;
+import com.websecurity.websecurity.DTO.CertificateRequestResponseDTO;
 import com.websecurity.websecurity.models.CertificateRequest;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface ICertificateRequestRepository extends MongoRepository<CertificateRequest, Long> {
+import java.util.List;
+
+public interface ICertificateRequestRepository extends MongoRepository<CertificateRequest, String> {
+
+    List<CertificateRequestResponseDTO> findAllBySubjectId(String subjectId);
 }

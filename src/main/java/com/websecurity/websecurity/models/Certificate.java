@@ -3,48 +3,70 @@ package com.websecurity.websecurity.models;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.security.PublicKey;
 import java.time.LocalDate;
 
 @Document("certificate")
 public class Certificate {
 
     @Id
-    private Long serialNumber;
-    private PublicKey publicKey;
+    private String serialNumber;
+    private String signingCertificateSerialNumber;
+    private String publicKey;
     private CertificateOwner owner;
     private CertificateIssuer issuer;
     private Boolean endCertificate;
     private LocalDate notBefore;
     private LocalDate notAfter;
-    private Long version;
+    private String version;
     private String signatureAlgorithm;
     private Boolean valid;
 
     public Certificate() {
     }
 
-    public Long getSerialNumber() {
+    public Certificate(String serialNumber, String signingCertificateSerialNumber, String publicKey, CertificateOwner owner, CertificateIssuer issuer, Boolean endCertificate, LocalDate notBefore, LocalDate notAfter, String version, String signatureAlgorithm, Boolean valid) {
+        this.serialNumber = serialNumber;
+        this.signingCertificateSerialNumber = signingCertificateSerialNumber;
+        this.publicKey = publicKey;
+        this.owner = owner;
+        this.issuer = issuer;
+        this.endCertificate = endCertificate;
+        this.notBefore = notBefore;
+        this.notAfter = notAfter;
+        this.version = version;
+        this.signatureAlgorithm = signatureAlgorithm;
+        this.valid = valid;
+    }
+
+    public String getSerialNumber() {
         return serialNumber;
     }
 
-    public void setSerialNumber(Long serialNumber) {
+    public void setSerialNumber(String serialNumber) {
         this.serialNumber = serialNumber;
     }
 
-    public Long getVersion() {
+    public String getSigningCertificateSerialNumber() {
+        return signingCertificateSerialNumber;
+    }
+
+    public void setSigningCertificateSerialNumber(String signingCertificateSerialNumber) {
+        this.signingCertificateSerialNumber = signingCertificateSerialNumber;
+    }
+
+    public String getVersion() {
         return version;
     }
 
-    public void setVersion(Long version) {
+    public void setVersion(String version) {
         this.version = version;
     }
 
-    public PublicKey getPublicKey() {
+    public String getPublicKey() {
         return publicKey;
     }
 
-    public void setPublicKey(PublicKey publicKey) {
+    public void setPublicKey(String publicKey) {
         this.publicKey = publicKey;
     }
 
