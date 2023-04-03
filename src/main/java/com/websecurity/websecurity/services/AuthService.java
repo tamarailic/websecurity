@@ -38,10 +38,9 @@ public class AuthService implements IAuthService{
     private User createNewUser(UserDTO userDTO) {
 
         User newUser = userDTO.toUser();
-        newUser.setId("");
         newUser.setActive(false);
         newUser.setNonLocked(true);
-        newUser.setEnabled(false);
+        newUser.setEnabled(true);
         newUser.setCredentialsExpiry(LocalDateTime.now().plusDays(7));
         List<Role> passengerRole = roleRepository.findByName("user");
         newUser.setRoles(passengerRole);
