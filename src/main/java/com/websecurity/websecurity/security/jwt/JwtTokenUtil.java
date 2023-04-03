@@ -51,7 +51,7 @@ public class JwtTokenUtil {
      * @param authorities
      * @return JWT token
      */
-    public String generateToken(Long id, String email, Collection<? extends GrantedAuthority> authorities) {
+    public String generateToken(String id, String email, Collection<? extends GrantedAuthority> authorities) {
         return Jwts.builder()
                 .setIssuer(APP_NAME)
                 .setSubject(email)
@@ -65,7 +65,7 @@ public class JwtTokenUtil {
 
     }
 
-    public String generateRefreshToken(Long id, String email) {
+    public String generateRefreshToken(String id, String email) {
 
         return Jwts.builder()
                 .setIssuer(APP_NAME)

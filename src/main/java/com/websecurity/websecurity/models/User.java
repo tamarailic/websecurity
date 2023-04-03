@@ -79,7 +79,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
@@ -89,7 +89,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return credentialsExpiry.isBefore(LocalDateTime.now());
+        return credentialsExpiry.isAfter(LocalDateTime.now());
     }
 
     @Override
