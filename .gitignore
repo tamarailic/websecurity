@@ -41,7 +41,7 @@ hs_err_pid*
 logs
 **/*.backup.*
 **/*.back.*
-
+target/
 node_modules
 bower_components
 
@@ -295,6 +295,8 @@ out/
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
+
+.idea
 
 # JIRA plugin
 atlassian-ide-plugin.xml
