@@ -1,7 +1,6 @@
 package com.websecurity.websecurity.models;
 
 import com.websecurity.websecurity.security.Role;
-import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,7 +11,6 @@ import java.util.Collection;
 import java.util.List;
 
 @Document("user")
-@Data
 public class User implements UserDetails {
     @Id
     private String id;
@@ -96,7 +94,45 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return enabled;
     }
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
 
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public void setCredentialsExpiry(LocalDateTime credentialsExpiry) {
+        this.credentialsExpiry = credentialsExpiry;
+    }
+
+    public void setNonLocked(Boolean nonLocked) {
+        this.nonLocked = nonLocked;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public LocalDateTime getCredentialsExpiry() {
+        return credentialsExpiry;
+    }
+
+    public Boolean getNonLocked() {
+        return nonLocked;
+    }
+
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
