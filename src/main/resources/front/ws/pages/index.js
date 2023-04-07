@@ -9,6 +9,10 @@ export default function Home() {
 
 function HomePage() {
   return <>
-    <h1>Test2</h1>
+    <h1 style={{padding:'2rem'}}>Test2</h1>
+    <p>Lfejfkngagangnanaglglangalagnng</p>
+    <p>Lfejfkngagangnanaglglangalagnng</p>
+    <p>Lfejfkngagangnanaglglangalagnng</p>
+    <p>Lfejfkngagangnanaglglangalagnng</p>
   </>
 }
