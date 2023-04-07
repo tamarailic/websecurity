@@ -3,13 +3,15 @@
   box-sizing: border-box;
 }
 
-:root {}
+:root {
+  --DarkGray: #333;
+  --LightGray: #f4f4f4;
+  --NavbarFontSize: 24px;
+}
 
 body {
   background-color: var(--LightGray);
-  font: normal 16px Arial, Helvetica, Sans-Serif, Verdana, Tahoma
-    /* For hedings*/
-  ;
+  font-family: 'Inter', sans-serif;
   line-height: 1.6;
   color: var(--DarkGray);
   margin: 0;
