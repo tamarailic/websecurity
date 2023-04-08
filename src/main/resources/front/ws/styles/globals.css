@@ -7,6 +7,8 @@
   --DarkGray: #333;
   --LightGray: #f4f4f4;
   --NavbarFontSize: 24px;
+  --FontSize: 1.2rem;
+  --AccentColor: #007aff
 }
 
 body {

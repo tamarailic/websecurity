@@ -1,6 +1,7 @@
 import PageContainer from "@/components/pageContainer"
 import styles from "@/styles/Home.module.css"
 import { useState } from "react";
+import Image from "next/image";
 
 export default function Home() {
   return (<PageContainer>
@@ -79,10 +80,56 @@ function MainArea({ setSelectedItem, appliedFilters }) {
   );
 }
 
-function OneElementPreview() {
-  return (<div className={styles.card} id="one_element_preview"></div>);
+function OneElementPreview({selectedItem}) {
+  // return (<div className={styles.card} id="one_element_preview"></div>);
+  return (<div className={`${styles.card} ${styles.preview}`} id="one_element_preview">
+    <h2>Certificate</h2>
+    <ul className={styles.certInfo}>
+      {/* <li>Serial number: <span>{selectedItem.serialNumber}</span></li>
+      <li>Owner: <span>{selectedItem.owner}</span></li>
+      <li>Issuer: <span>{selectedItem.issuer}</span></li>
+      <li>Valid till: <span>{selectedItem.notAfter}</span></li>
+      <li>Type: <span>{selectedItem.type}</span></li> */}
+      <li><span className={styles.certInfoLabel}>Serial number: </span><span>32323232</span></li>
+      <li><span className={styles.certInfoLabel}>Owner: </span><span>Marko</span></li>
+      <li><span className={styles.certInfoLabel}>Issuer: </span><span>Luka</span></li>
+      <li><span className={styles.certInfoLabel}>Valid till: </span><span>22.09.2023</span></li>
+      <li><span className={styles.certInfoLabel}>Type: </span><span>INTERMEDIATE</span></li>
+    </ul>
+    <hr/>
+    {/* <RequestCertificate canRequest={selectedItem.type != 'END'}/> */}
+    {true && <RequestCertificate/> }
+    {true && <InvalidateButton/>}
+    <DownloadButton/>
+  </div>);
 }
 
+function RequestCertificate(){
+  const possibleCertificateTypes = ['INTERMEDIATE', 'END']
+
+  return (<div>
+      <p className={styles.certInfoLabel}>Request certificate</p>
+      <div className={styles.requestCert}>
+        <select className={styles.requestType} name="certType" id="certType">
+        {possibleCertificateTypes.map(type => <option value={type}>{type}</option>)}
+        </select>
+        <button className={styles.btn}>Request</button>
+      </div>
+    </div>)
+
+}
+
+function InvalidateButton(){
+  return <button className={styles.accentBtn}>Invalidate</button>
+}
+
+function DownloadButton(){
+  return <div className={styles.accentBtn}>
+          <a>Download</a>
+          <Image src="/images/downloadCertificateIcon.png" width={24} height={24}></Image>
+        </div>
+ 
+}
 
 
 async function getAllCertificates() {
