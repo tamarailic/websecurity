@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class CertificateRequestService implements ICertificateRequestService {
@@ -102,17 +103,18 @@ public class CertificateRequestService implements ICertificateRequestService {
     @Override
     public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequests(String userId) {
         userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
-        return certificateRequestRepository.findAllBySubjectId(userId);
+        return certificateRequestRepository.findAllBySubjectId(userId).stream().map(CertificateRequestResponseDTO::new).collect(Collectors.toList());
     }
 
     @Override
     public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequestsToReview(String userId) {
         Set<Certificate> userCertificates = certificateRepository.findAllByOwnerId(userId);
-        Set<CertificateRequestResponseDTO> certificateRequestsToReview = new HashSet<>();
+        Set<CertificateRequest> certificateRequestsToReview = new HashSet<>();
         for (Certificate certificate : userCertificates) {
             certificateRequestsToReview.addAll(certificateRequestRepository.findAllByIssuerCertificateId(certificate.getSerialNumber()));
         }
-        return certificateRequestsToReview;
+
+        return certificateRequestsToReview.stream().filter(certificateRequest -> certificateRequest.getStatus().equals("PENDING")).map(CertificateRequestResponseDTO::new).collect(Collectors.toSet());
     }
 
     @Override

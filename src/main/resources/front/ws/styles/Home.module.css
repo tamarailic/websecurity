@@ -18,7 +18,7 @@
   flex-direction: row;
   justify-content: space-evenly;
   color: white;
-  font-size: 1.2rem;
+  font-size: var(--FontSize);
   font-weight: bold;
 }
 
@@ -71,6 +71,130 @@ p.selected {
 .separator {
   border-right: 3px solid rgba(238, 238, 238, 0.1);
   border-radius: 8px;
+}
+
+.preview{
+  color: white;
+  font-size: var(--FontSize);
+  line-height: 3rem;
+}
+
+.certInfo{
+  padding: 0;
+  list-style-type: none;
+}
+
+.certInfoLabel{
+  font-weight: bold;
+}
+
+.requestCert{
+  display: flex;
+  justify-self: center;
+}
+
+.requestCert > * {
+  font-size: var(--FontSize);
+  margin-right: 1.5rem;
+}
+
+.requestType{
+  text-decoration: none;
+  background-color: #fff;
+  border-radius: 0.3rem;
+  color: #000;
+  padding: 0.2rem 1rem;
+  margin: 1.5rem 0;
+  margin-right: 1.5rem;
+  border: 1px solid #fff;
+}
+
+.requestBtn{
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  width: 200px;
+  background-color: #fff;
+  color: #000;
+  font-size: 20px;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 0.3rem;
+  padding: 0 0.5rem;
+  border: 1px solid #fff;
+  margin: 1.5rem 3rem 1.5rem 0;
+}
+
+.approveBtn{
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  width: 200px;
+  background-color: #68CC45;
+  color: #fff;
+  font-size: 20px;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 0.3rem;
+  padding: 0 0.5rem;
+  border: 1px solid #68CC45;
+  margin: 1.5rem 3rem 1.5rem 0;
+}
+
+.denyBtn{
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  width: 200px;
+  background-color: #C7372F;
+  color: #fff;
+  font-size: 20px;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 0.3rem;
+  padding: 0 0.5rem;
+  border: 1px solid #C7372F;
+  margin: 1.5rem 3rem 1.5rem 0;
+}
+
+.accentBtn{
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  width: 200px;
+  background-color: #007aff;
+  color: #fff;
+  font-size: 20px;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 0.3rem;
+  padding: 0 0.5rem;
+  border: 1px solid #007aff;
+  margin: 1.5rem 3rem 1.5rem 0;
+}
+
+.imgDiv{
+  margin-top: 0.3rem;
+  margin-left: 0.5rem;
+}
+
+.denyDiv{
+  display: flex;
+}
+
+.denyInput{
+  display: flex;
+  flex-direction: column;
+  margin-right: 2rem;
+}
+
+.denyInput > * {
+  margin-right: 0.3rem;
+}
+
+.denyInput > input{
+  height: 2rem;
+  width: 20rem;
 }
 
 .validCircle {

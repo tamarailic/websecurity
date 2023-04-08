@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface ICertificateRequestRepository extends MongoRepository<CertificateRequest, String> {
 
-    List<CertificateRequestResponseDTO> findAllBySubjectId(String subjectId);
-    List<CertificateRequestResponseDTO> findAllByIssuerCertificateId(String issuerId);
+    List<CertificateRequest> findAllBySubjectId(String subjectId);
+    List<CertificateRequest> findAllByIssuerCertificateId(String issuerId);
 }
