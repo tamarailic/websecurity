@@ -1,0 +1,42 @@
+.navbarStyle{
+    font-size: var(--NavbarFontSize);
+    margin: auto 0;
+    background-color:  hsla(0,0%,100%,.8);
+    box-shadow: inset 0 -1px 0 0 rgba(0,0,0,.1);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    max-width: 100%;
+    transition: box-shadow .1s ease 0s,background-color .1s ease 0s;
+}
+
+.navUl{
+    list-style-type: none;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 0.1rem 1rem;
+}
+
+.navUl > li{
+    padding: 0 1rem;
+}
+
+.navItem{
+    text-decoration: none;
+    color: #000;
+}
+
+.signOut{
+    font-weight: 500;
+    text-decoration: none;
+    background-color: #000;
+    border-radius: 0.4rem;
+    color: #fff;
+    padding: 0 0.75rem;
+    border: 1px solid #000;
+}
