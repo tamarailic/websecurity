@@ -34,17 +34,64 @@ p.selected {
 .filter_options {
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: space-evenly;
+  margin: 2vh auto;
+}
+
+.filter_options label {
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .main_table {
   border: 1px solid transparent;
-  -webkit-box-shadow: 0px 5px 10px 7px rgba(238, 238, 238, 1);
-  -moz-box-shadow: 0px 5px 10px 7px rgba(238, 238, 238, 1);
-  box-shadow: 0px 5px 10px 7px rgba(238, 238, 238, 1);
+  color: white;
+  text-align: center;
+  margin: auto;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+
+.main_table tr {
+  cursor: pointer;
+  transition: all 150ms;
+}
+
+.main_table tbody tr:hover {
+  background-color: var(--DarkGrayHover);
+}
+
+.main_table th {
+  padding: 20px 15px;
+}
+
+.main_table td {
+  padding: 10px;
 }
 
 .separator {
   border-right: 3px solid rgba(238, 238, 238, 0.1);
   border-radius: 8px;
+}
+
+.validCircle {
+  border-radius: 50%;
+  width: 5px;
+  height: 5px;
+  background-color: var(--Valid);
+  margin: auto;
+}
+
+.invalidCircle {
+  border-radius: 50%;
+  width: 5px;
+  height: 5px;
+  background-color: var(--Invalid);
+  margin: auto;
+}
+
+.pendingCircle {
+  border-radius: 50%;
+  width: 5px;
+  height: 5px;
+  background-color: var(--Invalid);
+  margin: auto;
 }

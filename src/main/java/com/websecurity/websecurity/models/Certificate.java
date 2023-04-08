@@ -86,11 +86,11 @@ public class Certificate {
         this.issuer = issuer;
     }
 
-    public Boolean getEndCertificate() {
+    public Boolean isEndCertificate() {
         return endCertificate;
     }
 
-    public void setEndCertificate(Boolean endCertificate) {
+    public void setIsEndCertificate(Boolean endCertificate) {
         this.endCertificate = endCertificate;
     }
 

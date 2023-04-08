@@ -73,10 +73,11 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
         }
         Certificate issuerCertificate = certificateRepository.findById(request.getIssuerCertificateId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Certificate with that id does not exist."));
         User issuer = userRepository.findById(issuerCertificate.getOwner().getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User with that id does not exist."));
-
+        if (endDate.isAfter(issuerCertificate.getNotAfter())) {
+            endDate = issuerCertificate.getNotAfter();
+        }
         return new Certificate(serialNumber, request.getIssuerCertificateId(), publicKeyString, new CertificateOwner(requester.getId(), requester.getUsername(), requester.getFirstName(), requester.getLastName()), new CertificateIssuer(issuer.getId(), issuer.getUsername(), issuer.getFirstName(), issuer.getLastName()), request.getCertificateType().equals("END"), startDate, endDate, (String) helperService.getConfigValue("CERTIFICATE_VERSION"), (String) helperService.getConfigValue("SIGNATURE_ALGORITHM"), true);
     }
-
 
 
     private SubjectData getSubjectData(Certificate certificate) {

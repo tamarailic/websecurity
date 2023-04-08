@@ -2,6 +2,7 @@ package com.websecurity.websecurity.services;
 
 import com.websecurity.websecurity.DTO.CertificateRequestDTO;
 import com.websecurity.websecurity.DTO.CertificateRequestResponseDTO;
+import com.websecurity.websecurity.DTO.CertificateToShowDTO;
 import com.websecurity.websecurity.DTO.ReasonDTO;
 import com.websecurity.websecurity.models.Certificate;
 import com.websecurity.websecurity.models.CertificateRequest;
@@ -10,6 +11,8 @@ import com.websecurity.websecurity.repositories.ICertificateRepository;
 import com.websecurity.websecurity.repositories.ICertificateRequestRepository;
 import com.websecurity.websecurity.repositories.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -17,7 +20,9 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Service
 public class CertificateRequestService implements ICertificateRequestService {
@@ -41,7 +46,7 @@ public class CertificateRequestService implements ICertificateRequestService {
         User user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
 
         if (!certificateRequestDTO.getCertificateType().equals("INTERMEDIATE") & !certificateRequestDTO.getCertificateType().equals("END")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid certificate type.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid certificate type requested.");
         }
 
         Certificate certificate = certificateRepository.findById(certificateRequestDTO.getIssuerCertificateId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate with that ID doesn't exist."));
@@ -80,26 +85,18 @@ public class CertificateRequestService implements ICertificateRequestService {
     }
 
 
-    private void validateCertificateRequest(String requestedCertificateType, Certificate certificate){
-        if(!certificateValidityService.checkValidity(certificate.getSerialNumber())){
+    private void validateCertificateRequest(String requestedCertificateType, Certificate certificate) {
+        if (!certificateValidityService.checkValidity(certificate.getSerialNumber())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Issuer certificate isn't valid.");
         }
 
-        if(!canGenerateCertificate(certificate)){
+        if (!canGenerateCertificate(certificate)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Issuer certificate doesn't have permission to generate new certificate.");
         }
-
-        if(!isIssuerInValidPeriod(requestedCertificateType, certificate)){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Issuer certificate isn't valid long enough to generate new certificate.");
-        }
-    }
-    private boolean canGenerateCertificate(Certificate certificate){
-        return !certificate.getEndCertificate();
     }
 
-    private boolean isIssuerInValidPeriod(String requestedCertificateType, Certificate certificate){
-        LocalDate expirationDate = helperService.calculateExpirationDate(LocalDate.now(), requestedCertificateType);
-        return expirationDate.isBefore(certificate.getNotAfter());
+    private boolean canGenerateCertificate(Certificate certificate) {
+        return !certificate.isEndCertificate();
     }
 
     @Override
@@ -109,12 +106,22 @@ public class CertificateRequestService implements ICertificateRequestService {
     }
 
     @Override
-    public Certificate approveSigningRequest(String requestId) {
+    public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequestsToReview(String userId) {
+        Set<Certificate> userCertificates = certificateRepository.findAllByOwnerId(userId);
+        Set<CertificateRequestResponseDTO> certificateRequestsToReview = new HashSet<>();
+        for (Certificate certificate : userCertificates) {
+            certificateRequestsToReview.addAll(certificateRequestRepository.findAllByIssuerCertificateId(certificate.getSerialNumber()));
+        }
+        return certificateRequestsToReview;
+    }
+
+    @Override
+    public CertificateToShowDTO approveSigningRequest(String requestId) {
         CertificateRequest request = certificateRequestRepository.findById(requestId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request with that id does not exist."));
         if (!request.getStatus().equals("PENDING"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate request was already processed");
         markRequestAsApproved(request);
-        return certificateGeneratorService.createNewCertificate(requestId);
+        return new CertificateToShowDTO(certificateGeneratorService.createNewCertificate(requestId));
     }
 
     @Override
@@ -123,6 +130,11 @@ public class CertificateRequestService implements ICertificateRequestService {
         if (!request.getStatus().equals("PENDING"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate request was already processed");
         markRequestAsDenied(request, denyReason.getReason());
+    }
+
+    @Override
+    public Page<CertificateToShowDTO> getAll(Pageable pageable) {
+        return certificateRepository.findAll(pageable).map(CertificateToShowDTO::new);
     }
 
     private void markRequestAsApproved(CertificateRequest request) {
