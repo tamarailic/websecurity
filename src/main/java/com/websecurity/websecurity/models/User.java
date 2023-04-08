@@ -2,6 +2,7 @@ package com.websecurity.websecurity.models;
 
 import com.websecurity.websecurity.security.Role;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,10 +17,10 @@ public class User implements UserDetails {
     private String id;
     private String firstName;
     private String lastName;
+    @Indexed(unique = true)
     private String username;
     private String password;
     private Boolean active;
-
     private Boolean enabled;
     private LocalDateTime credentialsExpiry;
     private Boolean nonLocked;
@@ -94,6 +95,7 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return enabled;
     }
+
     public void setActive(Boolean active) {
         this.active = active;
     }

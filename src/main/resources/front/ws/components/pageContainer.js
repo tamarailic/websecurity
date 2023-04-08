@@ -1,6 +1,8 @@
 import Head from "next/head";
 import NavBar from "./navBar";
 
+export const backUrl = 'http://localhost:8080';
+
 export default function PageContainer({ children }) {
     return (
         <>

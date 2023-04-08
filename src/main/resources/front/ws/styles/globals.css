@@ -5,7 +5,10 @@
 
 :root {
   --DarkGray: #333;
+  --DarkGrayHover: #252525;
   --LightGray: #f4f4f4;
+  --Valid: #68CC45;
+  --Invalid: #BF3030;
   --NavbarFontSize: 24px;
   --FontSize: 1.2rem;
   --AccentColor: #007aff
