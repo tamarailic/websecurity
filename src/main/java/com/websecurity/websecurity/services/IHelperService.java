@@ -25,4 +25,6 @@ public interface IHelperService {
     byte[] convertKeyToBytes(PublicKey publicKey);
 
     LocalDate calculateExpirationDate(LocalDate notBefore, String certificateType);
+
+    String getEmailFrom();
 }

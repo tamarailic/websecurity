@@ -125,4 +125,9 @@ public class HelperService implements IHelperService {
         }
         return expirationDate;
     }
+
+    @Override
+    public String getEmailFrom() {
+        return this.getConfigValue("EMAIL_FROM").toString();
+    }
 }
