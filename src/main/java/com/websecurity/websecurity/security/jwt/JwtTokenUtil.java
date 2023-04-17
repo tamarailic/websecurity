@@ -1,10 +1,12 @@
 package com.websecurity.websecurity.security.jwt;
 
 import com.websecurity.websecurity.models.User;
+import com.websecurity.websecurity.services.HelperService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +18,9 @@ import java.util.Date;
 
 @Component
 public class JwtTokenUtil {
+
+    @Autowired
+    private HelperService helperService;
 
     @Value("Shuttle-back")
     private String APP_NAME;
@@ -31,6 +36,7 @@ public class JwtTokenUtil {
 
     @Value("${jwt.refreshExpirationDateInMs}")
     private int REFRESH_EXPIRATION;
+
 
     //	private static final String AUDIENCE_UNKNOWN = "unknown";
     //	private static final String AUDIENCE_MOBILE = "mobile";
@@ -79,6 +85,19 @@ public class JwtTokenUtil {
 
     }
 
+    public String generateVerificationToken(String email) {
+
+        return Jwts.builder()
+                .setIssuer(APP_NAME)
+                .setSubject(email)
+                .setAudience(generateAudience())
+                .setIssuedAt(new Date())
+                .setExpiration(generateVerificationExpirationDate())
+                .signWith(SIGNATURE_ALGORITHM, secret).compact();
+
+
+    }
+
     /**
      * @return Tip uređaja.
      */
@@ -107,6 +126,10 @@ public class JwtTokenUtil {
 
     private Date generateRefreshExpirationDate() {
         return new Date(new Date().getTime() + REFRESH_EXPIRATION);
+    }
+
+    private Date generateVerificationExpirationDate() {
+        return new Date(new Date().getTime() + helperService.getVerificationExpiration());
     }
 
     /**

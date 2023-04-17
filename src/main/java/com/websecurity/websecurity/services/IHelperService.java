@@ -27,4 +27,6 @@ public interface IHelperService {
     LocalDate calculateExpirationDate(LocalDate notBefore, String certificateType);
 
     String getEmailFrom();
+
+    int getVerificationExpiration();
 }

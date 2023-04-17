@@ -130,4 +130,9 @@ public class HelperService implements IHelperService {
     public String getEmailFrom() {
         return this.getConfigValue("EMAIL_FROM").toString();
     }
+
+    @Override
+    public int getVerificationExpiration() {
+        return (Integer) this.getConfigValue("VERIFICATION_EXPIRATION_IN_MS");
+    }
 }

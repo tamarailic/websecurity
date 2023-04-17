@@ -7,11 +7,13 @@ import com.sendgrid.SendGrid;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
+import com.websecurity.websecurity.models.User;
 import com.websecurity.websecurity.services.HelperService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 
 @Service
@@ -52,5 +54,22 @@ public class EmailService implements IEmailService {
             System.out.println(ex.getMessage());
         }
         return response;
+    }
+
+
+    @Override
+    public void sendVerificationEmail(User user, String url) {
+        String toAddress = user.getUsername();
+
+        String subject = "Please verify your registration";
+        String content = "Dear [[name]],<br>"
+                + "Please click the link below to verify your registration:<br>"
+                + "<h3><a href=\"[[URL]]\" target=\"_self\">VERIFY</a></h3>"
+                + "Thank you,<br>"
+                + "Shuttle";
+
+        content = content.replace("[[name]]", user.getFirstName());
+        content = content.replace("[[URL]]", url);
+        sendHTML(toAddress,subject,content);
     }
 }

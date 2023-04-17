@@ -3,6 +3,8 @@ package com.websecurity.websecurity.controllers;
 import com.websecurity.websecurity.DTO.UserDTO;
 import com.websecurity.websecurity.DTO.CredentialsDTO;
 import com.websecurity.websecurity.DTO.TokenDTO;
+import com.websecurity.websecurity.exceptions.NonExistantUserException;
+import com.websecurity.websecurity.exceptions.VerificationTokenExpiredException;
 import com.websecurity.websecurity.models.User;
 import com.websecurity.websecurity.repositories.IUserRepository;
 import com.websecurity.websecurity.security.jwt.JwtTokenUtil;
@@ -10,6 +12,7 @@ import com.websecurity.websecurity.services.IAuthService;
 import com.websecurity.websecurity.validators.LoginValidator;
 import com.websecurity.websecurity.validators.LoginValidatorException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,6 +27,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.PermitAll;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -103,6 +108,43 @@ public class AuthController {
         User user = userRepository.findByUsername(credentialsDTO.getEmail());
 
         return new ResponseEntity<TokenDTO>(tokens, HttpStatus.OK);
+    }
+
+    @GetMapping("/verify")
+    public ResponseEntity<?> verifyUser(@RequestParam("token") String code) {
+        boolean verified = false;
+        try {
+            verified = authService.verify(code);
+        } catch (VerificationTokenExpiredException e) {
+            return new ResponseEntity<>("Activation expired. Register again!", HttpStatus.BAD_REQUEST);
+        } catch (NonExistantUserException e) {
+            return new ResponseEntity<>("Activation with entered id does not exist!", HttpStatus.NOT_FOUND);
+        }
+
+        URI yahoo = null;
+        HttpHeaders httpHeaders = new HttpHeaders();
+        if (verified) {
+
+            try {
+                yahoo = new URI("http://localhost:4200/login");
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+
+            httpHeaders.setLocation(yahoo);
+            return new ResponseEntity<>(httpHeaders, HttpStatus.OK);
+
+        } else {
+
+            try {
+                yahoo = new URI("http://localhost:4200/bad-request");
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+
+            httpHeaders.setLocation(yahoo);
+            return new ResponseEntity<>(httpHeaders, HttpStatus.NOT_ACCEPTABLE);
+        }
     }
 
 

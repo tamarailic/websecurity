@@ -1,37 +1,69 @@
 package com.websecurity.websecurity.services;
 
 import com.websecurity.websecurity.DTO.UserDTO;
+import com.websecurity.websecurity.exceptions.NonExistantUserException;
+import com.websecurity.websecurity.exceptions.VerificationTokenExpiredException;
 import com.websecurity.websecurity.models.User;
 import com.websecurity.websecurity.repositories.IRoleRepository;
 import com.websecurity.websecurity.repositories.IUserRepository;
 import com.websecurity.websecurity.security.Role;
+import com.websecurity.websecurity.security.jwt.JwtTokenUtil;
+import com.websecurity.websecurity.services.email.EmailService;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
-public class AuthService implements IAuthService{
+public class AuthService implements IAuthService {
     @Autowired
     private IRoleRepository roleRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
     private IUserRepository userRepository;
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    private EmailService emailService;
+    @Value("${server.ip}")
+    private String IP;
+    @Value("${server.port}")
+    private int PORT;
 
     private static final int USER_CREDENTIALS_EXPIRY_DAYS = 7;
 
     @Override
     public User registerUser(UserDTO dto) {
-        User newPassenger = createNewUser(dto);
+        User newUser = createNewUser(dto);
 
-        newPassenger = userRepository.save(newPassenger);
+        newUser = userRepository.save(newUser);
+        String verificationToken = jwtTokenUtil.generateVerificationToken(newUser.getUsername());
+        emailService.sendVerificationEmail(newUser, "http://localhost:" + PORT + "/api/auth/verify?token=" + verificationToken);
+        return newUser;
+    }
 
+    @Override
+    public boolean verify(String verificationToken) throws VerificationTokenExpiredException, NonExistantUserException {
+        Date expiration = jwtTokenUtil.getExpirationDateFromToken(verificationToken);
+        if (expiration.before(new Date())) {
+            throw new VerificationTokenExpiredException();
+        }
 
-        return newPassenger;
+        Optional<User> user = Optional.ofNullable(userRepository.findByUsername(jwtTokenUtil.getUsernameFromToken(verificationToken)));
+        if (user.isEmpty()) throw new NonExistantUserException();
+        User actual = user.get();
+        if (actual.isEnabled()) return false;
+        actual.setEnabled(true);
+        userRepository.save(actual);
+        return true;
     }
 
 
@@ -40,7 +72,7 @@ public class AuthService implements IAuthService{
         User newUser = userDTO.toUser();
         newUser.setActive(false);
         newUser.setNonLocked(true);
-        newUser.setEnabled(true);
+        newUser.setEnabled(false);
         newUser.setCredentialsExpiry(LocalDateTime.now().plusDays(7));
         List<Role> passengerRole = roleRepository.findByName("user");
         newUser.setRoles(passengerRole);
@@ -51,8 +83,8 @@ public class AuthService implements IAuthService{
     }
 
     @Override
-    public void setRoles(){
-        roleRepository.save(new Role("1","user"));
-        roleRepository.save(new Role("2","admin"));
+    public void setRoles() {
+        roleRepository.save(new Role("1", "user"));
+        roleRepository.save(new Role("2", "admin"));
     }
 }
