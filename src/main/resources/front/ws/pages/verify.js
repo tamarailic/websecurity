@@ -91,19 +91,16 @@ function ByUpload() {
     }
 
     function sendFile(fileContent) {
-        fetch('/api/upload', {
+        fetch(`${backUrl}/api/certificate/verify/file`, {
             method: 'POST',
             body: fileContent,
             headers: {
                 'Content-Type': 'application/octet-stream'
             }
         })
-            .then(response => {
-                console.log('File uploaded successfully!');
-            })
-            .catch(error => {
-                console.error('Error uploading file:', error);
-            });
+            .then(response => { if (!response.ok) { return setCertificateStatus(-1); } return response.json() })
+            .then(status => status['status'] ? setCertificateStatus(1) : setCertificateStatus(0))
+            .catch(err => setCertificateStatus(-1));
     }
 
     return (<>
@@ -115,7 +112,7 @@ function ByUpload() {
             </form>
         </div>
         {certificateStatus !== null && <div className={styles.statusTitle}>
-            <p className={certificateStatus == 1 ? styles.valid : styles.invalid}>{certificateStatus == 1 ? 'Valid' : certificateStatus == 0 ? 'Invalid' : 'Certificate with that id does not exist'}</p>
+            <p className={certificateStatus == 1 ? styles.valid : styles.invalid}>{certificateStatus == 1 ? 'Valid' : certificateStatus == 0 ? 'Invalid' : 'Certificate file invalid'}</p>
         </div>}
     </>
 

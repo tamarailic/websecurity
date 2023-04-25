@@ -1,6 +1,9 @@
 package com.websecurity.websecurity.services;
 
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
@@ -13,11 +16,14 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.security.spec.X509EncodedKeySpec;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class HelperService implements IHelperService {
@@ -36,6 +42,20 @@ public class HelperService implements IHelperService {
     @Override
     public byte[] convertKeyToBytes(PublicKey publicKey) {
         return publicKey.getEncoded();
+    }
+
+    @Override
+    public X509Certificate convertBytesToCertificate(byte[] fileContent) {
+        X509Certificate certificate;
+        try {
+            X509CertificateHolder certificateHolder = new X509CertificateHolder(fileContent);
+            JcaX509CertificateConverter converter = new JcaX509CertificateConverter();
+            converter.setProvider(new BouncyCastleProvider());
+            certificate = converter.getCertificate(certificateHolder);
+        } catch (CertificateException | IOException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid certificate");
+        }
+        return certificate;
     }
 
     @Override
@@ -73,7 +93,7 @@ public class HelperService implements IHelperService {
     @Override
     public PrivateKey getPrivateKey(String signingCertificateId) {
         try {
-            BigInteger signingCertificateName = new BigInteger(signingCertificateId.replace("-", ""), 16);
+            BigInteger signingCertificateName = new BigInteger(signingCertificateId);
             // Read the private key from the file
             File keyFile = new File("src/main/java/com/websecurity/websecurity/security/keys/" + signingCertificateName + ".key");
             PEMParser pemParser = new PEMParser(new FileReader(keyFile));
@@ -124,5 +144,10 @@ public class HelperService implements IHelperService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate type does not exist");
         }
         return expirationDate;
+    }
+
+    @Override
+    public BigInteger convertUUIDtoBigInteger(String uuid) {
+        return new BigInteger(uuid.replace("-", ""), 16);
     }
 }

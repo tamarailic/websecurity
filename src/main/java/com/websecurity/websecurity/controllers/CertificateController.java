@@ -7,9 +7,11 @@ import com.websecurity.websecurity.services.IUploadDownloadCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.PermitAll;
+import java.util.Arrays;
 import java.util.Collection;
 
 @RestController
@@ -62,8 +64,12 @@ public class CertificateController {
     }
 
     @GetMapping("/verify/{certificateSerialNumber}")
-    public StatusDTO verifyCertificateValidity(@PathVariable String certificateSerialNumber) {
+    public StatusDTO verifyCertificateValidityFromId(@PathVariable String certificateSerialNumber) {
         return certificateValidityService.checkValidity(certificateSerialNumber);
+    }
+    @PostMapping(value = "/verify/file", consumes = {MediaType.APPLICATION_OCTET_STREAM_VALUE})
+    public StatusDTO verifyCertificateValidityFromFile(@RequestBody byte[] certificateContent) {
+        return certificateValidityService.checkFileValidity(certificateContent);
     }
 
     @PermitAll
