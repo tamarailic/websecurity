@@ -134,7 +134,7 @@ function AllCertificates({ appliedFilters, setSelectedItem }) {
         </tr>
       </thead>
       <tbody>
-        {certificatesData.map(item => <tr onClick={() => handleRowClick(item)} key={item['serialNumber']}><td>{item['valid'] ? <div className={styles.validCircle}></div> : <div className={styles.invalidCircle}></div>}</td>{Object.keys(item).filter(column => ['serialNumber', 'owner', 'issuer', 'type', 'notBefore', 'notAfter'].includes(column)).map(itemKey => <td key={`${item['serialNumber']}-${itemKey}`}>{item[itemKey]}</td>)}</tr>)}
+        {certificatesData.map(item => <tr onClick={() => handleRowClick(item)} key={item['serialNumber']}><td>{item['valid'] ? <div className={styles.validCircle}></div> : <div className={styles.invalidCircle}></div>}</td>{Object.keys(item).filter(column => ['serialNumber', 'owner', 'issuer', 'type', 'notBefore', 'notAfter'].includes(column)).map(itemKey => <td key={`${item['serialNumber']}-${itemKey}`}>{itemKey != 'serialNumber' ? item[itemKey] : `...${item[itemKey].slice(-5)}`}</td>)}</tr>)}
       </tbody>
     </table>
   );
