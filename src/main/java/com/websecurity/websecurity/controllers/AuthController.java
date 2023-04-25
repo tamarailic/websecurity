@@ -1,8 +1,8 @@
 package com.websecurity.websecurity.controllers;
 
-import com.websecurity.websecurity.DTO.UserDTO;
 import com.websecurity.websecurity.DTO.CredentialsDTO;
 import com.websecurity.websecurity.DTO.TokenDTO;
+import com.websecurity.websecurity.DTO.UserDTO;
 import com.websecurity.websecurity.models.User;
 import com.websecurity.websecurity.repositories.IUserRepository;
 import com.websecurity.websecurity.security.jwt.JwtTokenUtil;
@@ -21,9 +21,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-
 import javax.annotation.security.PermitAll;
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/auth")

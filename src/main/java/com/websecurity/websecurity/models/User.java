@@ -13,6 +13,7 @@ import java.util.List;
 
 @Document("user")
 public class User implements UserDetails {
+    List<Role> roles;
     @Id
     private String id;
     private String firstName;
@@ -24,7 +25,6 @@ public class User implements UserDetails {
     private Boolean enabled;
     private LocalDateTime credentialsExpiry;
     private Boolean nonLocked;
-    List<Role> roles;
 
     public User(String firstName, String lastName, String username, String password) {
         this.firstName = firstName;
@@ -96,36 +96,36 @@ public class User implements UserDetails {
         return enabled;
     }
 
-    public void setActive(Boolean active) {
-        this.active = active;
-    }
-
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public void setCredentialsExpiry(LocalDateTime credentialsExpiry) {
-        this.credentialsExpiry = credentialsExpiry;
-    }
-
-    public void setNonLocked(Boolean nonLocked) {
-        this.nonLocked = nonLocked;
-    }
-
     public Boolean getActive() {
         return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 
     public Boolean getEnabled() {
         return enabled;
     }
 
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
     public LocalDateTime getCredentialsExpiry() {
         return credentialsExpiry;
     }
 
+    public void setCredentialsExpiry(LocalDateTime credentialsExpiry) {
+        this.credentialsExpiry = credentialsExpiry;
+    }
+
     public Boolean getNonLocked() {
         return nonLocked;
+    }
+
+    public void setNonLocked(Boolean nonLocked) {
+        this.nonLocked = nonLocked;
     }
 
     public List<Role> getRoles() {

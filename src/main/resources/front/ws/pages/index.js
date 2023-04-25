@@ -11,8 +11,8 @@ import Error from "@/components/error";
 const fetcher = (...args) => fetch(...args).then(res => res.json());
 
 // Just mocked data -> should be replaced with data from JWT
-const userId = '6424a90c927c44152e84f182';
-const username = 'Test';
+const userId = '6447f68495bfc35b4f3eb745';
+const username = 'tamarailic11@gmail.com';
 
 export default function Home() {
   return (<PageContainer>
@@ -27,7 +27,7 @@ function HomePage() {
 
   function showSection(i) {
     setSelectedSection(i);
-    setSelectedItem(null)
+    setSelectedItem(null);
   }
 
   return (
@@ -258,203 +258,197 @@ function filterResults(data, filters) {
   return dataThatFulfillsFilters;
 }
 
-function OneElementPreview({selectedItem}) {
-  if(selectedItem == undefined){
+function OneElementPreview({ selectedItem }) {
+  if (selectedItem == undefined) {
     return null
   }
-  else if(Object.keys(selectedItem).includes('serialNumber')){
-    return <CertificatePreview selectedItem={selectedItem}/>;
+  else if (Object.keys(selectedItem).includes('serialNumber')) {
+    return <CertificatePreview selectedItem={selectedItem} />;
   }
-  else if (Object.keys(selectedItem).includes('status') && selectedItem.subjectId == userId){
-    return <UserCertificateRequestPreview selectedItem={selectedItem}/>
-  }else {
-    return <CertificateRequestNeedsApproval selectedItem={selectedItem}/>
+  else if (Object.keys(selectedItem).includes('status') && selectedItem.subjectId == userId) {
+    return <UserCertificateRequestPreview selectedItem={selectedItem} />
+  } else {
+    return <CertificateRequestNeedsApproval selectedItem={selectedItem} />
   }
 }
 
-function CertificatePreview({selectedItem}){
+function CertificatePreview({ selectedItem }) {
   return (<div className={`${styles.card} ${styles.preview}`} id="one_element_preview">
-  <h2>Certificate</h2>
-  <ul className={styles.certInfo}>
-    <li><span className={styles.certInfoLabel}>Serial number: </span><span>{selectedItem.serialNumber}</span></li>
-    <li><span className={styles.certInfoLabel}>Owner: </span><span>{selectedItem.owner}</span></li>
-    <li><span className={styles.certInfoLabel}>Issuer: </span><span>{selectedItem.issuer}</span></li>
-    <li><span className={styles.certInfoLabel}>Valid till: </span><span>{selectedItem.notAfter}</span></li>
-    <li><span className={styles.certInfoLabel}>Type: </span><span>{selectedItem.type}</span></li>
-  </ul>
-  <hr/>
-  {selectedItem.type != 'END' && <RequestCertificateAction issuerSerialNumber={selectedItem.serialNumber}/> }
-  {selectedItem.owner == username && <InvalidateButton/>}
-  <DownloadButton serialNumber={selectedItem.serialNumber}/>
-</div>)
+    <h2>Certificate</h2>
+    <ul className={styles.certInfo}>
+      <li><span className={styles.certInfoLabel}>Serial number: </span><span>{selectedItem.serialNumber}</span></li>
+      <li><span className={styles.certInfoLabel}>Owner: </span><span>{selectedItem.owner}</span></li>
+      <li><span className={styles.certInfoLabel}>Issuer: </span><span>{selectedItem.issuer}</span></li>
+      <li><span className={styles.certInfoLabel}>Valid till: </span><span>{selectedItem.notAfter}</span></li>
+      <li><span className={styles.certInfoLabel}>Type: </span><span>{selectedItem.type}</span></li>
+    </ul>
+    <hr />
+    {selectedItem.type != 'END' && <RequestCertificateAction issuerSerialNumber={selectedItem.serialNumber} />}
+    {selectedItem.owner == username && <InvalidateButton />}
+    <DownloadButton serialNumber={selectedItem.serialNumber} />
+  </div>)
 }
 
-function UserCertificateRequestPreview({selectedItem}){
- return (<div className={`${styles.card} ${styles.preview}`} id="one_element_preview">
-          <h2>Certificate Request</h2>
-          <ul className={styles.certInfo}>
-            <li><span className={styles.certInfoLabel}>Issuer certificate id: </span><span>{selectedItem.issuerCertificateId}</span></li>
-            <li><span className={styles.certInfoLabel}>Requested date: </span><span>{selectedItem.requestedDate}</span></li>
-            <li><span className={styles.certInfoLabel}>Type: </span><span>{selectedItem.certificateType}</span></li>
-            <li><span className={styles.certInfoLabel}>Status: </span><span>{selectedItem.status}</span></li>
-            {selectedItem.status == 'DENIED' && <li><span className={styles.certInfoLabel}>Denial reason: </span><span>{selectedItem.denyReason}</span></li>}
-          </ul>
-        </div>)
-}
-
-function CertificateRequestNeedsApproval({selectedItem}){
-
+function UserCertificateRequestPreview({ selectedItem }) {
   return (<div className={`${styles.card} ${styles.preview}`} id="one_element_preview">
-      <h2>Approve ceritificate request</h2>
-      <ul className={styles.certInfo}>
-        <li><span className={styles.certInfoLabel}>Issuer certificate id: </span><span>{selectedItem.issuerCertificateId}</span></li>
-        <li><span className={styles.certInfoLabel}>Requested date: </span><span>{selectedItem.requestedDate}</span></li>
-        <li><span className={styles.certInfoLabel}>Type: </span><span>{selectedItem.certificateType}</span></li>
-      </ul>
-      <ApproveBtn requestId={selectedItem['requestId']}/>
-      <DenyBtn requestId={selectedItem['requestId']}/>
-    </div>)
+    <h2>Certificate Request</h2>
+    <ul className={styles.certInfo}>
+      <li><span className={styles.certInfoLabel}>Issuer certificate id: </span><span>{selectedItem.issuerCertificateId}</span></li>
+      <li><span className={styles.certInfoLabel}>Requested date: </span><span>{selectedItem.requestedDate}</span></li>
+      <li><span className={styles.certInfoLabel}>Type: </span><span>{selectedItem.certificateType}</span></li>
+      <li><span className={styles.certInfoLabel}>Status: </span><span>{selectedItem.status}</span></li>
+      {selectedItem.status == 'DENIED' && <li><span className={styles.certInfoLabel}>Denial reason: </span><span>{selectedItem.denyReason}</span></li>}
+    </ul>
+  </div>)
 }
 
-function ApproveBtn({requestId}){
+function CertificateRequestNeedsApproval({ selectedItem }) {
+  return (<div className={`${styles.card} ${styles.preview}`} id="one_element_preview">
+    <h2>Approve ceritificate request</h2>
+    <ul className={styles.certInfo}>
+      <li><span className={styles.certInfoLabel}>Issuer certificate id: </span><span>{selectedItem.issuerCertificateId}</span></li>
+      <li><span className={styles.certInfoLabel}>Requested date: </span><span>{selectedItem.requestedDate}</span></li>
+      <li><span className={styles.certInfoLabel}>Type: </span><span>{selectedItem.certificateType}</span></li>
+    </ul>
+    <ApproveBtn requestId={selectedItem['requestId']} />
+    <DenyBtn requestId={selectedItem['requestId']} />
+  </div>)
+}
+
+function ApproveBtn({ requestId }) {
   return <div className={styles.approveBtn} onClick={() => approveCertificateRequest(requestId)}>
-            <a>Approve</a>
-            <div className={styles.imgDiv}>
-              <Image src="/images/approveCertificateIcon.png" width={24} height={24} alt="approveCertificateIcon"></Image>
-            </div>
-          </div>
+    <a>Approve</a>
+    <div className={styles.imgDiv}>
+      <Image src="/images/approveCertificateIcon.png" width={24} height={24} alt="approveCertificateIcon"></Image>
+    </div>
+  </div>
 }
 
-async function approveCertificateRequest(requestId){
+async function approveCertificateRequest(requestId) {
   const requestOptions = {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    };
+  };
 
   const response = await fetch(`${backUrl}/api/certificate/approve/${requestId}`, requestOptions);
-
   const data = await response.json();
-  if(data.status == 200){
+  if (data.status == 200) {
     alert("Succesfully approved certificate.")
-  }else{
+  } else {
     alert("Something went wrong!")
   }
-  
 }
 
-function DenyBtn({requestId}){
+function DenyBtn({ requestId }) {
   const [denyReason, setDenyReason] = useState(null)
 
-  function handleDenyReason(event){
-      setDenyReason(event.target.value)
+  function handleDenyReason(event) {
+    setDenyReason(event.target.value)
   }
 
-  function handleDenial(){
-    if (denyReason == null){
+  function handleDenial() {
+    if (denyReason == null) {
       alert("You must enter a reason")
-    }else{
+    } else {
       denyCertificateRequest(requestId, denyReason)
       setDenyReason(null)
     }
   }
 
   return <div className={styles.denyDiv}>
-          <div className={styles.denyInput}>
-            <label htmlFor="denyResaon">Denial reason:</label>
-            <input id="denyResaon" name="denyResaon" onChange={handleDenyReason}/>
-          </div>
-          <div className={styles.denyBtn} onClick={handleDenial}>
-            <a>Deny</a>
-            <div className={styles.imgDiv}>
-              <Image src="/images/denyCertificateIcon.png" width={24} height={24} alt="denyCertificateIcon"></Image>
-            </div>
-          </div>
-        </div>
-  
+    <div className={styles.denyInput}>
+      <label htmlFor="denyResaon">Denial reason:</label>
+      <input id="denyResaon" name="denyResaon" onChange={handleDenyReason} />
+    </div>
+    <div className={styles.denyBtn} onClick={handleDenial}>
+      <a>Deny</a>
+      <div className={styles.imgDiv}>
+        <Image src="/images/denyCertificateIcon.png" width={24} height={24} alt="denyCertificateIcon"></Image>
+      </div>
+    </div>
+  </div>
+
 }
 
-async function denyCertificateRequest(requestId, reason){
+async function denyCertificateRequest(requestId, reason) {
   const requestOptions = {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ reason: reason })
-    };
+  };
 
   const response = await fetch(`${backUrl}/api/certificate/deny/${requestId}`, requestOptions);
-  if(response.status == 200){
+  if (response.status == 200) {
     alert("Succesfully denied certificate.")
-  }else{
+  } else {
     alert("Something went wrong!")
   }
-   
-
 }
 
 
-function RequestCertificateAction({issuerSerialNumber}){
+function RequestCertificateAction({ issuerSerialNumber }) {
   const [selectedType, setSelectedType] = useState('INTERMEDIATE')
   const possibleCertificateTypes = ['INTERMEDIATE', 'END']
 
-  function changedRequestType(event){
-      setSelectedType(event.target.value)
+  function changedRequestType(event) {
+    setSelectedType(event.target.value)
   }
-  
-  return (<div>
-      <p className={styles.certInfoLabel}>Request certificate</p>
-      <div className={styles.requestCert}>
-        <select className={styles.requestType} name="certType" id="certType" onChange={changedRequestType}>
-        {possibleCertificateTypes.map(type => <option id={type} value={type}>{type}</option>)}
-        </select>
-        <div className={` ${styles.requestBtn}`} onClick={() => {requestNewCertificate(userId, selectedType, issuerSerialNumber)}}>
-            <a>Request</a>
-            <div className={styles.imgDiv}>
-              <Image src="/images/requestCertificateIcon.png" width={24} height={24} alt="requestCertificateIcon"></Image>
-            </div>
-          </div>
-      </div>
-    </div>)
 
+  return (<div>
+    <p className={styles.certInfoLabel}>Request certificate</p>
+    <div className={styles.requestCert}>
+      <select className={styles.requestType} name="certType" id="certType" onChange={changedRequestType}>
+        {possibleCertificateTypes.map(type => <option id={type} value={type}>{type}</option>)}
+      </select>
+      <div className={` ${styles.requestBtn}`} onClick={() => { requestNewCertificate(userId, selectedType, issuerSerialNumber) }}>
+        <a>Request</a>
+        <div className={styles.imgDiv}>
+          <Image src="/images/requestCertificateIcon.png" width={24} height={24} alt="requestCertificateIcon"></Image>
+        </div>
+      </div>
+    </div>
+  </div>);
 }
 
-
-async function requestNewCertificate(userId, certificateType, issuerCertificateId){
+async function requestNewCertificate(userId, certificateType, issuerCertificateId) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ issuerCertificateId: issuerCertificateId ,
-    certificateType: certificateType
-      })
-    };
+    body: JSON.stringify({
+      issuerCertificateId: issuerCertificateId,
+      certificateType: certificateType
+    })
+  };
 
-    const response = await fetch(`${backUrl}/api/certificate/request/user/${userId}`, requestOptions);
-    if(response.status.isError){
-      alert("Error in request")
-    }else{
-      const data = await response.json();
-      alert(data.status)
-    }  
+  const response = await fetch(`${backUrl}/api/certificate/request/user/${userId}`, requestOptions);
+  if (response.status.isError) {
+    alert("Error in request")
+  } else {
+    const data = await response.json();
+    alert(data.status)
+  }
 }
 
-function InvalidateButton(){
+function InvalidateButton() {
   return <div className={styles.accentBtn}>
-            <a>Invalidate</a>
-            <div className={styles.imgDiv}>
-              <Image src="/images/invalidateIcon.png" width={24} height={24} alt="invalidateIcon"></Image>
-            </div>
-          </div>
-  
+    <a>Invalidate</a>
+    <div className={styles.imgDiv}>
+      <Image src="/images/invalidateIcon.png" width={24} height={24} alt="invalidateIcon"></Image>
+    </div>
+  </div>
+
 }
 
-function DownloadButton({serialNumber}){
+function DownloadButton({ serialNumber }) {
   return <div className={styles.accentBtn} onClick={() => downloadCertificate(serialNumber)}>
-          <a>Download</a>
-          <div className={styles.imgDiv}>
-              <Image src="/images/downloadCertificateIcon.png" width={24} height={24} alt="downloadIcon"></Image>
-            </div>
-        </div>
+    <a>Download</a>
+    <div className={styles.imgDiv}>
+      <Image src="/images/downloadCertificateIcon.png" width={24} height={24} alt="downloadIcon"></Image>
+    </div>
+  </div>
 }
 
-async function downloadCertificate(serialNumber){
+async function downloadCertificate(serialNumber) {
   const requestOptions = {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' }
@@ -475,6 +469,7 @@ async function downloadCertificate(serialNumber){
       document.body.appendChild(link);
       link.click();
     }  
+
 }
 
 

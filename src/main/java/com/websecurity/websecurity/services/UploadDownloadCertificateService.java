@@ -15,7 +15,7 @@ import java.math.BigInteger;
 import java.util.Base64;
 
 @Service
-public class UploadDownloadCertificateService implements IUploadDownloadCertificateService{
+public class UploadDownloadCertificateService implements IUploadDownloadCertificateService {
     @Autowired
     private ICertificateRepository certificateRepository;
 

@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashSet;
@@ -87,7 +86,7 @@ public class CertificateRequestService implements ICertificateRequestService {
 
 
     private void validateCertificateRequest(String requestedCertificateType, Certificate certificate) {
-        if (!certificateValidityService.checkValidity(certificate.getSerialNumber())) {
+        if (!certificateValidityService.checkValidity(certificate.getSerialNumber()).getStatus()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Issuer certificate isn't valid.");
         }
 
