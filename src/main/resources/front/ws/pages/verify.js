@@ -36,7 +36,7 @@ function MainArea({ selectedSection }) {
         tableToRender = <ByUpload />
     }
     return (
-        <div id="main_area">
+        <div className={styles.card} id="main_area">
             {tableToRender}
         </div>
     );

@@ -1,12 +1,18 @@
 .main_container {
-    width: 60%;
+    width: 70%;
     margin: auto;
     display: flex;
     flex-direction: column;
-    margin-top: 10vh;
+    margin-top: 18vh;
     background: var(--DarkGray);
     border-radius: 8px;
 }
+
+.card {
+    background-color: var(--DarkGray);
+    padding: 0 50px;
+    border-radius: 8px;
+  }
 
 .toggle_options {
     display: flex;

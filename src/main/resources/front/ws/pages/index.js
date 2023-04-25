@@ -317,7 +317,9 @@ function CertificateRequestNeedsApproval({ selectedItem }) {
 
 function ApproveBtn({ requestId }) {
   return <div className={styles.approveBtn} onClick={() => approveCertificateRequest(requestId)}>
-    <a>Approve</a>
+    <div>
+      <a>Approve</a>
+    </div>
     <div className={styles.imgDiv}>
       <Image src="/images/approveCertificateIcon.png" width={24} height={24} alt="approveCertificateIcon"></Image>
     </div>
@@ -363,7 +365,9 @@ function DenyBtn({ requestId }) {
       <input id="denyResaon" name="denyResaon" ref={ref} onChange={handleDenyReason} />
     </div>
     <div className={styles.denyBtn} onClick={handleDenial}>
-      <a>Deny</a>
+      <div>
+        <a>Deny</a>
+      </div>
       <div className={styles.imgDiv}>
         <Image src="/images/denyCertificateIcon.png" width={24} height={24} alt="denyCertificateIcon"></Image>
       </div>
@@ -402,8 +406,10 @@ function RequestCertificateAction({ issuerSerialNumber }) {
       <select className={styles.requestType} name="certType" id="certType" onChange={changedRequestType}>
         {possibleCertificateTypes.map(type => <option id={type} value={type}>{type}</option>)}
       </select>
-      <div className={` ${styles.requestBtn}`} onClick={() => { requestNewCertificate(userId, selectedType, issuerSerialNumber) }}>
-        <a>Request</a>
+      <div className={styles.requestBtn} onClick={() => { requestNewCertificate(userId, selectedType, issuerSerialNumber) }}>
+        <div>
+          <a>Request</a>
+        </div>
         <div className={styles.imgDiv}>
           <Image src="/images/requestCertificateIcon.png" width={24} height={24} alt="requestCertificateIcon"></Image>
         </div>
@@ -454,7 +460,9 @@ function InvalidateButton({ serialNumber }) {
       <input id="invalidateReason" name="invalidateReason" ref={ref} onChange={handleInvalidationReason} />
     </div>
     <div className={styles.accentBtn} onClick={handleInvalidation}>
-      <a>Invalidate</a>
+      <div>
+        <a>Invalidate</a>
+      </div>
       <div className={styles.imgDiv}>
         <Image src="/images/invalidateIcon.png" width={24} height={24} alt="invalidateIcon"></Image>
       </div>
