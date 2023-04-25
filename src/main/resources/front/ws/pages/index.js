@@ -429,7 +429,7 @@ async function requestNewCertificate(userId, certificateType, issuerCertificateI
   }
 }
 
-function InvalidateButton(serialNumber) {
+function InvalidateButton({serialNumber}) {
   const [invalidationReason, setInvalidationReason] = useState(null)
 
   function handleInvalidationReason(event) {
