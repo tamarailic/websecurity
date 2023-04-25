@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 
 @Service
-public class UploadDownloadCertificateService implements IUploadDownloadCertificateService{
+public class UploadDownloadCertificateService implements IUploadDownloadCertificateService {
     @Autowired
     private ICertificateRepository certificateRepository;
 

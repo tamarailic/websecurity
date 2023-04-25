@@ -6,7 +6,6 @@ import com.websecurity.websecurity.repositories.IRoleRepository;
 import com.websecurity.websecurity.repositories.IUserRepository;
 import com.websecurity.websecurity.security.Role;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -14,15 +13,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class AuthService implements IAuthService{
+public class AuthService implements IAuthService {
+    private static final int USER_CREDENTIALS_EXPIRY_DAYS = 7;
     @Autowired
     private IRoleRepository roleRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
     private IUserRepository userRepository;
-
-    private static final int USER_CREDENTIALS_EXPIRY_DAYS = 7;
 
     @Override
     public User registerUser(UserDTO dto) {
@@ -51,8 +49,8 @@ public class AuthService implements IAuthService{
     }
 
     @Override
-    public void setRoles(){
-        roleRepository.save(new Role("1","user"));
-        roleRepository.save(new Role("2","admin"));
+    public void setRoles() {
+        roleRepository.save(new Role("1", "user"));
+        roleRepository.save(new Role("2", "admin"));
     }
 }

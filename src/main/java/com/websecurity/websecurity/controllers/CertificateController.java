@@ -5,16 +5,13 @@ import com.websecurity.websecurity.services.ICertificateRequestService;
 import com.websecurity.websecurity.services.ICertificateValidityService;
 import com.websecurity.websecurity.services.IUploadDownloadCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.PermitAll;
+import java.util.Arrays;
 import java.util.Collection;
 
 @RestController
@@ -28,6 +25,7 @@ public class CertificateController {
 
     @Autowired
     private IUploadDownloadCertificateService uploadDownloadCertificateService;
+
     @PostMapping("/request/user/{userId}")
     public CertificateRequestResponseDTO createCertificateRequestUser(@PathVariable String userId,
                                                                       @RequestBody CertificateRequestDTO certificateRequestDTO) {
@@ -66,8 +64,12 @@ public class CertificateController {
     }
 
     @GetMapping("/verify/{certificateSerialNumber}")
-    public Boolean verifyCertificateValidity(@PathVariable String certificateSerialNumber) {
+    public StatusDTO verifyCertificateValidityFromId(@PathVariable String certificateSerialNumber) {
         return certificateValidityService.checkValidity(certificateSerialNumber);
+    }
+    @PostMapping(value = "/verify/file", consumes = {MediaType.APPLICATION_OCTET_STREAM_VALUE})
+    public StatusDTO verifyCertificateValidityFromFile(@RequestBody byte[] certificateContent) {
+        return certificateValidityService.checkFileValidity(certificateContent);
     }
 
     @PermitAll
@@ -77,7 +79,7 @@ public class CertificateController {
     }
 
     @GetMapping("/download-certificate/{certificateSerialNumber}")
-    public DownloadCertificateDTO downloadCertificate(@PathVariable String certificateSerialNumber){
+    public DownloadCertificateDTO downloadCertificate(@PathVariable String certificateSerialNumber) {
         return uploadDownloadCertificateService.download(certificateSerialNumber);
     }
 

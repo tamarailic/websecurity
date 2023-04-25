@@ -1,6 +1,10 @@
 package com.websecurity.websecurity.services;
 
+import com.websecurity.websecurity.DTO.StatusDTO;
+
 public interface ICertificateValidityService {
 
-    Boolean checkValidity(String certificateSerialNumber);
+    StatusDTO checkValidity(String certificateSerialNumber);
+
+    StatusDTO checkFileValidity(byte[] fileContent);
 }

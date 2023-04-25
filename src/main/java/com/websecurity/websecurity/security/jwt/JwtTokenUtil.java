@@ -17,27 +17,23 @@ import java.util.Date;
 @Component
 public class JwtTokenUtil {
 
+    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
+    private static final String AUDIENCE_WEB = "web";
     @Value("Shuttle-back")
     private String APP_NAME;
-    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
     @Value("${jwt.secret}")
     private String secret;
     @Value("${jwt.expirationDateInMs}")
     private int JWT_EXPIRATION;
-
     // Naziv headera kroz koji ce se prosledjivati JWT u komunikaciji server-klijent
     @Value("Authorization")
     private String AUTH_HEADER;
 
-    @Value("${jwt.refreshExpirationDateInMs}")
-    private int REFRESH_EXPIRATION;
-
     //	private static final String AUDIENCE_UNKNOWN = "unknown";
     //	private static final String AUDIENCE_MOBILE = "mobile";
     //	private static final String AUDIENCE_TABLET = "tablet";
-
-    private static final String AUDIENCE_WEB = "web";
-
+    @Value("${jwt.refreshExpirationDateInMs}")
+    private int REFRESH_EXPIRATION;
     private SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS512;
 
 

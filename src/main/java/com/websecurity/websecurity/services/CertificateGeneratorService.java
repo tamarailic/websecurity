@@ -66,7 +66,7 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
         User requester = userRepository.findById(request.getSubjectId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User with that id does not exist."));
         LocalDate startDate = LocalDate.now();
         LocalDate endDate = helperService.calculateExpirationDate(startDate, request.getCertificateType());
-        String serialNumber = UUID.randomUUID().toString();
+        String serialNumber = String.valueOf(helperService.convertUUIDtoBigInteger(UUID.randomUUID().toString()));
         String publicKeyString = helperService.convertKeyToString(subjectPublicKey);
         if (request.getCertificateType().equals("ROOT")) {
             return new Certificate(serialNumber, serialNumber, publicKeyString, new CertificateOwner(requester.getId(), requester.getUsername(), requester.getFirstName(), requester.getLastName()), new CertificateIssuer(requester.getId(), requester.getUsername(), requester.getFirstName(), requester.getLastName()), false, startDate, endDate, (String) helperService.getConfigValue("CERTIFICATE_VERSION"), (String) helperService.getConfigValue("SIGNATURE_ALGORITHM"), true);
@@ -97,6 +97,7 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
         builder.addRDN(BCStyle.SURNAME, certificate.getIssuer().getLastName());
         builder.addRDN(BCStyle.GIVENNAME, certificate.getIssuer().getFirstName());
         builder.addRDN(BCStyle.UID, String.valueOf(certificate.getIssuer().getId()));
+        builder.addRDN(BCStyle.SN, certificate.getSigningCertificateSerialNumber());
 
         if (Objects.equals(certificate.getOwner().getId(), certificate.getIssuer().getId())) {
             issuerKey = subjectPrivateKey;
@@ -149,7 +150,7 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
 
             X509v3CertificateBuilder certGen = new JcaX509v3CertificateBuilder(
                     issuerData.getX500name(),
-                    new BigInteger(subjectData.getSerialNumber().replace("-", ""), 16),
+                    new BigInteger(subjectData.getSerialNumber()),
                     helperService.convertLocalDateToDate(subjectData.getStartDate()),
                     helperService.convertLocalDateToDate(subjectData.getEndDate()),
                     subjectData.getX500name(),

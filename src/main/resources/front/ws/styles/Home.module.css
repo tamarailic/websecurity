@@ -32,6 +32,11 @@ p.selected {
   color: rgba(255, 255, 255, 0.9) !important;
 }
 
+.separator {
+  border-right: 3px solid rgba(238, 238, 238, 0.1);
+  border-radius: 8px;
+}
+
 .filter_options {
   display: flex;
   flex-direction: row;
@@ -68,37 +73,32 @@ p.selected {
   padding: 10px;
 }
 
-.separator {
-  border-right: 3px solid rgba(238, 238, 238, 0.1);
-  border-radius: 8px;
-}
-
-.preview{
+.preview {
   color: white;
   font-size: var(--FontSize);
   line-height: 3rem;
 }
 
-.certInfo{
+.certInfo {
   padding: 0;
   list-style-type: none;
 }
 
-.certInfoLabel{
+.certInfoLabel {
   font-weight: bold;
 }
 
-.requestCert{
+.requestCert {
   display: flex;
   justify-self: center;
 }
 
-.requestCert > * {
+.requestCert>* {
   font-size: var(--FontSize);
   margin-right: 1.5rem;
 }
 
-.requestType{
+.requestType {
   text-decoration: none;
   background-color: #fff;
   border-radius: 0.3rem;
@@ -109,7 +109,7 @@ p.selected {
   border: 1px solid #fff;
 }
 
-.requestBtn{
+.requestBtn {
   cursor: pointer;
   display: flex;
   justify-content: center;
@@ -125,7 +125,7 @@ p.selected {
   margin: 1.5rem 3rem 1.5rem 0;
 }
 
-.approveBtn{
+.approveBtn {
   cursor: pointer;
   display: flex;
   justify-content: center;
@@ -141,7 +141,7 @@ p.selected {
   margin: 1.5rem 3rem 1.5rem 0;
 }
 
-.denyBtn{
+.denyBtn {
   cursor: pointer;
   display: flex;
   justify-content: center;
@@ -157,7 +157,7 @@ p.selected {
   margin: 1.5rem 3rem 1.5rem 0;
 }
 
-.accentBtn{
+.accentBtn {
   cursor: pointer;
   display: flex;
   justify-content: center;
@@ -173,26 +173,26 @@ p.selected {
   margin: 1.5rem 3rem 1.5rem 0;
 }
 
-.imgDiv{
+.imgDiv {
   margin-top: 0.3rem;
   margin-left: 0.5rem;
 }
 
-.denyDiv{
+.denyDiv {
   display: flex;
 }
 
-.denyInput{
+.denyInput {
   display: flex;
   flex-direction: column;
   margin-right: 2rem;
 }
 
-.denyInput > * {
+.denyInput>* {
   margin-right: 0.3rem;
 }
 
-.denyInput > input{
+.denyInput>input {
   height: 2rem;
   width: 20rem;
 }
