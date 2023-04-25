@@ -1,9 +1,6 @@
 package com.websecurity.websecurity.controllers;
 
-import com.websecurity.websecurity.DTO.CertificateRequestDTO;
-import com.websecurity.websecurity.DTO.CertificateRequestResponseDTO;
-import com.websecurity.websecurity.DTO.CertificateToShowDTO;
-import com.websecurity.websecurity.DTO.ReasonDTO;
+import com.websecurity.websecurity.DTO.*;
 import com.websecurity.websecurity.services.ICertificateRequestService;
 import com.websecurity.websecurity.services.ICertificateValidityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +54,7 @@ public class CertificateController {
     }
 
     @GetMapping("/verify/{certificateSerialNumber}")
-    public Boolean verifyCertificateValidity(@PathVariable String certificateSerialNumber) {
+    public StatusDTO verifyCertificateValidity(@PathVariable String certificateSerialNumber) {
         return certificateValidityService.checkValidity(certificateSerialNumber);
     }
 

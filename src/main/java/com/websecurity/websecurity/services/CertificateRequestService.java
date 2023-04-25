@@ -87,7 +87,7 @@ public class CertificateRequestService implements ICertificateRequestService {
 
 
     private void validateCertificateRequest(String requestedCertificateType, Certificate certificate) {
-        if (!certificateValidityService.checkValidity(certificate.getSerialNumber())) {
+        if (!certificateValidityService.checkValidity(certificate.getSerialNumber()).getStatus()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Issuer certificate isn't valid.");
         }
 

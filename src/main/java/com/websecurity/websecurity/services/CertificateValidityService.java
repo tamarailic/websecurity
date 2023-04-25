@@ -1,5 +1,6 @@
 package com.websecurity.websecurity.services;
 
+import com.websecurity.websecurity.DTO.StatusDTO;
 import com.websecurity.websecurity.models.Certificate;
 import com.websecurity.websecurity.repositories.ICertificateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +17,10 @@ public class CertificateValidityService implements ICertificateValidityService {
     private ICertificateRepository certificateRepository;
 
     @Override
-    public Boolean checkValidity(String certificateSerialNumber) {
+    public StatusDTO checkValidity(String certificateSerialNumber) {
         Certificate certificate = certificateRepository.findById(certificateSerialNumber).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Certificate with that id does not exist"));
-        if (isWithdrawn(certificate)) return false;
-        if (hasExpired(certificate)) return false;
-        return true;
+        Boolean isValid = !(isWithdrawn(certificate) || hasExpired(certificate));
+        return new StatusDTO(isValid);
     }
 
     private boolean isWithdrawn(Certificate certificateToCheck) {
