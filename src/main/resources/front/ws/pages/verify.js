@@ -85,9 +85,25 @@ function ByUpload() {
         const file = event.target.by_upload.files[0];
         reader.addEventListener('load', (event) => {
             const content = new Uint8Array(event.target.result);
-            console.log(content);
+            sendFile(content)
         });
         reader.readAsArrayBuffer(file);
+    }
+
+    function sendFile(fileContent) {
+        fetch('/api/upload', {
+            method: 'POST',
+            body: fileContent,
+            headers: {
+                'Content-Type': 'application/octet-stream'
+            }
+        })
+            .then(response => {
+                console.log('File uploaded successfully!');
+            })
+            .catch(error => {
+                console.error('Error uploading file:', error);
+            });
     }
 
     return (<>
