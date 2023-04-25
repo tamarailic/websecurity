@@ -82,7 +82,7 @@ public class CertificateController {
         return uploadDownloadCertificateService.download(certificateSerialNumber);
     }
 
-    @PutMapping("/withdrawn/{certificateSerialNumber}")
+    @PutMapping("/withdraw/{certificateSerialNumber}")
     public CertificateToShowDTO withdrawCertificate(@PathVariable String certificateSerialNumber, @RequestBody ReasonDTO reason){
         return certificateRequestService.withdrawCertificateById(certificateSerialNumber, reason);
     }
