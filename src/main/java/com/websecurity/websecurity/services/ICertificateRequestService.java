@@ -28,4 +28,6 @@ public interface ICertificateRequestService {
 
     Page<CertificateToShowDTO> getAll(Pageable pageable);
 
+    CertificateToShowDTO withdrawCertificateById(String certificateSerialNumber, ReasonDTO reason);
+
 }

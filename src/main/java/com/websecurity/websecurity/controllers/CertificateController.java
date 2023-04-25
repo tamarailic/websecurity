@@ -11,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.PermitAll;
-import java.util.Arrays;
 import java.util.Collection;
 
 @RestController
@@ -83,5 +82,8 @@ public class CertificateController {
         return uploadDownloadCertificateService.download(certificateSerialNumber);
     }
 
-
+    @PutMapping("/withdrawn/{certificateSerialNumber}")
+    public CertificateToShowDTO withdrawCertificate(@PathVariable String certificateSerialNumber, @RequestBody ReasonDTO reason){
+        return certificateRequestService.withdrawCertificateById(certificateSerialNumber, reason);
+    }
 }

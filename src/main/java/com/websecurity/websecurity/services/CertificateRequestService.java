@@ -143,6 +143,18 @@ public class CertificateRequestService implements ICertificateRequestService {
         return certificateRepository.findAll(pageable).map(CertificateToShowDTO::new);
     }
 
+    @Override
+    public CertificateToShowDTO withdrawCertificateById(String certificateSerialNumber, ReasonDTO reason) {
+        Certificate certificateToWithdraw = certificateRepository.findById(certificateSerialNumber).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Certificate with that id does not exist."));
+        certificateToWithdraw.setValid(false);
+        certificateToWithdraw.setWithdrawReason(reason.getReason());
+        certificateRepository.save(certificateToWithdraw);
+        for (String certificateIdThatWasSignedByWithdrawnCertificate : certificateToWithdraw.getHaveSigned()) {
+            withdrawCertificateById(certificateIdThatWasSignedByWithdrawnCertificate, reason);
+        }
+        return new CertificateToShowDTO(certificateToWithdraw);
+    }
+
     private void markRequestAsApproved(CertificateRequest request) {
         request.setStatus("APPROVED");
         certificateRequestRepository.save(request);
