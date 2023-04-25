@@ -146,13 +146,27 @@ public class CertificateRequestService implements ICertificateRequestService {
     @Override
     public CertificateToShowDTO withdrawCertificateById(String certificateSerialNumber, ReasonDTO reason) {
         Certificate certificateToWithdraw = certificateRepository.findById(certificateSerialNumber).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Certificate with that id does not exist."));
+        if (!certificateToWithdraw.getValid()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate already withdrawn");
+        }
+        certificateToWithdraw.setValid(false);
+        certificateToWithdraw.setWithdrawReason(reason.getReason());
+        certificateRepository.save(certificateToWithdraw);
+        for (String certificateIdThatWasSignedByWithdrawnCertificate : certificateToWithdraw.getHaveSigned()) {
+            _withdrawCertificateById(certificateIdThatWasSignedByWithdrawnCertificate, reason);
+        }
+        return new CertificateToShowDTO(certificateToWithdraw);
+    }
+
+    private void _withdrawCertificateById(String certificateSerialNumber, ReasonDTO reason) {
+        Certificate certificateToWithdraw = certificateRepository.findById(certificateSerialNumber).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Certificate with that id does not exist."));
+        if (!certificateToWithdraw.getValid()) return;
         certificateToWithdraw.setValid(false);
         certificateToWithdraw.setWithdrawReason(reason.getReason());
         certificateRepository.save(certificateToWithdraw);
         for (String certificateIdThatWasSignedByWithdrawnCertificate : certificateToWithdraw.getHaveSigned()) {
             withdrawCertificateById(certificateIdThatWasSignedByWithdrawnCertificate, reason);
         }
-        return new CertificateToShowDTO(certificateToWithdraw);
     }
 
     private void markRequestAsApproved(CertificateRequest request) {
