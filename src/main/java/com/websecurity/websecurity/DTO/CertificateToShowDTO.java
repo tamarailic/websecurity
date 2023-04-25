@@ -26,10 +26,10 @@ public class CertificateToShowDTO {
         String certType;
         if (certificate.isEndCertificate()) {
             certType = "END";
-        } else if (Objects.equals(certificate.getIssuer().getId(), certificate.getOwner().getId())) {
-            certType = "INTERMEDIATE";
-        } else {
+        } else if (Objects.equals(certificate.getSerialNumber(), certificate.getSigningCertificateSerialNumber())) {
             certType = "ROOT";
+        } else {
+            certType = "INTERMEDIATE";
         }
 
         this.serialNumber = certificate.getSerialNumber();

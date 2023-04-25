@@ -284,7 +284,7 @@ function CertificatePreview({ selectedItem }) {
     </ul>
     <hr />
     {selectedItem.type != 'END' && <RequestCertificateAction issuerSerialNumber={selectedItem.serialNumber} />}
-    {selectedItem.owner == username && <InvalidateButton />}
+    {selectedItem.owner == username && <InvalidateButton serialNumber={selectedItem.serialNumber}/>}
     <DownloadButton serialNumber={selectedItem.serialNumber} />
   </div>)
 }
@@ -355,8 +355,8 @@ function DenyBtn({ requestId }) {
     }
   }
 
-  return <div className={styles.denyDiv}>
-    <div className={styles.denyInput}>
+  return <div className={styles.reasonDiv }>
+    <div className={styles.reasonInput}>
       <label htmlFor="denyResaon">Denial reason:</label>
       <input id="denyResaon" name="denyResaon" onChange={handleDenyReason} />
     </div>
@@ -429,14 +429,48 @@ async function requestNewCertificate(userId, certificateType, issuerCertificateI
   }
 }
 
-function InvalidateButton() {
-  return <div className={styles.accentBtn}>
+function InvalidateButton(serialNumber) {
+  const [invalidationReason, setInvalidationReason] = useState(null)
+
+  function handleInvalidationReason(event) {
+    setInvalidationReason(event.target.value)
+  }
+
+  function handleInvalidation() {
+    if (invalidationReason == null) {
+      alert("You must enter a reason")
+    } else {
+      invalidateCertificateRequest(serialNumber, invalidationReason)
+      setInvalidationReason(null)
+    }
+  }
+  return <div className={styles.reasonDiv }>
+  <div className={styles.reasonInput}>
+      <label htmlFor="invalidateReason">Invalidation reason:</label>
+      <input id="invalidateReason" name="invalidateReason"  onChange={handleInvalidationReason}/>
+    </div>
+  <div className={styles.accentBtn} onClick={handleInvalidation}>
     <a>Invalidate</a>
     <div className={styles.imgDiv}>
       <Image src="/images/invalidateIcon.png" width={24} height={24} alt="invalidateIcon"></Image>
     </div>
   </div>
+  </div>
+}
 
+async function invalidateCertificateRequest(serialNumber, reason){
+  const requestOptions = {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason: reason })
+  };
+
+  const response = await fetch(`${backUrl}/api/certificate/withdraw/${serialNumber}`, requestOptions);
+  if (response.status == 200) {
+    alert("Succesfully withdrawn certificate.")
+  } else {
+    alert("Something went wrong!")
+  }
 }
 
 function DownloadButton({ serialNumber }) {
