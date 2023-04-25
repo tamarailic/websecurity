@@ -166,7 +166,7 @@ function MyRequests({ appliedFilters, setSelectedItem }) {
         </tr>
       </thead>
       <tbody>
-        {requestsData.map(item => <tr onClick={() => handleRowClick(item)} key={item['requestId']}><td>{item['status'] == 'APPROVED' ? <div className={styles.validCircle}></div> : item['status'] == 'DENIED' ? <div className={styles.invalidCircle}></div> : <div className={styles.pendingCircle}></div>}</td>{Object.keys(item).filter(column => ['requestId', 'subjectId', 'issuerCertificateId', 'requestedDate', 'certificateType'].includes(column)).map(itemKey => <td key={`${item['subjectId']}-${itemKey}`}>{item[itemKey]}</td>)}</tr>)}
+        {requestsData.map(item => <tr onClick={() => handleRowClick(item)} key={item['requestId']}><td>{item['status'] == 'APPROVED' ? <div className={styles.validCircle}></div> : item['status'] == 'DENIED' ? <div className={styles.invalidCircle}></div> : <div className={styles.pendingCircle}></div>}</td>{Object.keys(item).filter(column => ['requestId', 'subjectId', 'issuerCertificateId', 'requestedDate', 'certificateType'].includes(column)).map(itemKey => <td key={`${item['subjectId']}-${itemKey}`}>{itemKey != 'issuerCertificateId' ? item[itemKey] : `...${item[itemKey].slice(-5)}`}</td>)}</tr>)}
       </tbody>
     </table>
   );
@@ -284,7 +284,7 @@ function CertificatePreview({ selectedItem }) {
     </ul>
     <hr />
     {selectedItem.type != 'END' && <RequestCertificateAction issuerSerialNumber={selectedItem.serialNumber} />}
-    {selectedItem.owner == username && <InvalidateButton serialNumber={selectedItem.serialNumber}/>}
+    {selectedItem.owner == username && <InvalidateButton serialNumber={selectedItem.serialNumber} />}
     <DownloadButton serialNumber={selectedItem.serialNumber} />
   </div>)
 }
@@ -357,7 +357,7 @@ function DenyBtn({ requestId }) {
     }
   }
 
-  return <div className={styles.reasonDiv }>
+  return <div className={styles.reasonDiv}>
     <div className={styles.reasonInput}>
       <label htmlFor="denyResaon">Denial reason:</label>
       <input id="denyResaon" name="denyResaon" ref={ref} onChange={handleDenyReason} />
@@ -431,7 +431,7 @@ async function requestNewCertificate(userId, certificateType, issuerCertificateI
   }
 }
 
-function InvalidateButton({serialNumber}) {
+function InvalidateButton({ serialNumber }) {
   const [invalidationReason, setInvalidationReason] = useState(null)
   const ref = useRef(null)
 
@@ -448,21 +448,21 @@ function InvalidateButton({serialNumber}) {
       ref.current.value = '';
     }
   }
-  return <div className={styles.reasonDiv }>
-  <div className={styles.reasonInput}>
+  return <div className={styles.reasonDiv}>
+    <div className={styles.reasonInput}>
       <label htmlFor="invalidateReason">Invalidation reason:</label>
-      <input id="invalidateReason" name="invalidateReason" ref={ref} onChange={handleInvalidationReason}/>
+      <input id="invalidateReason" name="invalidateReason" ref={ref} onChange={handleInvalidationReason} />
     </div>
-  <div className={styles.accentBtn} onClick={handleInvalidation}>
-    <a>Invalidate</a>
-    <div className={styles.imgDiv}>
-      <Image src="/images/invalidateIcon.png" width={24} height={24} alt="invalidateIcon"></Image>
+    <div className={styles.accentBtn} onClick={handleInvalidation}>
+      <a>Invalidate</a>
+      <div className={styles.imgDiv}>
+        <Image src="/images/invalidateIcon.png" width={24} height={24} alt="invalidateIcon"></Image>
+      </div>
     </div>
-  </div>
   </div>
 }
 
-async function invalidateCertificateRequest(serialNumber, reason){
+async function invalidateCertificateRequest(serialNumber, reason) {
   const requestOptions = {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -490,23 +490,23 @@ async function downloadCertificate(serialNumber) {
   const requestOptions = {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' }
-    };
+  };
 
-    const response = await fetch(`${backUrl}/api/certificate/download-certificate/${serialNumber}`, requestOptions);
-    if(response.status.isError){
-      alert("Error in request")
-    }else{
-      const data = await response.json();
-      const certData = atob(data.certificateContent);
-      const fileBlob = new Blob([certData], { type: 'application/octet-stream' }); // Create a Blob object from the byte array
-      const fileURL = URL.createObjectURL(fileBlob); // Create a URL for the Blob object
+  const response = await fetch(`${backUrl}/api/certificate/download-certificate/${serialNumber}`, requestOptions);
+  if (response.status.isError) {
+    alert("Error in request")
+  } else {
+    const data = await response.json();
+    const certData = atob(data.certificateContent);
+    const fileBlob = new Blob([certData], { type: 'application/octet-stream' }); // Create a Blob object from the byte array
+    const fileURL = URL.createObjectURL(fileBlob); // Create a URL for the Blob object
 
-      const link = document.createElement('a');
-      link.href = fileURL;
-      link.download = `${serialNumber}.crt`;
-      document.body.appendChild(link);
-      link.click();
-    }  
+    const link = document.createElement('a');
+    link.href = fileURL;
+    link.download = `${serialNumber}.crt`;
+    document.body.appendChild(link);
+    link.click();
+  }
 
 }
 
