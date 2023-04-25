@@ -11,8 +11,8 @@ import Error from "@/components/error";
 const fetcher = (...args) => fetch(...args).then(res => res.json());
 
 // Just mocked data -> should be replaced with data from JWT
-const userId = '6424a90c927c44152e84f182';
-const username = 'Test';
+const userId = '6447f68495bfc35b4f3eb745';
+const username = 'tamarailic11@gmail.com';
 
 export default function Home() {
   return (<PageContainer>
@@ -303,7 +303,6 @@ function UserCertificateRequestPreview({ selectedItem }) {
 }
 
 function CertificateRequestNeedsApproval({ selectedItem }) {
-
   return (<div className={`${styles.card} ${styles.preview}`} id="one_element_preview">
     <h2>Approve ceritificate request</h2>
     <ul className={styles.certInfo}>
@@ -313,19 +312,6 @@ function CertificateRequestNeedsApproval({ selectedItem }) {
     </ul>
     <ApproveBtn requestId={selectedItem['requestId']} />
     <DenyBtn requestId={selectedItem['requestId']} />
-  </div>)
-}
-
-function CertificateRequestNeedsApproval({ selectedItem }) {
-  return (<div className={`${styles.card} ${styles.preview}`} id="one_element_preview">
-    <h2>Approve ceritificate request</h2>
-    <ul className={styles.certInfo}>
-      <li><span className={styles.certInfoLabel}>Issuer certificate id: </span><span>{selectedItem.issuerCertificateId}</span></li>
-      <li><span className={styles.certInfoLabel}>Requested date: </span><span>{selectedItem.requestedDate}</span></li>
-      <li><span className={styles.certInfoLabel}>Type: </span><span>{selectedItem.certificateType}</span></li>
-    </ul>
-    <ApproveBtn requestId={selectedItem.requestId} />
-    <DenyBtn />
   </div>)
 }
 
