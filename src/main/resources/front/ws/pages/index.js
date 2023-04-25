@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import useSWR from 'swr'
 import PageContainer from "@/components/pageContainer"
 import styles from "@/styles/Home.module.css"
@@ -11,8 +11,8 @@ import Error from "@/components/error";
 const fetcher = (...args) => fetch(...args).then(res => res.json());
 
 // Just mocked data -> should be replaced with data from JWT
-const userId = '6447f68495bfc35b4f3eb745';
-const username = 'tamarailic11@gmail.com';
+const userId = '643d966f681de87d29254e97';
+const username = 'aisling.rebyl@meantodeal.com';
 
 export default function Home() {
   return (<PageContainer>
@@ -284,7 +284,7 @@ function CertificatePreview({ selectedItem }) {
     </ul>
     <hr />
     {selectedItem.type != 'END' && <RequestCertificateAction issuerSerialNumber={selectedItem.serialNumber} />}
-    {selectedItem.owner == username && <InvalidateButton />}
+    {selectedItem.owner == username && <InvalidateButton serialNumber={selectedItem.serialNumber}/>}
     <DownloadButton serialNumber={selectedItem.serialNumber} />
   </div>)
 }
@@ -341,6 +341,7 @@ async function approveCertificateRequest(requestId) {
 
 function DenyBtn({ requestId }) {
   const [denyReason, setDenyReason] = useState(null)
+  const ref = useRef(null)
 
   function handleDenyReason(event) {
     setDenyReason(event.target.value)
@@ -352,13 +353,14 @@ function DenyBtn({ requestId }) {
     } else {
       denyCertificateRequest(requestId, denyReason)
       setDenyReason(null)
+      ref.current.value = '';
     }
   }
 
-  return <div className={styles.denyDiv}>
-    <div className={styles.denyInput}>
+  return <div className={styles.reasonDiv }>
+    <div className={styles.reasonInput}>
       <label htmlFor="denyResaon">Denial reason:</label>
-      <input id="denyResaon" name="denyResaon" onChange={handleDenyReason} />
+      <input id="denyResaon" name="denyResaon" ref={ref} onChange={handleDenyReason} />
     </div>
     <div className={styles.denyBtn} onClick={handleDenial}>
       <a>Deny</a>
@@ -429,14 +431,50 @@ async function requestNewCertificate(userId, certificateType, issuerCertificateI
   }
 }
 
-function InvalidateButton() {
-  return <div className={styles.accentBtn}>
+function InvalidateButton({serialNumber}) {
+  const [invalidationReason, setInvalidationReason] = useState(null)
+  const ref = useRef(null)
+
+  function handleInvalidationReason(event) {
+    setInvalidationReason(event.target.value)
+  }
+
+  function handleInvalidation() {
+    if (invalidationReason == null) {
+      alert("You must enter a reason")
+    } else {
+      invalidateCertificateRequest(serialNumber, invalidationReason)
+      setInvalidationReason(null)
+      ref.current.value = '';
+    }
+  }
+  return <div className={styles.reasonDiv }>
+  <div className={styles.reasonInput}>
+      <label htmlFor="invalidateReason">Invalidation reason:</label>
+      <input id="invalidateReason" name="invalidateReason" ref={ref} onChange={handleInvalidationReason}/>
+    </div>
+  <div className={styles.accentBtn} onClick={handleInvalidation}>
     <a>Invalidate</a>
     <div className={styles.imgDiv}>
       <Image src="/images/invalidateIcon.png" width={24} height={24} alt="invalidateIcon"></Image>
     </div>
   </div>
+  </div>
+}
 
+async function invalidateCertificateRequest(serialNumber, reason){
+  const requestOptions = {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason: reason })
+  };
+
+  const response = await fetch(`${backUrl}/api/certificate/withdraw/${serialNumber}`, requestOptions);
+  if (response.status == 200) {
+    alert("Succesfully withdrawn certificate.")
+  } else {
+    alert("You can invalidate already invalidated certificate!")
+  }
 }
 
 function DownloadButton({ serialNumber }) {
@@ -452,15 +490,24 @@ async function downloadCertificate(serialNumber) {
   const requestOptions = {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' }
-  };
+    };
 
-  const response = await fetch(`${backUrl}/api/certificate/download-certificate/${serialNumber}`, requestOptions);
-  if (response.status.isError) {
-    alert("Error in request")
-  } else {
-    const data = await response.json();
-    alert(data.certificateContent)
-  }
+    const response = await fetch(`${backUrl}/api/certificate/download-certificate/${serialNumber}`, requestOptions);
+    if(response.status.isError){
+      alert("Error in request")
+    }else{
+      const data = await response.json();
+      const certData = atob(data.certificateContent);
+      const fileBlob = new Blob([certData], { type: 'application/octet-stream' }); // Create a Blob object from the byte array
+      const fileURL = URL.createObjectURL(fileBlob); // Create a URL for the Blob object
+
+      const link = document.createElement('a');
+      link.href = fileURL;
+      link.download = `${serialNumber}.crt`;
+      document.body.appendChild(link);
+      link.click();
+    }  
+
 }
 
 

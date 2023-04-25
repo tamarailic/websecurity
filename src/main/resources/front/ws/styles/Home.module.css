@@ -178,21 +178,21 @@ p.selected {
   margin-left: 0.5rem;
 }
 
-.denyDiv {
+.reasonDiv {
   display: flex;
 }
 
-.denyInput {
+.reasonInput {
   display: flex;
   flex-direction: column;
   margin-right: 2rem;
 }
 
-.denyInput>* {
+.reasonInput>* {
   margin-right: 0.3rem;
 }
 
-.denyInput>input {
+.reasonInput>input {
   height: 2rem;
   width: 20rem;
 }

@@ -72,6 +72,8 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
             return new Certificate(serialNumber, serialNumber, publicKeyString, new CertificateOwner(requester.getId(), requester.getUsername(), requester.getFirstName(), requester.getLastName()), new CertificateIssuer(requester.getId(), requester.getUsername(), requester.getFirstName(), requester.getLastName()), false, startDate, endDate, (String) helperService.getConfigValue("CERTIFICATE_VERSION"), (String) helperService.getConfigValue("SIGNATURE_ALGORITHM"), true);
         }
         Certificate issuerCertificate = certificateRepository.findById(request.getIssuerCertificateId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Certificate with that id does not exist."));
+        issuerCertificate.getHaveSigned().add(serialNumber);
+        certificateRepository.save(issuerCertificate);
         User issuer = userRepository.findById(issuerCertificate.getOwner().getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User with that id does not exist."));
         if (endDate.isAfter(issuerCertificate.getNotAfter())) {
             endDate = issuerCertificate.getNotAfter();
@@ -99,10 +101,10 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
         builder.addRDN(BCStyle.UID, String.valueOf(certificate.getIssuer().getId()));
         builder.addRDN(BCStyle.SN, certificate.getSigningCertificateSerialNumber());
 
-        if (Objects.equals(certificate.getOwner().getId(), certificate.getIssuer().getId())) {
+        if (Objects.equals(certificate.getSerialNumber(), certificate.getSigningCertificateSerialNumber())) {
             issuerKey = subjectPrivateKey;
         } else {
-            issuerKey = helperService.getPrivateKey(certificate.getSigningCertificateSerialNumber());
+            issuerKey = helperService.getPrivateKeyForCertificate(certificate.getSigningCertificateSerialNumber());
         }
         return new IssuerData(issuerKey, builder.build());
     }

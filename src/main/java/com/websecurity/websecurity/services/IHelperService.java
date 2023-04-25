@@ -7,7 +7,6 @@ import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.time.LocalDate;
 import java.util.Date;
-import java.util.UUID;
 
 public interface IHelperService {
 
@@ -19,7 +18,7 @@ public interface IHelperService {
 
     Date convertLocalDateToDate(LocalDate localDate);
 
-    PrivateKey getPrivateKey(String signingCertificateId);
+    PrivateKey getPrivateKeyForCertificate(String signingCertificateId);
 
     KeyPair generateKeyPair();
 
