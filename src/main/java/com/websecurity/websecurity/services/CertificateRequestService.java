@@ -107,6 +107,11 @@ public class CertificateRequestService implements ICertificateRequestService {
     }
 
     @Override
+    public Collection<CertificateRequestResponseDTO> getAllCertificateRequests() {
+        return certificateRequestRepository.findAll().stream().map(CertificateRequestResponseDTO::new).collect(Collectors.toList());
+    }
+
+    @Override
     public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequestsToReview(String userId) {
         Set<Certificate> userCertificates = certificateRepository.findAllByOwnerId(userId);
         Set<CertificateRequest> certificateRequestsToReview = new HashSet<>();
