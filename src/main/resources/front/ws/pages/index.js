@@ -452,15 +452,24 @@ async function downloadCertificate(serialNumber) {
   const requestOptions = {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' }
-  };
+    };
 
-  const response = await fetch(`${backUrl}/api/certificate/download-certificate/${serialNumber}`, requestOptions);
-  if (response.status.isError) {
-    alert("Error in request")
-  } else {
-    const data = await response.json();
-    alert(data.certificateContent)
-  }
+    const response = await fetch(`${backUrl}/api/certificate/download-certificate/${serialNumber}`, requestOptions);
+    if(response.status.isError){
+      alert("Error in request")
+    }else{
+      const data = await response.json();
+      const certData = atob(data.certificateContent);
+      const fileBlob = new Blob([certData], { type: 'application/octet-stream' }); // Create a Blob object from the byte array
+      const fileURL = URL.createObjectURL(fileBlob); // Create a URL for the Blob object
+
+      const link = document.createElement('a');
+      link.href = fileURL;
+      link.download = `${serialNumber}.crt`;
+      document.body.appendChild(link);
+      link.click();
+    }  
+
 }
 
 
