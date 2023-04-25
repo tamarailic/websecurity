@@ -23,7 +23,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 public class HelperService implements IHelperService {
@@ -91,7 +90,7 @@ public class HelperService implements IHelperService {
     }
 
     @Override
-    public PrivateKey getPrivateKey(String signingCertificateId) {
+    public PrivateKey getPrivateKeyForCertificate(String signingCertificateId) {
         try {
             BigInteger signingCertificateName = new BigInteger(signingCertificateId);
             // Read the private key from the file
