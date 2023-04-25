@@ -15,11 +15,12 @@ import org.springframework.data.web.config.SpringDataWebConfiguration;
 public class PaginationConfiguration extends SpringDataWebConfiguration {
     // https://stackoverflow.com/questions/23751193/spring-data-jpa-limit-pagesize-how-to-set-to-maxsize
 
+    @Value("${spring.data.web.pageable.max-page-size}")
+    int maxSize;
+
     public PaginationConfiguration(ApplicationContext context, ObjectFactory<ConversionService> conversionService) {
         super(context, conversionService);
     }
-    @Value("${spring.data.web.pageable.max-page-size}")
-    int maxSize;
 
     @Bean
     public PageableHandlerMethodArgumentResolver pageableResolver() {

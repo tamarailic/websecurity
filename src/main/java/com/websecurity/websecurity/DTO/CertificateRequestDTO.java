@@ -1,9 +1,5 @@
 package com.websecurity.websecurity.DTO;
 
-import com.websecurity.websecurity.models.CertificateRequest;
-
-import java.time.LocalDateTime;
-
 public class CertificateRequestDTO {
 
     private String issuerCertificateId;

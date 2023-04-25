@@ -19,11 +19,9 @@ import java.io.IOException;
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-    private UserDetailsService userDetailsService;
-
-    private JwtTokenUtil tokenUtil;
-
     protected final Log LOGGER = LogFactory.getLog(getClass());
+    private UserDetailsService userDetailsService;
+    private JwtTokenUtil tokenUtil;
 
     public JwtRequestFilter(JwtTokenUtil tokenHelper, UserDetailsService userDetailsService) {
         this.tokenUtil = tokenHelper;

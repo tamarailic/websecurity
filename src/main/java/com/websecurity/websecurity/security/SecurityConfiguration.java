@@ -23,6 +23,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfiguration {
     @Autowired
     private JwtTokenUtil tokenUtils;
+    @Autowired
+    private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable();
@@ -39,7 +42,6 @@ public class SecurityConfiguration {
         return new BCryptPasswordEncoder();
     }
 
-
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -55,19 +57,16 @@ public class SecurityConfiguration {
         return new CustomUserDetailsService();
     }
 
-    @Autowired
-    private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 
-//    TODO customize this
+    //    TODO customize this
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
 
-        return (web) -> web.ignoring().antMatchers(HttpMethod.POST, "/api/register","/api/login")
+        return (web) -> web.ignoring().antMatchers(HttpMethod.POST, "/api/register", "/api/login")
                 .antMatchers(HttpMethod.PUT, "/api/*/resetPassword");
 
     }
