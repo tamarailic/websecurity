@@ -29,4 +29,10 @@ public interface IHelperService {
     String getEmailFrom();
 
     int getVerificationExpiration();
+
+    String getTwilioPhone();
+
+    String getTwilioToken();
+
+    String getTwilioSID();
 }

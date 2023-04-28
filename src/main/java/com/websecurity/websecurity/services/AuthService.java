@@ -1,5 +1,8 @@
 package com.websecurity.websecurity.services;
 
+import com.twilio.Twilio;
+import com.twilio.rest.api.v2010.account.Message;
+import com.twilio.type.PhoneNumber;
 import com.websecurity.websecurity.DTO.UserDTO;
 import com.websecurity.websecurity.exceptions.NonExistantUserException;
 import com.websecurity.websecurity.exceptions.VerificationTokenExpiredException;
@@ -37,6 +40,9 @@ public class AuthService implements IAuthService {
     private String IP;
     @Value("${server.port}")
     private int PORT;
+    @Autowired
+    IHelperService helperService;
+
 
     private static final int USER_CREDENTIALS_EXPIRY_DAYS = 7;
 
@@ -46,7 +52,14 @@ public class AuthService implements IAuthService {
 
         newUser = userRepository.save(newUser);
         String verificationToken = jwtTokenUtil.generateVerificationToken(newUser.getUsername());
-        emailService.sendVerificationEmail(newUser, "http://localhost:" + PORT + "/api/auth/verify?token=" + verificationToken);
+
+        if (dto.isEmailValidation())
+            emailService.sendVerificationEmail(newUser, "http://localhost:" + PORT + "/api/auth/verify?token=" + verificationToken);
+        else {
+            Twilio.init(helperService.getTwilioSID(), helperService.getTwilioToken());
+            Message.creator(new PhoneNumber(dto.getPhone()),
+                    new PhoneNumber(helperService.getTwilioPhone()),"http://" + IP + ":"  + PORT + "/api/auth/verify?token=" + verificationToken ).create();
+        }
         return newUser;
     }
 

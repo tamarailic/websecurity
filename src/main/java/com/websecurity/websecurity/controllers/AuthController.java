@@ -51,7 +51,7 @@ public class AuthController {
             LoginValidator.validateRequired(dto.getSurname(), "surname");
             LoginValidator.validateRequired(dto.getUsername(), "email");
             LoginValidator.validateRequired(dto.getPassword(), "password");
-
+            LoginValidator.validateLength(dto.getPhone(),"phone",18);
             LoginValidator.validateLength(dto.getName(), "name", 100);
             LoginValidator.validateLength(dto.getSurname(), "surname", 100);
             LoginValidator.validateLength(dto.getUsername(), "email", 100);

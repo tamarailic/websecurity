@@ -7,6 +7,9 @@ public class UserDTO {
     public String surname;
     public String username;
     public String password;
+    public String phone;
+
+    boolean emailValidation;
 
     public User toUser(){
         return new User(name,surname,username,password);
@@ -52,6 +55,14 @@ public class UserDTO {
 
     public String getPassword() {
         return password;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public boolean isEmailValidation() {
+        return emailValidation;
     }
 }
 

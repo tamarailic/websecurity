@@ -135,4 +135,21 @@ public class HelperService implements IHelperService {
     public int getVerificationExpiration() {
         return (Integer) this.getConfigValue("VERIFICATION_EXPIRATION_IN_MS");
     }
+
+    @Override
+    public String getTwilioPhone() {
+        return this.getConfigValue("TWILIO_PHONE").toString();
+    }
+
+    @Override
+    public String getTwilioToken() {
+        return this.getConfigValue("TWILIO_TOKEN").toString();
+    }
+
+    @Override
+    public String getTwilioSID() {
+        return this.getConfigValue("TWILIO_SID").toString();
+    }
+
+
 }
