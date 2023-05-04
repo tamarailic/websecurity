@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashSet;
@@ -87,7 +86,7 @@ public class CertificateRequestService implements ICertificateRequestService {
 
 
     private void validateCertificateRequest(String requestedCertificateType, Certificate certificate) {
-        if (!certificateValidityService.checkValidity(certificate.getSerialNumber())) {
+        if (!certificateValidityService.checkValidity(certificate.getSerialNumber()).getStatus()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Issuer certificate isn't valid.");
         }
 
@@ -104,6 +103,11 @@ public class CertificateRequestService implements ICertificateRequestService {
     public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequests(String userId) {
         userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
         return certificateRequestRepository.findAllBySubjectId(userId).stream().map(CertificateRequestResponseDTO::new).collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<CertificateRequestResponseDTO> getAllCertificateRequests() {
+        return certificateRequestRepository.findAll().stream().map(CertificateRequestResponseDTO::new).collect(Collectors.toList());
     }
 
     @Override
@@ -137,6 +141,32 @@ public class CertificateRequestService implements ICertificateRequestService {
     @Override
     public Page<CertificateToShowDTO> getAll(Pageable pageable) {
         return certificateRepository.findAll(pageable).map(CertificateToShowDTO::new);
+    }
+
+    @Override
+    public CertificateToShowDTO withdrawCertificateById(String certificateSerialNumber, ReasonDTO reason) {
+        Certificate certificateToWithdraw = certificateRepository.findById(certificateSerialNumber).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Certificate with that id does not exist."));
+        if (!certificateToWithdraw.getValid()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate already withdrawn");
+        }
+        certificateToWithdraw.setValid(false);
+        certificateToWithdraw.setWithdrawReason(reason.getReason());
+        certificateRepository.save(certificateToWithdraw);
+        for (String certificateIdThatWasSignedByWithdrawnCertificate : certificateToWithdraw.getHaveSigned()) {
+            _withdrawCertificateById(certificateIdThatWasSignedByWithdrawnCertificate, reason);
+        }
+        return new CertificateToShowDTO(certificateToWithdraw);
+    }
+
+    private void _withdrawCertificateById(String certificateSerialNumber, ReasonDTO reason) {
+        Certificate certificateToWithdraw = certificateRepository.findById(certificateSerialNumber).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Certificate with that id does not exist."));
+        if (!certificateToWithdraw.getValid()) return;
+        certificateToWithdraw.setValid(false);
+        certificateToWithdraw.setWithdrawReason(reason.getReason());
+        certificateRepository.save(certificateToWithdraw);
+        for (String certificateIdThatWasSignedByWithdrawnCertificate : certificateToWithdraw.getHaveSigned()) {
+            withdrawCertificateById(certificateIdThatWasSignedByWithdrawnCertificate, reason);
+        }
     }
 
     private void markRequestAsApproved(CertificateRequest request) {

@@ -26,6 +26,7 @@ import java.util.Optional;
 
 @Service
 public class AuthService implements IAuthService {
+    private static final int USER_CREDENTIALS_EXPIRY_DAYS = 7;
     @Autowired
     private IRoleRepository roleRepository;
     @Autowired
@@ -44,7 +45,6 @@ public class AuthService implements IAuthService {
     IHelperService helperService;
 
 
-    private static final int USER_CREDENTIALS_EXPIRY_DAYS = 7;
 
     @Override
     public User registerUser(UserDTO dto) {
@@ -85,7 +85,7 @@ public class AuthService implements IAuthService {
         User newUser = userDTO.toUser();
         newUser.setActive(false);
         newUser.setNonLocked(true);
-        newUser.setEnabled(false);
+        newUser.setEnabled(true);
         newUser.setCredentialsExpiry(LocalDateTime.now().plusDays(7));
         List<Role> passengerRole = roleRepository.findByName("user");
         newUser.setRoles(passengerRole);
@@ -96,8 +96,8 @@ public class AuthService implements IAuthService {
     }
 
     @Override
-    public void setRoles() {
-        roleRepository.save(new Role("1", "user"));
-        roleRepository.save(new Role("2", "admin"));
+    public void setRoles(){
+        roleRepository.save(new Role("1","user"));
+        roleRepository.save(new Role("2","admin"));
     }
 }

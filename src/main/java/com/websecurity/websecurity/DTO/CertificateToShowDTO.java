@@ -22,14 +22,14 @@ public class CertificateToShowDTO {
     public CertificateToShowDTO() {
     }
 
-    public CertificateToShowDTO(Certificate certificate){
+    public CertificateToShowDTO(Certificate certificate) {
         String certType;
-        if(certificate.isEndCertificate()){
+        if (certificate.isEndCertificate()) {
             certType = "END";
-        }else if(Objects.equals(certificate.getIssuer().getId(), certificate.getOwner().getId())){
-            certType = "INTERMEDIATE";
-        }else{
+        } else if (Objects.equals(certificate.getSerialNumber(), certificate.getSigningCertificateSerialNumber())) {
             certType = "ROOT";
+        } else {
+            certType = "INTERMEDIATE";
         }
 
         this.serialNumber = certificate.getSerialNumber();
@@ -37,7 +37,7 @@ public class CertificateToShowDTO {
         this.publicKey = certificate.getPublicKey();
         this.owner = certificate.getOwner().getUsername();
         this.issuer = certificate.getIssuer().getUsername();
-        this.type = certType ;
+        this.type = certType;
         this.notBefore = certificate.getNotBefore().format(DateTimeFormatter.ofPattern("dd LLLL yyyy"));
         this.notAfter = certificate.getNotAfter().format(DateTimeFormatter.ofPattern("dd LLLL yyyy"));
         this.version = certificate.getVersion();

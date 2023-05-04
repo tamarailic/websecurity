@@ -18,6 +18,8 @@ public interface ICertificateRequestService {
 
     Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequests(String userId);
 
+    Collection<CertificateRequestResponseDTO> getAllCertificateRequests();
+
     Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequestsToReview(String userId);
 
     CertificateToShowDTO approveSigningRequest(String requestId);
@@ -25,5 +27,7 @@ public interface ICertificateRequestService {
     void denySigningRequest(String requestId, ReasonDTO denyReason);
 
     Page<CertificateToShowDTO> getAll(Pageable pageable);
+
+    CertificateToShowDTO withdrawCertificateById(String certificateSerialNumber, ReasonDTO reason);
 
 }

@@ -5,6 +5,7 @@ import com.websecurity.websecurity.DTO.CredentialsDTO;
 import com.websecurity.websecurity.DTO.TokenDTO;
 import com.websecurity.websecurity.exceptions.NonExistantUserException;
 import com.websecurity.websecurity.exceptions.VerificationTokenExpiredException;
+import com.websecurity.websecurity.DTO.UserDTO;
 import com.websecurity.websecurity.models.User;
 import com.websecurity.websecurity.repositories.IUserRepository;
 import com.websecurity.websecurity.security.jwt.JwtTokenUtil;
@@ -51,7 +52,7 @@ public class AuthController {
             LoginValidator.validateRequired(dto.getSurname(), "surname");
             LoginValidator.validateRequired(dto.getUsername(), "email");
             LoginValidator.validateRequired(dto.getPassword(), "password");
-            LoginValidator.validateLength(dto.getPhone(),"phone",18);
+
             LoginValidator.validateLength(dto.getName(), "name", 100);
             LoginValidator.validateLength(dto.getSurname(), "surname", 100);
             LoginValidator.validateLength(dto.getUsername(), "email", 100);

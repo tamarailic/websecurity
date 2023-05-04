@@ -5,6 +5,7 @@
   gap: 2vw;
   width: 90%;
   margin: auto;
+  margin-bottom: 100px;
 }
 
 .card {
@@ -32,6 +33,11 @@ p.selected {
   color: rgba(255, 255, 255, 0.9) !important;
 }
 
+.separator {
+  border-right: 3px solid rgba(238, 238, 238, 0.1);
+  border-radius: 8px;
+}
+
 .filter_options {
   display: flex;
   flex-direction: row;
@@ -49,6 +55,7 @@ p.selected {
   text-align: center;
   margin: auto;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  font-size: 0.9rem !important;
 }
 
 .main_table tr {
@@ -68,37 +75,35 @@ p.selected {
   padding: 10px;
 }
 
-.separator {
-  border-right: 3px solid rgba(238, 238, 238, 0.1);
-  border-radius: 8px;
-}
-
-.preview{
+.preview {
   color: white;
   font-size: var(--FontSize);
-  line-height: 3rem;
 }
 
-.certInfo{
+.certInfo {
   padding: 0;
   list-style-type: none;
 }
 
-.certInfoLabel{
+.certInfo li{
+  margin-bottom: 1.5rem;
+}
+
+.certInfoLabel {
   font-weight: bold;
 }
 
-.requestCert{
+.requestCert {
   display: flex;
   justify-self: center;
 }
 
-.requestCert > * {
+.requestCert>* {
   font-size: var(--FontSize);
   margin-right: 1.5rem;
 }
 
-.requestType{
+.requestType {
   text-decoration: none;
   background-color: #fff;
   border-radius: 0.3rem;
@@ -109,11 +114,11 @@ p.selected {
   border: 1px solid #fff;
 }
 
-.requestBtn{
+.requestBtn {
   cursor: pointer;
   display: flex;
   justify-content: center;
-  width: 200px;
+  align-items: center;
   background-color: #fff;
   color: #000;
   font-size: 20px;
@@ -125,11 +130,11 @@ p.selected {
   margin: 1.5rem 3rem 1.5rem 0;
 }
 
-.approveBtn{
+.approveBtn {
   cursor: pointer;
   display: flex;
   justify-content: center;
-  width: 200px;
+  align-items: center;
   background-color: #68CC45;
   color: #fff;
   font-size: 20px;
@@ -141,11 +146,11 @@ p.selected {
   margin: 1.5rem 3rem 1.5rem 0;
 }
 
-.denyBtn{
+.denyBtn {
   cursor: pointer;
   display: flex;
   justify-content: center;
-  width: 200px;
+  align-items: center;
   background-color: #C7372F;
   color: #fff;
   font-size: 20px;
@@ -157,11 +162,11 @@ p.selected {
   margin: 1.5rem 3rem 1.5rem 0;
 }
 
-.accentBtn{
+.accentBtn {
   cursor: pointer;
   display: flex;
   justify-content: center;
-  width: 200px;
+  align-items: center;
   background-color: #007aff;
   color: #fff;
   font-size: 20px;
@@ -170,31 +175,33 @@ p.selected {
   border-radius: 0.3rem;
   padding: 0 0.5rem;
   border: 1px solid #007aff;
-  margin: 1.5rem 3rem 1.5rem 0;
 }
 
-.imgDiv{
+.imgDiv {
   margin-top: 0.3rem;
   margin-left: 0.5rem;
 }
 
-.denyDiv{
+.reasonDiv {
   display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5rem auto;
 }
 
-.denyInput{
+.reasonInput {
   display: flex;
   flex-direction: column;
   margin-right: 2rem;
 }
 
-.denyInput > * {
+.reasonInput>* {
   margin-right: 0.3rem;
 }
 
-.denyInput > input{
-  height: 2rem;
-  width: 20rem;
+.reasonInput>input {
+  padding: 5px 0;
+  width: 100%;
 }
 
 .validCircle {
@@ -219,4 +226,28 @@ p.selected {
   height: 5px;
   background-color: var(--Invalid);
   margin: auto;
+}
+
+@media (max-width:1800px ){
+ .preview, .requestCert>*, .main_table{
+    font-size: var(--FontSizeSmaller);
+  }
+
+  .card{
+    padding: 25px;
+  }
+
+  .requestBtn, .approveBtn, .denyBtn, .accentBtn{
+    font-size: 14px;
+  }
+
+  .main_table td{
+    padding: 5px;
+  }
+
+  .main_grid {
+
+    width: 95%;
+
+  }
 }
