@@ -34,13 +34,16 @@ function Register() {
     const {register, handleSubmit, formState} = useForm(formOptions);
     const {errors} = formState;
 
-    async function onSubmit(name) {
-        console.log({
-            name: name,
-        });
-        const response = await axiosInstance.post(`${backUrl}/api/auth/register`, name
+    async function onSubmit(formData) {
 
-        );
+        formData.emailValidation = checked;
+        try {
+            const response = await axiosInstance.post(`${backUrl}/api/auth/register`, formData);
+        }
+        catch (e){
+            console.log(e);
+        }
+
         console.log(response);
 
 
