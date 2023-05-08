@@ -21,16 +21,20 @@ public class User implements UserDetails {
     @Indexed(unique = true)
     private String username;
     private String password;
+    private String phone;
     private Boolean active;
     private Boolean enabled;
     private LocalDateTime credentialsExpiry;
     private Boolean nonLocked;
+    private Boolean emailValidation;
 
-    public User(String firstName, String lastName, String username, String password) {
+    public User(String firstName, String lastName, String username, String password,boolean emailValidation,String phone) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
         this.password = password;
+        this.emailValidation = emailValidation;
+        this.phone = phone;
     }
 
     public User() {
@@ -139,5 +143,13 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles;
+    }
+
+    public Boolean getEmailValidation() {
+        return emailValidation;
+    }
+
+    public String getPhone() {
+        return phone;
     }
 }

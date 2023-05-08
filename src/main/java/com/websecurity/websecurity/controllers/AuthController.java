@@ -1,21 +1,23 @@
 package com.websecurity.websecurity.controllers;
 
-import com.websecurity.websecurity.DTO.UserDTO;
-import com.websecurity.websecurity.DTO.CredentialsDTO;
-import com.websecurity.websecurity.DTO.TokenDTO;
+import com.websecurity.websecurity.DTO.*;
 import com.websecurity.websecurity.exceptions.NonExistantUserException;
 import com.websecurity.websecurity.exceptions.VerificationTokenExpiredException;
 import com.websecurity.websecurity.DTO.UserDTO;
+import com.websecurity.websecurity.models.PasswordChangeRequest;
 import com.websecurity.websecurity.models.User;
+import com.websecurity.websecurity.repositories.IPasswordChangeRequestRepository;
 import com.websecurity.websecurity.repositories.IUserRepository;
 import com.websecurity.websecurity.security.jwt.JwtTokenUtil;
 import com.websecurity.websecurity.services.IAuthService;
+import com.websecurity.websecurity.services.email.EmailService;
 import com.websecurity.websecurity.validators.LoginValidator;
 import com.websecurity.websecurity.validators.LoginValidatorException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -23,13 +25,16 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 
 import javax.annotation.security.PermitAll;
+import javax.websocket.server.PathParam;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -43,6 +48,13 @@ public class AuthController {
     private AuthenticationManager authenticationManager;
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    EmailService emailService;
+    @Autowired
+    IPasswordChangeRequestRepository passwordChangeRequestRepository;
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
 
     @PermitAll
     @PostMapping("/register")
@@ -57,7 +69,7 @@ public class AuthController {
             LoginValidator.validateLength(dto.getSurname(), "surname", 100);
             LoginValidator.validateLength(dto.getUsername(), "email", 100);
 
-            LoginValidator.validatePattern(dto.getPassword(), "password", "^(?=.*\\d)(?=.*[A-Z])(?!.*[^a-zA-Z0-9@#$^+=])(.{8,15})$");
+            LoginValidator.validatePattern(dto.getPassword(), "password", "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
         } catch (LoginValidatorException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -127,7 +139,7 @@ public class AuthController {
         if (verified) {
 
             try {
-                yahoo = new URI("http://localhost:4200/login");
+                yahoo = new URI("http://localhost:3000/login");
             } catch (URISyntaxException e) {
                 e.printStackTrace();
             }
@@ -148,6 +160,63 @@ public class AuthController {
         }
     }
 
+    @PermitAll
+    @PostMapping(value = "/refreshToken")
+    public ResponseEntity<TokenDTO> refreshtoken(@RequestBody String refreshToken) throws Exception {
+        // From the HttpRequest get the claims
+        refreshToken = refreshToken.replace("\"", "");
+        refreshToken = refreshToken.replace("{", "");
+        refreshToken = refreshToken.replace("}", "");
+        refreshToken = refreshToken.replace("\\", "");
+        refreshToken = refreshToken.split(":")[1];
+        String email = jwtTokenUtil.getEmailFromToken(refreshToken);
+        User user = userRepository.findByUsername(email);
+
+        if (jwtTokenUtil.validateToken(refreshToken, user)) {
+            String token = jwtTokenUtil.generateToken(user.getId(), user.getUsername(), user.getAuthorities());
+            System.out.println("Refreshed token");
+            TokenDTO tokenDTO = new TokenDTO(token, refreshToken);
+            return new ResponseEntity<>(tokenDTO, HttpStatus.OK);
+
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+    @PermitAll
+    @GetMapping("/change")
+    public ResponseEntity<?> changePassword(@PathParam("email") String email) {
+        User user = userRepository.findByUsername(email);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        authService.generatePasswordChangeRequest(user);
+
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @PermitAll
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody PasswordChangeDTO dto) {
+        List<PasswordChangeRequest> requests = passwordChangeRequestRepository.findAll();
+        PasswordChangeRequest currentRequest = null;
+        for (PasswordChangeRequest request :
+                requests) {
+            if (passwordEncoder.matches(dto.getCode(), request.getCode())) {
+                currentRequest = request;
+                break;
+            }
+        }
+        if (currentRequest == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        String encodedPw = passwordEncoder.encode(dto.getPassword());
+        if (currentRequest.getUser().getPassword().equals(encodedPw))
+            return new ResponseEntity<>("Password must be different then the old one", HttpStatus.BAD_REQUEST);
+        currentRequest.getUser().setPassword(encodedPw);
+        userRepository.save(currentRequest.getUser());
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
 
     @PermitAll
     @GetMapping
@@ -155,4 +224,6 @@ public class AuthController {
         authService.setRoles();
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+
 }

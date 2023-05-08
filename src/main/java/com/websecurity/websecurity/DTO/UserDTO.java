@@ -11,8 +11,8 @@ public class UserDTO {
 
     boolean emailValidation;
 
-    public User toUser(){
-        return new User(name,surname,username,password);
+    public User toUser() {
+        return new User(name, surname, username, password, emailValidation, phone);
     }
 
     public UserDTO() {

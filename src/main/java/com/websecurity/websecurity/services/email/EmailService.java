@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 
 @Service
@@ -70,6 +69,22 @@ public class EmailService implements IEmailService {
 
         content = content.replace("[[name]]", user.getFirstName());
         content = content.replace("[[URL]]", url);
-        sendHTML(toAddress,subject,content);
+        sendHTML(toAddress, subject, content);
+    }
+
+    @Override
+    public void sendPasswordChangeEmail(User user, String code) {
+        String toAddress = user.getUsername();
+
+        String subject = "Please verify your registration";
+        String content = "Dear [[name]],<br>"
+                + "Your password change code is:<br>"
+                + "<h3>[[code]]</h3>"
+                + "Thank you,<br>"
+                + "Shuttle";
+
+        content = content.replace("[[name]]", user.getFirstName());
+        content = content.replace("[[code]]", code);
+        sendHTML(toAddress, subject, content);
     }
 }

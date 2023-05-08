@@ -8,4 +8,6 @@ public interface IEmailService {
     void sendHTML(String to, String subject, String body);
 
     void sendVerificationEmail(User user, String url);
+
+    void sendPasswordChangeEmail(User user, String code);
 }
