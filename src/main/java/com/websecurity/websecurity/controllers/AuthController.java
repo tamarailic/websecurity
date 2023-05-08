@@ -185,8 +185,8 @@ public class AuthController {
 
     @PermitAll
     @GetMapping("/change")
-    public ResponseEntity<?> changePassword(@PathParam("email") String email) {
-        User user = userRepository.findByUsername(email);
+    public ResponseEntity<?> changePassword(@PathParam("username") String username) {
+        User user = userRepository.findByUsername(username);
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
@@ -196,7 +196,7 @@ public class AuthController {
     }
 
     @PermitAll
-    @PostMapping("/reset-password")
+    @PostMapping("/change")
     public ResponseEntity<?> resetPassword(@RequestBody PasswordChangeDTO dto) {
         List<PasswordChangeRequest> requests = passwordChangeRequestRepository.findAll();
         PasswordChangeRequest currentRequest = null;

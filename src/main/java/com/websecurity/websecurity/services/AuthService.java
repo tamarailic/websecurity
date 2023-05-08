@@ -28,7 +28,7 @@ import java.util.Random;
 @Service
 public class AuthService implements IAuthService {
     private static final int USER_CREDENTIALS_EXPIRY_DAYS = 7;
-    private static final int LOWER_BOUND = 10000000;
+    private static final int UPPER_BOUND = 10000000;
 
     @Autowired
     private IRoleRepository roleRepository;
@@ -108,7 +108,7 @@ public class AuthService implements IAuthService {
     @Override
     public void generatePasswordChangeRequest(User user) {
         boolean emailValidation = user.getEmailValidation();
-        String code = Integer.toString((new Random()).nextInt(LOWER_BOUND) + LOWER_BOUND);
+        String code = Integer.toString((new Random()).nextInt(UPPER_BOUND));
         passwordChangeRequestRepository.save(new PasswordChangeRequest(user, passwordEncoder.encode(code)));
 
         if (emailValidation) {

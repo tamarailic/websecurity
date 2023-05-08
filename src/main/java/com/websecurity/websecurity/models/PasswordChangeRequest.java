@@ -1,9 +1,12 @@
 package com.websecurity.websecurity.models;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document("PasswordChangeRequest")
 public class PasswordChangeRequest {
+    @Id
+    private String id;
     User user;
     String code;
 
