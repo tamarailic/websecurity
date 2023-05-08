@@ -210,11 +210,11 @@ public class AuthController {
         if (currentRequest == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-        String encodedPw = passwordEncoder.encode(dto.getPassword());
-        if (currentRequest.getUser().getPassword().equals(encodedPw))
+        if (passwordEncoder.matches(dto.getPassword(),currentRequest.getUser().getPassword()))
             return new ResponseEntity<>("Password must be different then the old one", HttpStatus.BAD_REQUEST);
-        currentRequest.getUser().setPassword(encodedPw);
+        currentRequest.getUser().setPassword(passwordEncoder.encode(dto.getPassword()));
         userRepository.save(currentRequest.getUser());
+        passwordChangeRequestRepository.delete(currentRequest);
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
