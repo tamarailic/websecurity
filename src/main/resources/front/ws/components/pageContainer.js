@@ -1,7 +1,8 @@
 import Head from "next/head";
 import NavBar from "./navBar";
-import { IAuthTokens, TokenRefreshRequest, applyAuthTokenInterceptor, getBrowserLocalStorage } from 'axios-jwt'
+import { IAuthTokens, TokenRefreshRequest, applyAuthTokenInterceptor, getBrowserLocalStorage,getAccessToken } from 'axios-jwt'
 import axios from 'axios'
+import jwtDecode from "jwt-decode";
 
 export const backUrl = 'http://localhost:8080';
 
@@ -29,6 +30,10 @@ const requestRefresh = (refresh) => {
     return axios.post(`${backUrl}/api/auth/refreshToken`, { refresh })
         .then(response => ( {accessToken: response.data.accessToken,refreshToken: response.data.refreshToken}));
 };
+
+export  function getUserRoles(){
+    return jwtDecode(getAccessToken()).role[0].name;
+}
 
 applyAuthTokenInterceptor(axiosInstance, { requestRefresh });  // Notice that this uses the axiosInstance instance.  <-- important
 

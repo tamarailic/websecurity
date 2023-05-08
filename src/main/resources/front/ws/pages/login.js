@@ -3,7 +3,7 @@ import {useForm} from 'react-hook-form';
 import {yupResolver} from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 
-import {backUrl, axiosInstance} from "@/components/pageContainer";
+import {backUrl, axiosInstance, getUserRoles} from "@/components/pageContainer";
 import {setAuthTokens} from "axios-jwt";
 
 export default Login;
@@ -27,15 +27,18 @@ function Login() {
             {
                 email: username,
                 password: password
-            }).then(resp =>{});
-        if (response.status.isError) {
-            alert("Error in request")
-        } else {
-            setAuthTokens({
-                accessToken: response.data.accessToken,
-                refreshToken: response.data.refreshToken
-            });
-        }
+            }).then(resp => {
+            if (resp.status.isError) {
+                alert("Error in request")
+            } else {
+                setAuthTokens({
+                    accessToken: resp.data.accessToken,
+                    refreshToken: resp.data.refreshToken
+                });
+            }
+            console.log(getUserRoles());
+        });
+
     }
 
     return (
@@ -61,6 +64,7 @@ function Login() {
                             Login
                         </button>
                         <a href="/register" className="btn btn-link">Register</a>
+                        <a href="/forgot-password" className="btn btn-link">Forgot Password</a>
                     </form>
                 </div>
             </div>
