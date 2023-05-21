@@ -1,6 +1,7 @@
 package com.websecurity.websecurity.models;
 
 import com.websecurity.websecurity.security.Role;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -8,11 +9,15 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 @Document("user")
 public class User implements UserDetails {
+    static final int PREVIOUS_PASSWORDS_COUNT = 5;
+    static final int CREDENTIAL_EXPIRY_DAYS = 7;
+
     List<Role> roles;
     @Id
     private String id;
@@ -28,16 +33,20 @@ public class User implements UserDetails {
     private Boolean nonLocked;
     private Boolean emailValidation;
 
-    public User(String firstName, String lastName, String username, String password,boolean emailValidation,String phone) {
+    private List<String> previousPasswords;
+
+    public User(String firstName, String lastName, String username, String password, boolean emailValidation, String phone) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
         this.password = password;
         this.emailValidation = emailValidation;
         this.phone = phone;
+        previousPasswords = new ArrayList<>();
     }
 
     public User() {
+        previousPasswords = new ArrayList<>();
     }
 
     public String getId() {
@@ -151,5 +160,26 @@ public class User implements UserDetails {
 
     public String getPhone() {
         return phone;
+    }
+
+    public void addPreviousPassword(String previousPassword) {
+        if (previousPasswords.size() >= PREVIOUS_PASSWORDS_COUNT) {
+            previousPasswords.remove(0);
+        }
+        previousPasswords.add(previousPassword);
+    }
+
+    public Boolean checkPreviousPasswords(String password){
+        int minDistance = password.length();
+        for (String previousPassword :
+                previousPasswords) {
+            int currentDistance = LevenshteinDistance.getDefaultInstance().apply(previousPassword,password);
+            if (currentDistance<minDistance) minDistance = currentDistance;
+        }
+        return minDistance>(password.length()/2);
+    }
+
+    public void refreshExpirationDate(){
+        this.credentialsExpiry = LocalDateTime.now().plusDays(CREDENTIAL_EXPIRY_DAYS);
     }
 }

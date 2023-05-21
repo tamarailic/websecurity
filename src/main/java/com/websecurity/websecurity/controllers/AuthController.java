@@ -210,12 +210,46 @@ public class AuthController {
         if (currentRequest == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-        if (passwordEncoder.matches(dto.getPassword(),currentRequest.getUser().getPassword()))
+        if (passwordEncoder.matches(dto.getPassword(), currentRequest.getUser().getPassword()))
             return new ResponseEntity<>("Password must be different then the old one", HttpStatus.BAD_REQUEST);
         currentRequest.getUser().setPassword(passwordEncoder.encode(dto.getPassword()));
         userRepository.save(currentRequest.getUser());
         passwordChangeRequestRepository.delete(currentRequest);
         return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @PermitAll
+    @PostMapping("/refresh-password")
+    public ResponseEntity<?> refreshPassword(@RequestBody PreviousPasswordDTO dto) {
+        try {
+
+            LoginValidator.validateRequired(dto.username, "username");
+            LoginValidator.validateRequired(dto.previousPassword, "previousPassword");
+            LoginValidator.validateRequired(dto.password, "password");
+
+        } catch (LoginValidatorException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        User user = userRepository.findByUsername(dto.username);
+        if (user == null) return new ResponseEntity<>("Something went wrong", HttpStatus.BAD_REQUEST);
+        if (!user.isAccountNonExpired()){
+            if (passwordEncoder.matches(dto.previousPassword, user.getPassword())){
+                try {
+                    LoginValidator.validatePattern(dto.password, "password", "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
+                    user.addPreviousPassword(dto.previousPassword);
+                    if (!user.checkPreviousPasswords(dto.password)) throw new LoginValidatorException("Password is too similar to one of the previous passwords");
+                    user.setPassword(passwordEncoder.encode(dto.password));
+                    user.refreshExpirationDate();
+                    userRepository.save(user);
+                    return new ResponseEntity<>("Password changed successfully", HttpStatus.OK);
+                }
+                catch (LoginValidatorException e) {
+                    return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+        return new ResponseEntity<>("Something went wrong", HttpStatus.BAD_REQUEST);
+
     }
 
     @PermitAll
