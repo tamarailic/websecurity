@@ -3,7 +3,6 @@ package com.websecurity.websecurity.controllers;
 import com.websecurity.websecurity.DTO.*;
 import com.websecurity.websecurity.exceptions.NonExistantUserException;
 import com.websecurity.websecurity.exceptions.VerificationTokenExpiredException;
-import com.websecurity.websecurity.DTO.UserDTO;
 import com.websecurity.websecurity.models.PasswordChangeRequest;
 import com.websecurity.websecurity.models.User;
 import com.websecurity.websecurity.repositories.IPasswordChangeRequestRepository;
@@ -17,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -28,10 +26,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-
 import javax.annotation.security.PermitAll;
 import javax.websocket.server.PathParam;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -111,14 +107,14 @@ public class AuthController {
             return new ResponseEntity<>("User is disabled!", HttpStatus.BAD_REQUEST);
         }
 
+
+
         SecurityContext sc = SecurityContextHolder.getContext();
         sc.setAuthentication(auth);
         String id = ((User) auth.getPrincipal()).getId();
         String token = jwtTokenUtil.generateToken(id, credentialsDTO.getEmail(), auth.getAuthorities());
         String refreshToken = jwtTokenUtil.generateRefreshToken(id, credentialsDTO.getEmail());
         TokenDTO tokens = new TokenDTO(token, refreshToken);
-
-        User user = userRepository.findByUsername(credentialsDTO.getEmail());
 
         return new ResponseEntity<TokenDTO>(tokens, HttpStatus.OK);
     }
@@ -232,15 +228,11 @@ public class AuthController {
         }
         User user = userRepository.findByUsername(dto.username);
         if (user == null) return new ResponseEntity<>("Something went wrong", HttpStatus.BAD_REQUEST);
-        if (!user.isAccountNonExpired()){
+        if (!user.isCredentialsNonExpired()){
             if (passwordEncoder.matches(dto.previousPassword, user.getPassword())){
                 try {
                     LoginValidator.validatePattern(dto.password, "password", "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
-                    user.addPreviousPassword(dto.previousPassword);
-                    if (!user.checkPreviousPasswords(dto.password)) throw new LoginValidatorException("Password is too similar to one of the previous passwords");
-                    user.setPassword(passwordEncoder.encode(dto.password));
-                    user.refreshExpirationDate();
-                    userRepository.save(user);
+                    authService.setNewUserPassword(user,dto);
                     return new ResponseEntity<>("Password changed successfully", HttpStatus.OK);
                 }
                 catch (LoginValidatorException e) {

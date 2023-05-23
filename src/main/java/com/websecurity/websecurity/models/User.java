@@ -1,7 +1,6 @@
 package com.websecurity.websecurity.models;
 
 import com.websecurity.websecurity.security.Role;
-import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -162,21 +161,15 @@ public class User implements UserDetails {
         return phone;
     }
 
-    public void addPreviousPassword(String previousPassword) {
+    public List<String> getPreviousPasswords() {
+        return previousPasswords;
+    }
+
+    public void addPreviousPassword() {
         if (previousPasswords.size() >= PREVIOUS_PASSWORDS_COUNT) {
             previousPasswords.remove(0);
         }
-        previousPasswords.add(previousPassword);
-    }
-
-    public Boolean checkPreviousPasswords(String password){
-        int minDistance = password.length();
-        for (String previousPassword :
-                previousPasswords) {
-            int currentDistance = LevenshteinDistance.getDefaultInstance().apply(previousPassword,password);
-            if (currentDistance<minDistance) minDistance = currentDistance;
-        }
-        return minDistance>(password.length()/2);
+        previousPasswords.add(this.password);
     }
 
     public void refreshExpirationDate(){

@@ -3,6 +3,7 @@ package com.websecurity.websecurity.services;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
+import com.websecurity.websecurity.DTO.PreviousPasswordDTO;
 import com.websecurity.websecurity.DTO.UserDTO;
 import com.websecurity.websecurity.exceptions.NonExistantUserException;
 import com.websecurity.websecurity.exceptions.VerificationTokenExpiredException;
@@ -14,6 +15,7 @@ import com.websecurity.websecurity.repositories.IUserRepository;
 import com.websecurity.websecurity.security.Role;
 import com.websecurity.websecurity.security.jwt.JwtTokenUtil;
 import com.websecurity.websecurity.services.email.EmailService;
+import com.websecurity.websecurity.validators.LoginValidatorException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -118,5 +120,19 @@ public class AuthService implements IAuthService {
             Message.creator(new PhoneNumber(user.getPhone()),
                     new PhoneNumber(helperService.getTwilioPhone()), "Your verification code is:" + code).create();
         }
+    }
+
+    @Override
+    public void setNewUserPassword(User user, PreviousPasswordDTO dto) throws LoginValidatorException {
+        user.addPreviousPassword();
+        for (String password :
+                user.getPreviousPasswords()) {
+            if (passwordEncoder.matches(dto.password, password))
+                throw new LoginValidatorException("Password matches one of the previous ones!");
+        }
+        user.setPassword(passwordEncoder.encode(dto.password));
+        user.setCredentialsExpiry(LocalDateTime.now().plusDays(USER_CREDENTIALS_EXPIRY_DAYS));
+        userRepository.save(user);
+
     }
 }
