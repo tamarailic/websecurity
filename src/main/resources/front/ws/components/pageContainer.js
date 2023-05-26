@@ -1,10 +1,10 @@
 import Head from "next/head";
 import NavBar from "./navBar";
-import { IAuthTokens, TokenRefreshRequest, applyAuthTokenInterceptor, getBrowserLocalStorage,getAccessToken } from 'axios-jwt'
+import { IAuthTokens, TokenRefreshRequest, applyAuthTokenInterceptor, getBrowserLocalStorage, getAccessToken } from 'axios-jwt'
 import axios from 'axios'
 import jwtDecode from "jwt-decode";
 
-export const backUrl = 'http://localhost:8080';
+export const backUrl = 'https://localhost:8443';
 
 export default function PageContainer({ children }) {
     return (
@@ -28,10 +28,10 @@ export const axiosInstance = axios.create({ baseURL: backUrl })
 const requestRefresh = (refresh) => {
     // Notice that this is the global axios instance, not the axiosInstance!  <-- important
     return axios.post(`${backUrl}/api/auth/refreshToken`, { refresh })
-        .then(response => ( {accessToken: response.data.accessToken,refreshToken: response.data.refreshToken}));
+        .then(response => ({ accessToken: response.data.accessToken, refreshToken: response.data.refreshToken }));
 };
 
-export  function getUserRoles(){
+export function getUserRoles() {
     return jwtDecode(getAccessToken()).role[0].name;
 }
 

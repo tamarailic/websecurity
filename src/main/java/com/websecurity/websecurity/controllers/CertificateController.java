@@ -21,7 +21,6 @@ public class CertificateController {
     private ICertificateRequestService certificateRequestService;
     @Autowired
     private ICertificateValidityService certificateValidityService;
-
     @Autowired
     private IUploadDownloadCertificateService uploadDownloadCertificateService;
 

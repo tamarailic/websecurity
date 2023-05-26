@@ -329,5 +329,7 @@ fabric.properties
 # Our custom ignores
 src/main/java/com/websecurity/websecurity/security/certs/*.crt
 src/main/java/com/websecurity/websecurity/security/keys/*.key
+src/main/resources/keystore
+src/main/resources/front/ws/cert
 
 # End of https://mrkandreev.name/snippets/gitignore-generator/#Java,Linux,react,macOS,Eclipse,Windows,WebStorm,Intellij,VisualStudioCode
