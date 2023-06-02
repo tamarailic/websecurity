@@ -175,5 +175,10 @@ public class HelperService implements IHelperService {
         return this.getConfigValue("TWILIO_SID").toString();
     }
 
+    @Override
+    public String getEncryptAlgorithm() {
+        return this.getConfigValue("ENCRYPT_ALGORITHM").toString();
+    }
+
 
 }

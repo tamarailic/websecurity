@@ -18,9 +18,19 @@ import com.websecurity.websecurity.services.email.EmailService;
 import com.websecurity.websecurity.validators.LoginValidatorException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -110,7 +120,7 @@ public class AuthService implements IAuthService {
     @Override
     public void generatePasswordChangeRequest(User user) {
         boolean emailValidation = user.getEmailValidation();
-        String code = Integer.toString((new Random()).nextInt(UPPER_BOUND));
+        String code = generateCode();
         passwordChangeRequestRepository.save(new PasswordChangeRequest(user, passwordEncoder.encode(code)));
 
         if (emailValidation) {
@@ -120,6 +130,11 @@ public class AuthService implements IAuthService {
             Message.creator(new PhoneNumber(user.getPhone()),
                     new PhoneNumber(helperService.getTwilioPhone()), "Your verification code is:" + code).create();
         }
+    }
+
+    @Override
+    public String generateCode() {
+        return Integer.toString((new Random()).nextInt(UPPER_BOUND));
     }
 
     @Override
@@ -134,5 +149,40 @@ public class AuthService implements IAuthService {
         user.setCredentialsExpiry(LocalDateTime.now().plusDays(USER_CREDENTIALS_EXPIRY_DAYS));
         userRepository.save(user);
 
+    }
+
+    @Override
+    public byte[] encryptAuthentication(Authentication authentication, String secretKey) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+        byte[] encryptedData = null;
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(bos);
+        oos.writeObject(authentication);
+        byte[] serializedData = bos.toByteArray();
+
+        String encryptionAlgorithm = helperService.getEncryptAlgorithm();
+        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), encryptionAlgorithm);
+        Cipher cipher = Cipher.getInstance(encryptionAlgorithm);
+        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
+        encryptedData = cipher.doFinal(serializedData);
+
+
+        return encryptedData;
+    }
+
+    @Override
+    public Authentication dencryptAuthentication(byte[] encryptedData, String secretKey) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException {
+        Authentication decryptedObject = null;
+
+        String encryptionAlgorithm = helperService.getEncryptAlgorithm();
+        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), encryptionAlgorithm);
+        Cipher cipher = Cipher.getInstance(encryptionAlgorithm);
+
+        byte[] decryptedData = cipher.doFinal(encryptedData);
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(decryptedData);
+        ObjectInputStream ois = new ObjectInputStream(bis);
+        decryptedObject = (UsernamePasswordAuthenticationToken) ois.readObject();
+
+        return decryptedObject;
     }
 }

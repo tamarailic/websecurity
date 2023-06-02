@@ -2,6 +2,7 @@ package com.websecurity.websecurity.models;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import java.time.LocalDateTime;
 
@@ -9,25 +10,29 @@ import java.time.LocalDateTime;
 public class LoginAttempt {
     @Id
     private String id;
-    User user;
-    String code;
-
+    String userEmail;
     LocalDateTime validUntil;
 
-    public LoginAttempt(User user, String code, LocalDateTime validUntil) {
-        this.user = user;
-        this.code = code;
-        this.validUntil = validUntil;
+    byte[] auth;
+
+    public LoginAttempt(String userEmail, byte[] auth) {
+        this.userEmail = userEmail;
+        this.validUntil = LocalDateTime.now().plusMinutes(5);
+        this.auth = auth;
     }
 
     public LoginAttempt() {
     }
 
-    public User getUser() {
-        return user;
+    public String getUserEmail() {
+        return userEmail;
     }
 
-    public String getCode() {
-        return code;
+    public byte[] getAuth() {
+        return auth;
+    }
+
+    public LocalDateTime getValidUntil() {
+        return validUntil;
     }
 }

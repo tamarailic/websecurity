@@ -3,8 +3,10 @@ package com.websecurity.websecurity.controllers;
 import com.websecurity.websecurity.DTO.*;
 import com.websecurity.websecurity.exceptions.NonExistantUserException;
 import com.websecurity.websecurity.exceptions.VerificationTokenExpiredException;
+import com.websecurity.websecurity.models.LoginAttempt;
 import com.websecurity.websecurity.models.PasswordChangeRequest;
 import com.websecurity.websecurity.models.User;
+import com.websecurity.websecurity.repositories.ILoginAttemptRepository;
 import com.websecurity.websecurity.repositories.IPasswordChangeRequestRepository;
 import com.websecurity.websecurity.repositories.IUserRepository;
 import com.websecurity.websecurity.security.jwt.JwtTokenUtil;
@@ -30,6 +32,7 @@ import javax.annotation.security.PermitAll;
 import javax.websocket.server.PathParam;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -50,6 +53,8 @@ public class AuthController {
     IPasswordChangeRequestRepository passwordChangeRequestRepository;
     @Autowired
     PasswordEncoder passwordEncoder;
+    @Autowired
+    ILoginAttemptRepository loginAttemptRepository;
 
 
     @PermitAll
@@ -106,14 +111,35 @@ public class AuthController {
         } catch (DisabledException e) {
             return new ResponseEntity<>("User is disabled!", HttpStatus.BAD_REQUEST);
         }
+        String code = authService.generateCode();
+        LoginAttempt loginAttempt = new LoginAttempt(credentialsDTO.getEmail(), authService.encryptAuthentication(auth, code));
+        loginAttemptRepository.save(loginAttempt);
 
 
+    }
+
+    @PermitAll
+    @PostMapping("/2fa")
+    public ResponseEntity<?> factorAuth(@RequestBody CodeDTO codeDTO) {
+        Authentication auth = null;
+        LoginAttempt attempt = null;
+        try {
+            attempt = loginAttemptRepository.findByUserEmail(codeDTO.getEmail());
+            if (attempt.getValidUntil().isAfter(LocalDateTime.now())){
+                loginAttemptRepository.delete(attempt);
+                throw new Exception("User code expired");
+            }
+            auth = authService.dencryptAuthentication(attempt.getAuth(), codeDTO.getCode());
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         SecurityContext sc = SecurityContextHolder.getContext();
         sc.setAuthentication(auth);
         String id = ((User) auth.getPrincipal()).getId();
-        String token = jwtTokenUtil.generateToken(id, credentialsDTO.getEmail(), auth.getAuthorities());
-        String refreshToken = jwtTokenUtil.generateRefreshToken(id, credentialsDTO.getEmail());
+        String token = jwtTokenUtil.generateToken(id, attempt.getUserEmail(), auth.getAuthorities());
+        String refreshToken = jwtTokenUtil.generateRefreshToken(id, attempt.getUserEmail());
         TokenDTO tokens = new TokenDTO(token, refreshToken);
 
         return new ResponseEntity<TokenDTO>(tokens, HttpStatus.OK);
@@ -228,14 +254,13 @@ public class AuthController {
         }
         User user = userRepository.findByUsername(dto.username);
         if (user == null) return new ResponseEntity<>("Something went wrong", HttpStatus.BAD_REQUEST);
-        if (!user.isCredentialsNonExpired()){
-            if (passwordEncoder.matches(dto.previousPassword, user.getPassword())){
+        if (!user.isCredentialsNonExpired()) {
+            if (passwordEncoder.matches(dto.previousPassword, user.getPassword())) {
                 try {
                     LoginValidator.validatePattern(dto.password, "password", "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
-                    authService.setNewUserPassword(user,dto);
+                    authService.setNewUserPassword(user, dto);
                     return new ResponseEntity<>("Password changed successfully", HttpStatus.OK);
-                }
-                catch (LoginValidatorException e) {
+                } catch (LoginValidatorException e) {
                     return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
                 }
             }
