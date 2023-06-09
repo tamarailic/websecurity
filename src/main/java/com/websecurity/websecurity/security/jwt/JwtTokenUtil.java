@@ -1,10 +1,12 @@
 package com.websecurity.websecurity.security.jwt;
 
 import com.websecurity.websecurity.models.User;
+import com.websecurity.websecurity.services.HelperService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,21 +21,29 @@ public class JwtTokenUtil {
 
     public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
     private static final String AUDIENCE_WEB = "web";
+    @Autowired
+    private HelperService helperService;
+
     @Value("Shuttle-back")
     private String APP_NAME;
     @Value("${jwt.secret}")
     private String secret;
     @Value("${jwt.expirationDateInMs}")
     private int JWT_EXPIRATION;
+
     // Naziv headera kroz koji ce se prosledjivati JWT u komunikaciji server-klijent
     @Value("Authorization")
     private String AUTH_HEADER;
 
+    @Value("${jwt.refreshExpirationDateInMs}")
+    private int REFRESH_EXPIRATION;
+
+
     //	private static final String AUDIENCE_UNKNOWN = "unknown";
     //	private static final String AUDIENCE_MOBILE = "mobile";
     //	private static final String AUDIENCE_TABLET = "tablet";
-    @Value("${jwt.refreshExpirationDateInMs}")
-    private int REFRESH_EXPIRATION;
+
+
     private SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS512;
 
 
@@ -75,6 +85,19 @@ public class JwtTokenUtil {
 
     }
 
+    public String generateVerificationToken(String email) {
+
+        return Jwts.builder()
+                .setIssuer(APP_NAME)
+                .setSubject(email)
+                .setAudience(generateAudience())
+                .setIssuedAt(new Date())
+                .setExpiration(generateVerificationExpirationDate())
+                .signWith(SIGNATURE_ALGORITHM, secret).compact();
+
+
+    }
+
     /**
      * @return Tip uređaja.
      */
@@ -103,6 +126,10 @@ public class JwtTokenUtil {
 
     private Date generateRefreshExpirationDate() {
         return new Date(new Date().getTime() + REFRESH_EXPIRATION);
+    }
+
+    private Date generateVerificationExpirationDate() {
+        return new Date(new Date().getTime() + helperService.getVerificationExpiration());
     }
 
     /**

@@ -11,8 +11,8 @@ import Error from "@/components/error";
 const fetcher = (...args) => fetch(...args).then(res => res.json());
 
 // Just mocked data -> should be replaced with data from JWT
-const userId = '643d966f681de87d29254e97';
-const username = 'aisling.rebyl@meantodeal.com';
+const userId = '6447f68495bfc35b4f3eb745';
+const username = 'tamarailic11@gmail.com';
 
 export default function Home() {
   return (<PageContainer>
@@ -166,7 +166,8 @@ function MyRequests({ appliedFilters, setSelectedItem }) {
         </tr>
       </thead>
       <tbody>
-        {requestsData.map(item => <tr onClick={() => handleRowClick(item)} key={item['requestId']}><td>{item['status'] == 'APPROVED' ? <div className={styles.validCircle}></div> : item['status'] == 'DENIED' ? <div className={styles.invalidCircle}></div> : <div className={styles.pendingCircle}></div>}</td>{Object.keys(item).filter(column => ['requestId', 'subjectId', 'issuerCertificateId', 'requestedDate', 'certificateType'].includes(column)).map(itemKey => <td key={`${item['subjectId']}-${itemKey}`}>{itemKey != 'issuerCertificateId' ? item[itemKey] : `...${item[itemKey].slice(-5)}`}</td>)}</tr>)}
+        {console.log(requestsData)}
+        {requestsData.map(item => <tr onClick={() => handleRowClick(item)} key={item['requestId']}><td>{item['status'] == 'APPROVED' ? <div className={styles.validCircle}></div> : item['status'] == 'DENIED' ? <div className={styles.invalidCircle}></div> : <div className={styles.pendingCircle}></div>}</td>{Object.keys(item).filter(column => ['requestId', 'subjectId', 'issuerCertificateId', 'requestedDate', 'certificateType'].includes(column)).map(itemKey => <td key={`${item['subjectId']}-${itemKey}`}>{itemKey != 'issuerCertificateId' ? item[itemKey] : `...${item[itemKey] ? item[itemKey].slice(-5) : 'self signed'}`}</td>)}</tr>)}
       </tbody>
     </table>
   );

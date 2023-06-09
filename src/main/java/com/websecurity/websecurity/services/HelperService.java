@@ -149,4 +149,31 @@ public class HelperService implements IHelperService {
     public BigInteger convertUUIDtoBigInteger(String uuid) {
         return new BigInteger(uuid.replace("-", ""), 16);
     }
+
+    @Override
+    public String getEmailFrom() {
+        return this.getConfigValue("EMAIL_FROM").toString();
+    }
+
+    @Override
+    public int getVerificationExpiration() {
+        return (Integer) this.getConfigValue("VERIFICATION_EXPIRATION_IN_MS");
+    }
+
+    @Override
+    public String getTwilioPhone() {
+        return this.getConfigValue("TWILIO_PHONE").toString();
+    }
+
+    @Override
+    public String getTwilioToken() {
+        return this.getConfigValue("TWILIO_TOKEN").toString();
+    }
+
+    @Override
+    public String getTwilioSID() {
+        return this.getConfigValue("TWILIO_SID").toString();
+    }
+
+
 }

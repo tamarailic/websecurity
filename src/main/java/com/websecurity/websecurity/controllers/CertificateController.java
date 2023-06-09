@@ -21,7 +21,6 @@ public class CertificateController {
     private ICertificateRequestService certificateRequestService;
     @Autowired
     private ICertificateValidityService certificateValidityService;
-
     @Autowired
     private IUploadDownloadCertificateService uploadDownloadCertificateService;
 
@@ -66,6 +65,7 @@ public class CertificateController {
     public StatusDTO verifyCertificateValidityFromId(@PathVariable String certificateSerialNumber) {
         return certificateValidityService.checkValidity(certificateSerialNumber);
     }
+
     @PostMapping(value = "/verify/file", consumes = {MediaType.APPLICATION_OCTET_STREAM_VALUE})
     public StatusDTO verifyCertificateValidityFromFile(@RequestBody byte[] certificateContent) {
         return certificateValidityService.checkFileValidity(certificateContent);
@@ -83,7 +83,7 @@ public class CertificateController {
     }
 
     @PutMapping("/withdraw/{certificateSerialNumber}")
-    public CertificateToShowDTO withdrawCertificate(@PathVariable String certificateSerialNumber, @RequestBody ReasonDTO reason){
+    public CertificateToShowDTO withdrawCertificate(@PathVariable String certificateSerialNumber, @RequestBody ReasonDTO reason) {
         return certificateRequestService.withdrawCertificateById(certificateSerialNumber, reason);
     }
 }

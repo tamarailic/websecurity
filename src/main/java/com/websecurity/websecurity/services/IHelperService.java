@@ -31,4 +31,14 @@ public interface IHelperService {
     LocalDate calculateExpirationDate(LocalDate notBefore, String certificateType);
 
     BigInteger convertUUIDtoBigInteger(String uuid);
+
+    String getEmailFrom();
+
+    int getVerificationExpiration();
+
+    String getTwilioPhone();
+
+    String getTwilioToken();
+
+    String getTwilioSID();
 }
