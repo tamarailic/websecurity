@@ -6,8 +6,9 @@ const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
 const httpsOptions = {
-    key: fs.readFileSync("./cert/ws.key.pem"),
-    cert: fs.readFileSync("./cert/ws.crt.pem"),
+    key: fs.readFileSync("./cert/wskeystore.key"),
+    cert: fs.readFileSync("./cert/wskeystore.crt"),
+    passphrase: 'Mojteam24'
 };
 app.prepare().then(() => {
     createServer(httpsOptions, (req, res) => {
