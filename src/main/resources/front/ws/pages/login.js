@@ -40,6 +40,7 @@ function Login() {
                         accessToken: resp.data.accessToken,
                         refreshToken: resp.data.refreshToken
                     });
+                    router.replace('/')
                 }
             }).catch(err => {
                 alert("Error in request");

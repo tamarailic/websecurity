@@ -100,9 +100,9 @@ function FilterOptions({ appliedFilters, setAppliedFilters }) {
 function MainArea({ userId, username, selectedSection, appliedFilters, setSelectedItem }) {
   let tableToRender = null;
   if (selectedSection == 0) {
-    tableToRender = <AllCertificates appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
+    tableToRender = <AllCertificates username={username} appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
   } else if (selectedSection == 1) {
-    tableToRender = <MyRequests appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
+    tableToRender = <MyRequests userId={userId} username={username} appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
   } else if (selectedSection == 2) {
     tableToRender = <ForSigning userId={userId} username={username} appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
   }
@@ -113,7 +113,7 @@ function MainArea({ userId, username, selectedSection, appliedFilters, setSelect
   );
 }
 
-function AllCertificates({ appliedFilters, setSelectedItem }) {
+function AllCertificates({ username, appliedFilters, setSelectedItem }) {
   function handleRowClick(certificate) {
     setSelectedItem(certificate);
   }
@@ -145,7 +145,7 @@ function AllCertificates({ appliedFilters, setSelectedItem }) {
 
 }
 
-function MyRequests({ appliedFilters, setSelectedItem }) {
+function MyRequests({ userId, username, appliedFilters, setSelectedItem }) {
   function handleRowClick(certificate) {
     setSelectedItem(certificate);
   }
@@ -170,7 +170,6 @@ function MyRequests({ appliedFilters, setSelectedItem }) {
         </tr>
       </thead>
       <tbody>
-        {console.log(requestsData)}
         {requestsData.map(item => <tr onClick={() => handleRowClick(item)} key={item['requestId']}><td>{item['status'] == 'APPROVED' ? <div className={styles.validCircle}></div> : item['status'] == 'DENIED' ? <div className={styles.invalidCircle}></div> : <div className={styles.pendingCircle}></div>}</td>{Object.keys(item).filter(column => ['requestId', 'subjectId', 'issuerCertificateId', 'requestedDate', 'certificateType'].includes(column)).map(itemKey => <td key={`${item['subjectId']}-${itemKey}`}>{itemKey != 'issuerCertificateId' ? item[itemKey] : `...${item[itemKey] ? item[itemKey].slice(-5) : 'self signed'}`}</td>)}</tr>)}
       </tbody>
     </table>
