@@ -100,9 +100,9 @@ function FilterOptions({ appliedFilters, setAppliedFilters }) {
 function MainArea({ userId, username, selectedSection, appliedFilters, setSelectedItem }) {
   let tableToRender = null;
   if (selectedSection == 0) {
-    tableToRender = <AllCertificates appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
+    tableToRender = <AllCertificates username={username} appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
   } else if (selectedSection == 1) {
-    tableToRender = <MyRequests appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
+    tableToRender = <MyRequests userId={userId} username={username} appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
   } else if (selectedSection == 2) {
     tableToRender = <ForSigning userId={userId} username={username} appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
   }
@@ -113,7 +113,7 @@ function MainArea({ userId, username, selectedSection, appliedFilters, setSelect
   );
 }
 
-function AllCertificates({ appliedFilters, setSelectedItem }) {
+function AllCertificates({ username, appliedFilters, setSelectedItem }) {
   function handleRowClick(certificate) {
     setSelectedItem(certificate);
   }
@@ -145,7 +145,7 @@ function AllCertificates({ appliedFilters, setSelectedItem }) {
 
 }
 
-function MyRequests({ appliedFilters, setSelectedItem }) {
+function MyRequests({ userId, username, appliedFilters, setSelectedItem }) {
   function handleRowClick(certificate) {
     setSelectedItem(certificate);
   }
