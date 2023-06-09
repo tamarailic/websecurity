@@ -1,9 +1,10 @@
-import {useRouter} from "next/router";
-import {useState} from "react";
+import { useRouter } from "next/router";
+import { useState } from "react";
 import * as Yup from "yup";
-import {yupResolver} from "@hookform/resolvers/yup";
-import {useForm} from "react-hook-form";
-import {axiosInstance, backUrl} from "@/components/pageContainer";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
+import styles from "@/styles/LoginRegistration.module.css"
+import { axiosInstance, backUrl } from "@/components/pageContainer";
 
 export default ChangePw;
 
@@ -15,16 +16,16 @@ function ChangePw() {
         username: Yup.string()
             .required('Email is required').email(),
     });
-    const formOptions = {resolver: yupResolver(validationSchema)};
+    const formOptions = { resolver: yupResolver(validationSchema) };
 
     // get functions to build form with useForm() hook
-    const {register, handleSubmit, formState} = useForm(formOptions);
-    const {errors} = formState;
+    const { register, handleSubmit, formState } = useForm(formOptions);
+    const { errors } = formState;
 
     async function onSubmit(formData) {
 
         try {
-            const response = await axiosInstance.get(`${backUrl}/api/auth/change`, {params: {username: formData.username}});
+            const response = await axiosInstance.get(`${backUrl}/api/auth/change`, { params: { username: formData.username } });
             console.log(response.status);
         } catch (e) {
             console.log(e);
@@ -35,25 +36,29 @@ function ChangePw() {
 
     return (
         <div>
-            <div className="card">
-                <h4 className="card-header">Register</h4>
-                <div className="card-body">
+            <div className={styles.card}>
+                <h1 className={styles.cardHeader}>Forgot password</h1>
+                <div className={styles.cardBody}>
                     <form onSubmit={handleSubmit(onSubmit)}>
-                        <div className="form-group">
+                        <div className={styles.formGroup}>
                             <label>E-mail</label>
                             <input name="username" type="text" {...register('username')}
-                                   className={`form-control ${errors.username ? 'is-invalid' : ''}`}/>
-                            <div className="invalid-feedback">{errors.username?.message}</div>
+                                className={`${styles.formControl} ${errors.username ? styles.isInvalid : ''}`} />
                         </div>
-                        <button disabled={formState.isSubmitting} className="btn btn-primary">
-                            {formState.isSubmitting && <span className="spinner-border spinner-border-sm mr-1"></span>}
-                            Reset password
-                        </button>
-                        <a href="/login" className="btn btn-link">Cancel</a>
+                        {errors.username && <div className={styles.invalidFeedback}>{errors.username?.message}</div>}
+                        <div className={styles.btnContainerRegistration}>
+                            <div className={styles.noLinkContainer}>
+                                <a href="/login" className={styles.noLink}>Cancel registration</a>
+                            </div>
+                            <button disabled={formState.isSubmitting} className={styles.loginBtn}>
+                                Reset password
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
 
         </div>
+
     );
 }

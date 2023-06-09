@@ -3,10 +3,10 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 import ReCAPTCHA from "react-google-recaptcha";
-
 import { backUrl, axiosInstance, getUserId } from "@/components/pageContainer";
 import { setAuthTokens } from "axios-jwt";
 import { useRef } from 'react';
+import styles from "@/styles/LoginRegistration.module.css"
 
 export default Login;
 
@@ -49,35 +49,43 @@ function Login() {
 
     return (
         <div>
-            <div className="card">
-                <h4 className="card-header">Login</h4>
-                <div className="card-body">
+            <div className={styles.card}>
+                <h1 className={styles.cardHeader}>Welcome to websecurity,</h1>
+                <p className={`${styles.cardHeader} ${styles.subtitle}`}>let us take care of your ceritificates</p>
+                <div className={styles.cardBody}>
                     <form onSubmit={handleSubmit(onSubmit)}>
-                        <div className="form-group">
+                        <div className={styles.formGroup}>
                             <label>Username</label>
                             <input name="username" type="text" {...register('username')}
-                                className={`form-control ${errors.username ? 'is-invalid' : ''}`} />
-                            <div className="invalid-feedback">{errors.username?.message}</div>
+                                className={`${styles.formControl} ${errors.username ? styles.isInvalid : ''}`} />
                         </div>
-                        <div className="form-group">
+                        {errors.username && <div className={styles.invalidFeedback}>{errors.username?.message}</div>}
+                        <div className={styles.formGroup}>
                             <label>Password</label>
                             <input name="password" type="password" {...register('password')}
-                                className={`form-control ${errors.password ? 'is-invalid' : ''}`} />
-                            <div className="invalid-feedback">{errors.password?.message}</div>
+                                className={`${styles.formControl} ${errors.password ? styles.isInvalid : ''}`} />
+
                         </div>
+                        {errors.username && <div className={styles.invalidFeedback}>{errors.password?.message}</div>}
                         <ReCAPTCHA
                             ref={recaptchaRef}
                             sitekey="6LfEWIMmAAAAAG_1ZepVg757CP01pC-qakTTNByI"
                         />
-                        <button disabled={formState.isSubmitting} className="btn btn-primary">
-                            {formState.isSubmitting && <span className="spinner-border spinner-border-sm mr-1"></span>}
-                            Login
-                        </button>
-                        <a href="/register" className="btn btn-link">Register</a>
-                        <a href="/forgot-password" className="btn btn-link">Forgot Password</a>
+                        <div className={styles.btnContainerLogin}>
+                            <button disabled={formState.isSubmitting} className={styles.loginBtn}>
+                                Login
+                            </button>
+                        </div>
+
+                        <div >
+                            <p>Don't have account? <a href="/register">Register</a></p>
+                        </div>
+                        <div>
+                            <p>Forgot password? <a href="/forgot-password" >Reset password</a></p>
+                        </div>
                     </form>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

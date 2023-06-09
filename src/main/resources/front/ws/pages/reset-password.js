@@ -1,9 +1,10 @@
-import {useRouter} from 'next/router';
-import {useForm} from 'react-hook-form';
-import {yupResolver} from '@hookform/resolvers/yup';
+import { useRouter } from 'next/router';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
-import {backUrl, axiosInstance} from "@/components/pageContainer";
-import {useState} from "react";
+import styles from "@/styles/LoginRegistration.module.css"
+import { backUrl, axiosInstance } from "@/components/pageContainer";
+import { useState } from "react";
 
 const codeRegExp = /^[0-9]{7}$/
 export default Register;
@@ -22,11 +23,11 @@ function Register() {
                 "Password must contain at least 8 characters, one uppercase, one number and one special case character"),
         confirmation: Yup.string().required().oneOf([Yup.ref('password'), null], "Passwords don't match."),
     });
-    const formOptions = {resolver: yupResolver(validationSchema)};
+    const formOptions = { resolver: yupResolver(validationSchema) };
 
     // get functions to build form with useForm() hook
-    const {register, handleSubmit, formState} = useForm(formOptions);
-    const {errors} = formState;
+    const { register, handleSubmit, formState } = useForm(formOptions);
+    const { errors } = formState;
 
     async function onSubmit(formData) {
 
@@ -34,49 +35,47 @@ function Register() {
             const response = await axiosInstance.post(`${backUrl}/api/auth/change`, formData);
             console.log(response.status);
         }
-        catch (e){
+        catch (e) {
             console.log(e);
         }
-
-
-
-
     }
 
     return (
         <div>
-            <div className="card">
-                <h4 className="card-header">Register</h4>
-                <div className="card-body">
+            <div className={styles.card}>
+                <h1 className={styles.cardHeader}>Reset password</h1>
+                <div className={styles.cardBody}>
                     <form onSubmit={handleSubmit(onSubmit)}>
-                        <div className="form-group">
+                        <div className={styles.formGroup}>
                             <label>Code</label>
                             <input name="code" type="text" {...register('code')}
-                                   className={`form-control ${errors.code ? 'is-invalid' : ''}`}/>
-                            <div className="invalid-feedback">{errors.code?.message}</div>
+                                className={`${styles.formControl} ${errors.code ? styles.isInvalid : ''}`} />
                         </div>
-
-                        <div className="form-group">
+                        {errors.code && <div className={styles.invalidFeedback}>{errors.code?.message}</div>}
+                        <div className={styles.formGroup}>
                             <label>Password</label>
                             <input name="password" type="password" {...register('password')}
-                                   className={`form-control ${errors.password ? 'is-invalid' : ''}`}/>
-                            <div className="invalid-feedback">{errors.password?.message}</div>
+                                className={`${styles.formControl} ${errors.password ? styles.isInvalid : ''}`} />
                         </div>
-                        <div className="form-group">
+                        {errors.password && <div className={styles.invalidFeedback}>{errors.password?.message}</div>}
+                        <div className={styles.formGroup}>
                             <label>Confirm Password</label>
                             <input name="confirmation" type="password" {...register('confirmation')}
-                                   className={`form-control ${errors.confirmation ? 'is-invalid' : ''}`}/>
-                            <div className="invalid-feedback">{errors.confirmation?.message}</div>
+                                className={`${styles.formControl} ${errors.confirmation ? styles.isInvalid : ''}`} />
                         </div>
-                        <button disabled={formState.isSubmitting} className="btn btn-primary">
-                            {formState.isSubmitting && <span className="spinner-border spinner-border-sm mr-1"></span>}
-                            Reset password
-                        </button>
-                        <a href="/login" className="btn btn-link">Cancel</a>
+                        {errors.confirmation && <div className={styles.invalidFeedback}>{errors.confirmation?.message}</div>}
+                        <div className={styles.btnContainerRegistration}>
+                            <div className={styles.noLinkContainer}>
+                                <a href="/login" className={styles.noLink}>Cancel registration</a>
+                            </div>
+                            <button disabled={formState.isSubmitting} className={styles.loginBtn}>
+                                Reset password
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
-
         </div>
+
     );
 }
