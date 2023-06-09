@@ -50,7 +50,7 @@ function Login() {
     return (
         <div>
             <div className={styles.card}>
-                <h1 className={styles.cardHeader}>Welcome to websecurity,</h1>
+                <h1 className={styles.cardHeader}>Welcome to websecurity</h1>
                 <p className={`${styles.cardHeader} ${styles.subtitle}`}>let us take care of your ceritificates</p>
                 <div className={styles.cardBody}>
                     <form onSubmit={handleSubmit(onSubmit)}>

@@ -4,7 +4,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 import styles from "@/styles/LoginRegistration.module.css"
 import { backUrl, axiosInstance } from "@/components/pageContainer";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const phoneRegExp = /^[+]?[(]?[0-9]{3}[)]?[-s.]?[0-9]{3}[-s.]?[0-9]{4,6}$/
 export default Register;
@@ -12,6 +13,7 @@ export default Register;
 
 function Register() {
     const router = useRouter();
+    const recaptchaRef = useRef();
     const [checked, setChecked] = useState(true);
 
     // form validation rules
@@ -35,18 +37,15 @@ function Register() {
     const { register, handleSubmit, formState } = useForm(formOptions);
     const { errors } = formState;
 
-    async function onSubmit(formData) {
-
+    function onSubmit(formData) {
+        const recaptchaValue = recaptchaRef.current.getValue();
         formData.emailValidation = checked;
-        try {
-            const response = await axiosInstance.post(`${backUrl}/api/auth/register`, formData);
-            console.log(response.status);
-        }
-        catch (e) {
-            console.log(e);
-        }
-
-
+        formData.recaptcha = recaptchaValue;
+        axiosInstance.post(`${backUrl}/api/auth/register`, formData).then(resp => {
+            router.replace('/login');
+        }).catch(err => {
+            alert(err.response.data);
+        })
     }
 
     return (
@@ -103,9 +102,13 @@ function Register() {
                             <input name="phoneValidation" checked={!checked} value={!checked} type="radio"
                                 onChange={() => setChecked(false)} />
                         </div>
+                        <ReCAPTCHA
+                            ref={recaptchaRef}
+                            sitekey="6LfEWIMmAAAAAG_1ZepVg757CP01pC-qakTTNByI"
+                        />
                         <div className={styles.btnContainerRegistration}>
                             <div className={styles.noLinkContainer}>
-                                <a href="/login" className={styles.noLink}>Cancel registration</a>
+                                <a href="/login" className={styles.noLink}>Have an account? Login</a>
                             </div>
                             <button disabled={formState.isSubmitting} className={styles.loginBtn}>
                                 Register
@@ -115,6 +118,5 @@ function Register() {
                 </div>
             </div >
         </div >
-
     );
 }

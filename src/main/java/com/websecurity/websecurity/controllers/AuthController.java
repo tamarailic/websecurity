@@ -85,6 +85,14 @@ public class AuthController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
+        try {
+            if (!isRecaptchaValid(dto.getRecaptcha(), request.getRemoteAddr())) {
+                return new ResponseEntity<>("Invalid captcha", HttpStatus.BAD_REQUEST);
+            }
+        } catch (IOException e2) {
+            return new ResponseEntity<>(e2.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
         User userWithThisEmail = userRepository.findByUsername(dto.getUsername());
         if (userWithThisEmail != null) {
             return new ResponseEntity<>("User with that email already exists!", HttpStatus.BAD_REQUEST);
