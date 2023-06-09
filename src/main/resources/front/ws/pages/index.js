@@ -170,7 +170,6 @@ function MyRequests({ userId, username, appliedFilters, setSelectedItem }) {
         </tr>
       </thead>
       <tbody>
-        {console.log(requestsData)}
         {requestsData.map(item => <tr onClick={() => handleRowClick(item)} key={item['requestId']}><td>{item['status'] == 'APPROVED' ? <div className={styles.validCircle}></div> : item['status'] == 'DENIED' ? <div className={styles.invalidCircle}></div> : <div className={styles.pendingCircle}></div>}</td>{Object.keys(item).filter(column => ['requestId', 'subjectId', 'issuerCertificateId', 'requestedDate', 'certificateType'].includes(column)).map(itemKey => <td key={`${item['subjectId']}-${itemKey}`}>{itemKey != 'issuerCertificateId' ? item[itemKey] : `...${item[itemKey] ? item[itemKey].slice(-5) : 'self signed'}`}</td>)}</tr>)}
       </tbody>
     </table>

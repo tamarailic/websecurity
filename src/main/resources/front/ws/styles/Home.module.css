@@ -85,7 +85,7 @@ p.selected {
   list-style-type: none;
 }
 
-.certInfo li{
+.certInfo li {
   margin-bottom: 1.5rem;
 }
 
@@ -224,24 +224,30 @@ p.selected {
   border-radius: 50%;
   width: 5px;
   height: 5px;
-  background-color: var(--Invalid);
+  background-color: var(--Pending);
   margin: auto;
 }
 
-@media (max-width:1800px ){
- .preview, .requestCert>*, .main_table{
+@media (max-width:1800px) {
+
+  .preview,
+  .requestCert>*,
+  .main_table {
     font-size: var(--FontSizeSmaller);
   }
 
-  .card{
+  .card {
     padding: 25px;
   }
 
-  .requestBtn, .approveBtn, .denyBtn, .accentBtn{
+  .requestBtn,
+  .approveBtn,
+  .denyBtn,
+  .accentBtn {
     font-size: 14px;
   }
 
-  .main_table td{
+  .main_table td {
     padding: 5px;
   }
 
