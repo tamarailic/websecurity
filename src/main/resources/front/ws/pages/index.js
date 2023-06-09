@@ -37,7 +37,7 @@ function HomePage() {
   return (
     <section className={styles.main_grid}>
       <AllElementsTable userId={userId} username={username} selectedSection={selectedSection} showSection={showSection} setSelectedItem={setSelectedItem} appliedFilters={appliedFilters} setAppliedFilters={setAppliedFilters} />
-      <OneElementPreview selectedItem={selectedItem} />
+      <OneElementPreview userId={userId} selectedItem={selectedItem} />
     </section >);
 }
 
@@ -123,7 +123,7 @@ function AllCertificates({ appliedFilters, setSelectedItem }) {
   if (isLoading) return <Spinner />
   if (isError) return <Error />
 
-  const certificatesData = filterResults(certificates.content, appliedFilters);
+  const certificatesData = filterResults(username, certificates.content, appliedFilters);
 
   if (certificatesData == null || certificatesData.length == 0) return null;
 
@@ -155,7 +155,7 @@ function MyRequests({ appliedFilters, setSelectedItem }) {
   if (isLoading) return <Spinner />
   if (isError) return <Error />
 
-  const requestsData = filterResults(requests, appliedFilters);
+  const requestsData = filterResults(username, requests, appliedFilters);
 
   if (requestsData == null || requestsData.length == 0) return null;
 
@@ -187,7 +187,7 @@ function ForSigning({ userId, username, appliedFilters, setSelectedItem }) {
   if (isLoading) return <Spinner />
   if (isError) return <Error />
 
-  const requestsData = filterResults(requests, appliedFilters);
+  const requestsData = filterResults(username, requests, appliedFilters);
 
   if (requestsData == null || requestsData.length == 0) return null;
 
@@ -238,7 +238,7 @@ function getAllRequestsToReview(userId) {
   }
 }
 
-function filterResults(data, filters) {
+function filterResults(username, data, filters) {
   let dataThatFulfillsFilters = JSON.parse(JSON.stringify(data))
   if (filters['search'] != null && filters['search'] != '') {
     for (let item of dataThatFulfillsFilters) {
@@ -263,12 +263,12 @@ function filterResults(data, filters) {
   return dataThatFulfillsFilters;
 }
 
-function OneElementPreview({ selectedItem }) {
+function OneElementPreview({ userId, selectedItem }) {
   if (selectedItem == undefined) {
     return null
   }
   else if (Object.keys(selectedItem).includes('serialNumber')) {
-    return <CertificatePreview selectedItem={selectedItem} />;
+    return <CertificatePreview userId={userId} selectedItem={selectedItem} />;
   }
   else if (Object.keys(selectedItem).includes('status') && selectedItem.subjectId == userId) {
     return <UserCertificateRequestPreview selectedItem={selectedItem} />
@@ -277,7 +277,7 @@ function OneElementPreview({ selectedItem }) {
   }
 }
 
-function CertificatePreview({ selectedItem }) {
+function CertificatePreview({ userId, username, selectedItem }) {
   return (<div className={`${styles.card} ${styles.preview}`} id="one_element_preview">
     <h2>Certificate</h2>
     <ul className={styles.certInfo}>
@@ -288,7 +288,7 @@ function CertificatePreview({ selectedItem }) {
       <li><span className={styles.certInfoLabel}>Type: </span><span>{selectedItem.type}</span></li>
     </ul>
     <hr />
-    {selectedItem.type != 'END' && <RequestCertificateAction issuerSerialNumber={selectedItem.serialNumber} />}
+    {selectedItem.type != 'END' && <RequestCertificateAction userId={userId} issuerSerialNumber={selectedItem.serialNumber} />}
     {selectedItem.owner == username && <InvalidateButton serialNumber={selectedItem.serialNumber} />}
     <DownloadButton serialNumber={selectedItem.serialNumber} />
   </div>)
@@ -397,7 +397,7 @@ async function denyCertificateRequest(requestId, reason) {
 }
 
 
-function RequestCertificateAction({ issuerSerialNumber }) {
+function RequestCertificateAction({ userId, issuerSerialNumber }) {
   const [selectedType, setSelectedType] = useState('INTERMEDIATE')
   const possibleCertificateTypes = ['INTERMEDIATE', 'END']
 
