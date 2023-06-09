@@ -1,23 +1,30 @@
 package com.websecurity.websecurity.controllers;
 
-import com.websecurity.websecurity.DTO.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.websecurity.websecurity.DTO.CredentialsDTO;
+import com.websecurity.websecurity.DTO.PasswordChangeDTO;
+import com.websecurity.websecurity.DTO.TokenDTO;
+import com.websecurity.websecurity.DTO.UserDTO;
 import com.websecurity.websecurity.exceptions.NonExistantUserException;
 import com.websecurity.websecurity.exceptions.VerificationTokenExpiredException;
-import com.websecurity.websecurity.DTO.UserDTO;
+import com.websecurity.websecurity.models.CaptchaResponseDTO;
 import com.websecurity.websecurity.models.PasswordChangeRequest;
 import com.websecurity.websecurity.models.User;
 import com.websecurity.websecurity.repositories.IPasswordChangeRequestRepository;
 import com.websecurity.websecurity.repositories.IUserRepository;
 import com.websecurity.websecurity.security.jwt.JwtTokenUtil;
 import com.websecurity.websecurity.services.IAuthService;
+import com.websecurity.websecurity.services.RecaptchaHelper;
 import com.websecurity.websecurity.services.email.EmailService;
 import com.websecurity.websecurity.validators.LoginValidator;
 import com.websecurity.websecurity.validators.LoginValidatorException;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -28,8 +35,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-
 import javax.annotation.security.PermitAll;
+import javax.servlet.http.HttpServletRequest;
 import javax.websocket.server.PathParam;
 import java.io.IOException;
 import java.net.URI;
@@ -54,6 +61,10 @@ public class AuthController {
     IPasswordChangeRequestRepository passwordChangeRequestRepository;
     @Autowired
     PasswordEncoder passwordEncoder;
+    @Autowired
+    RecaptchaHelper recaptchaHelper;
+    @Autowired
+    private HttpServletRequest request;
 
 
     @PermitAll
@@ -99,6 +110,13 @@ public class AuthController {
         } catch (LoginValidatorException e1) {
             return new ResponseEntity<>(e1.getMessage(), HttpStatus.BAD_REQUEST);
         }
+        try {
+            if (!isRecaptchaValid(credentialsDTO.getRecaptcha(), request.getRemoteAddr())) {
+                return new ResponseEntity<>("Invalid captcha", HttpStatus.BAD_REQUEST);
+            }
+        } catch (IOException e2) {
+            return new ResponseEntity<>(e2.getMessage(), HttpStatus.BAD_REQUEST);
+        }
 
         UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(credentialsDTO.getEmail(), credentialsDTO.getPassword());
 
@@ -118,10 +136,23 @@ public class AuthController {
         String refreshToken = jwtTokenUtil.generateRefreshToken(id, credentialsDTO.getEmail());
         TokenDTO tokens = new TokenDTO(token, refreshToken);
 
-        User user = userRepository.findByUsername(credentialsDTO.getEmail());
-
         return new ResponseEntity<TokenDTO>(tokens, HttpStatus.OK);
     }
+
+    boolean isRecaptchaValid(String value, String clientIP) throws IOException {
+        Request request = new Request.Builder()
+                .url(String.format("https://www.google.com/recaptcha/api/siteverify?secret=%s&response=%s&remoteip=%s", recaptchaHelper.getSecret(), value, clientIP))
+                .build();
+        OkHttpClient client = new OkHttpClient();
+
+        try (Response response = client.newCall(request).execute()) {
+            String responseString = response.body().string();
+            ObjectMapper objectMapper = new ObjectMapper();
+            CaptchaResponseDTO captcha = objectMapper.readValue(responseString, CaptchaResponseDTO.class);
+            return captcha.isSuccess();
+        }
+    }
+
 
     @GetMapping("/verify")
     public ResponseEntity<?> verifyUser(@RequestParam("token") String code) {
@@ -210,7 +241,7 @@ public class AuthController {
         if (currentRequest == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-        if (passwordEncoder.matches(dto.getPassword(),currentRequest.getUser().getPassword()))
+        if (passwordEncoder.matches(dto.getPassword(), currentRequest.getUser().getPassword()))
             return new ResponseEntity<>("Password must be different then the old one", HttpStatus.BAD_REQUEST);
         currentRequest.getUser().setPassword(passwordEncoder.encode(dto.getPassword()));
         userRepository.save(currentRequest.getUser());

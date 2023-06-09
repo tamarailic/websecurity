@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useSWR from 'swr'
-import PageContainer from "@/components/pageContainer"
+import PageContainer, { getUserId, getUserRoles, getUsername } from "@/components/pageContainer"
 import styles from "@/styles/Home.module.css"
 import Image from "next/image";
 
@@ -9,10 +9,6 @@ import Spinner from "@/components/spinner";
 import Error from "@/components/error";
 
 const fetcher = (...args) => fetch(...args).then(res => res.json());
-
-// Just mocked data -> should be replaced with data from JWT
-const userId = '6447f68495bfc35b4f3eb745';
-const username = 'tamarailic11@gmail.com';
 
 export default function Home() {
   return (<PageContainer>
@@ -25,6 +21,14 @@ function HomePage() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [appliedFilters, setAppliedFilters] = useState({ search: null, type: null, onlyMy: false });
 
+  const [userId, setUserId] = useState();
+  const [username, setUsername] = useState();
+
+  useEffect(() => {
+    setUserId(getUserId());
+    setUsername(getUsername());
+  }, [])
+
   function showSection(i) {
     setSelectedSection(i);
     setSelectedItem(null);
@@ -32,17 +36,17 @@ function HomePage() {
 
   return (
     <section className={styles.main_grid}>
-      <AllElementsTable selectedSection={selectedSection} showSection={showSection} setSelectedItem={setSelectedItem} appliedFilters={appliedFilters} setAppliedFilters={setAppliedFilters} />
+      <AllElementsTable userId={userId} username={username} selectedSection={selectedSection} showSection={showSection} setSelectedItem={setSelectedItem} appliedFilters={appliedFilters} setAppliedFilters={setAppliedFilters} />
       <OneElementPreview selectedItem={selectedItem} />
     </section >);
 }
 
-function AllElementsTable({ selectedSection, showSection, setSelectedItem, appliedFilters, setAppliedFilters }) {
+function AllElementsTable({ userId, username, selectedSection, showSection, setSelectedItem, appliedFilters, setAppliedFilters }) {
   return (
     <div className={styles.card} id="all_elements_table">
       <ToggleOptions selectedSection={selectedSection} showSection={showSection} />
       <FilterOptions appliedFilters={appliedFilters} setAppliedFilters={setAppliedFilters} />
-      <MainArea selectedSection={selectedSection} appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
+      <MainArea userId={userId} username={username} selectedSection={selectedSection} appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
     </div>
   );
 }
@@ -93,14 +97,14 @@ function FilterOptions({ appliedFilters, setAppliedFilters }) {
   );
 }
 
-function MainArea({ selectedSection, appliedFilters, setSelectedItem }) {
+function MainArea({ userId, username, selectedSection, appliedFilters, setSelectedItem }) {
   let tableToRender = null;
   if (selectedSection == 0) {
     tableToRender = <AllCertificates appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
   } else if (selectedSection == 1) {
     tableToRender = <MyRequests appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
   } else if (selectedSection == 2) {
-    tableToRender = <ForSigning appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
+    tableToRender = <ForSigning userId={userId} username={username} appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
   }
   return (
     <div id="main_area">
@@ -173,7 +177,7 @@ function MyRequests({ appliedFilters, setSelectedItem }) {
   );
 }
 
-function ForSigning({ appliedFilters, setSelectedItem }) {
+function ForSigning({ userId, username, appliedFilters, setSelectedItem }) {
   function handleRowClick(certificate) {
     setSelectedItem(certificate);
   }

@@ -35,5 +35,13 @@ export function getUserRoles() {
     return jwtDecode(getAccessToken()).role[0].name;
 }
 
+export function getUserId() {
+    return jwtDecode(getAccessToken()).id;
+}
+
+export function getUsername() {
+    return jwtDecode(getAccessToken()).sub;
+}
+
 applyAuthTokenInterceptor(axiosInstance, { requestRefresh });  // Notice that this uses the axiosInstance instance.  <-- important
 
