@@ -4,7 +4,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 import styles from "@/styles/LoginRegistration.module.css"
 import { backUrl, axiosInstance } from "@/components/pageContainer";
-import { useState } from "react";
+import Link from 'next/link';
 
 const codeRegExp = /^[0-9]{7}$/
 export default Register;
@@ -29,15 +29,8 @@ function Register() {
     const { register, handleSubmit, formState } = useForm(formOptions);
     const { errors } = formState;
 
-    async function onSubmit(formData) {
-
-        try {
-            const response = await axiosInstance.post(`${backUrl}/api/auth/change`, formData);
-            console.log(response.status);
-        }
-        catch (e) {
-            console.log(e);
-        }
+    function onSubmit(formData) {
+        axiosInstance.post(`${backUrl}/api/auth/change`, formData).then().catch();
     }
 
     return (
@@ -66,7 +59,7 @@ function Register() {
                         {errors.confirmation && <div className={styles.invalidFeedback}>{errors.confirmation?.message}</div>}
                         <div className={styles.btnContainerRegistration}>
                             <div className={styles.noLinkContainer}>
-                                <a href="/login" className={styles.noLink}>Cancel registration</a>
+                                <Link href="/login" className={styles.noLink}>Back to login</Link>
                             </div>
                             <button disabled={formState.isSubmitting} className={styles.loginBtn}>
                                 Reset password

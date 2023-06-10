@@ -5,6 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import styles from "@/styles/LoginRegistration.module.css"
 import { axiosInstance, backUrl } from "@/components/pageContainer";
+import Link from "next/link";
 
 export default ChangePw;
 
@@ -22,16 +23,8 @@ function ChangePw() {
     const { register, handleSubmit, formState } = useForm(formOptions);
     const { errors } = formState;
 
-    async function onSubmit(formData) {
-
-        try {
-            const response = await axiosInstance.get(`${backUrl}/api/auth/change`, { params: { username: formData.username } });
-            console.log(response.status);
-        } catch (e) {
-            console.log(e);
-        }
-
-
+    function onSubmit(formData) {
+        axiosInstance.get(`${backUrl}/api/auth/change`, { params: { username: formData.username } }).then().catch();
     }
 
     return (
@@ -48,7 +41,7 @@ function ChangePw() {
                         {errors.username && <div className={styles.invalidFeedback}>{errors.username?.message}</div>}
                         <div className={styles.btnContainerRegistration}>
                             <div className={styles.noLinkContainer}>
-                                <a href="/login" className={styles.noLink}>Cancel registration</a>
+                                <Link href="/login" className={styles.noLink}>Cancel registration</Link>
                             </div>
                             <button disabled={formState.isSubmitting} className={styles.loginBtn}>
                                 Reset password

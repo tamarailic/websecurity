@@ -8,9 +8,8 @@ import com.websecurity.websecurity.models.User;
 
 public interface IAuthService {
     User registerUser(UserDTO dto);
-
     void setRoles();
     boolean verify(String verificationToken) throws VerificationTokenExpiredException, NonExistantUserException;
-
     void generatePasswordChangeRequest(User user);
+    User registerOauthUser(UserDTO dto);
 }

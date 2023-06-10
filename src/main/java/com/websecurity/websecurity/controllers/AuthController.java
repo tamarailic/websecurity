@@ -1,13 +1,9 @@
 package com.websecurity.websecurity.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.websecurity.websecurity.DTO.CredentialsDTO;
-import com.websecurity.websecurity.DTO.PasswordChangeDTO;
-import com.websecurity.websecurity.DTO.TokenDTO;
-import com.websecurity.websecurity.DTO.UserDTO;
+import com.websecurity.websecurity.DTO.*;
 import com.websecurity.websecurity.exceptions.NonExistantUserException;
 import com.websecurity.websecurity.exceptions.VerificationTokenExpiredException;
-import com.websecurity.websecurity.models.CaptchaResponseDTO;
 import com.websecurity.websecurity.models.PasswordChangeRequest;
 import com.websecurity.websecurity.models.User;
 import com.websecurity.websecurity.repositories.IPasswordChangeRequestRepository;
@@ -147,7 +143,7 @@ public class AuthController {
         return new ResponseEntity<TokenDTO>(tokens, HttpStatus.OK);
     }
 
-    boolean isRecaptchaValid(String value, String clientIP) throws IOException {
+    private boolean isRecaptchaValid(String value, String clientIP) throws IOException {
         Request request = new Request.Builder()
                 .url(String.format("https://www.google.com/recaptcha/api/siteverify?secret=%s&response=%s&remoteip=%s", recaptchaHelper.getSecret(), value, clientIP))
                 .build();
@@ -160,7 +156,6 @@ public class AuthController {
             return captcha.isSuccess();
         }
     }
-
 
     @GetMapping("/verify")
     public ResponseEntity<?> verifyUser(@RequestParam("token") String code) {
@@ -201,7 +196,7 @@ public class AuthController {
 
     @PermitAll
     @PostMapping(value = "/refreshToken")
-    public ResponseEntity<TokenDTO> refreshtoken(@RequestBody String refreshToken) throws Exception {
+    public ResponseEntity<TokenDTO> refreshToken(@RequestBody String refreshToken) throws Exception {
         // From the HttpRequest get the claims
         refreshToken = refreshToken.replace("\"", "");
         refreshToken = refreshToken.replace("{", "");
@@ -259,10 +254,33 @@ public class AuthController {
 
     @PermitAll
     @GetMapping
-    public ResponseEntity<?> create() {
+    public ResponseEntity<?> createNew() {
         authService.setRoles();
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PermitAll
+    @PostMapping("/creteOrLogin")
+    public ResponseEntity<?> oauth(@RequestBody OauthInfoDTO oauthInfoDTO) {
+        User user = userRepository.findByUsername(oauthInfoDTO.getUsername());
+        if (user != null) {
+            String token = jwtTokenUtil.generateToken(user.getId(), user.getUsername(), user.getAuthorities());
+            String refreshToken = jwtTokenUtil.generateRefreshToken(user.getId(), user.getUsername());
+            TokenDTO tokens = new TokenDTO(token, refreshToken);
 
+            return new ResponseEntity<TokenDTO>(tokens, HttpStatus.OK);
+        }
+
+        try {
+            user = authService.registerOauthUser(new UserDTO(oauthInfoDTO));
+        } catch (Exception e) {
+            return new ResponseEntity<>("Invalid data", HttpStatus.BAD_REQUEST);
+        }
+
+        String token = jwtTokenUtil.generateToken(user.getId(), user.getUsername(), user.getAuthorities());
+        String refreshToken = jwtTokenUtil.generateRefreshToken(user.getId(), user.getUsername());
+        TokenDTO tokens = new TokenDTO(token, refreshToken);
+
+        return new ResponseEntity<TokenDTO>(tokens, HttpStatus.OK);
+    }
 }

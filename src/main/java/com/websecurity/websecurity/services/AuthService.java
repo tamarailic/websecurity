@@ -68,6 +68,15 @@ public class AuthService implements IAuthService {
     }
 
     @Override
+    public User registerOauthUser(UserDTO dto) {
+        User newUser = createNewOauthUser(dto);
+
+        newUser = userRepository.save(newUser);
+
+        return newUser;
+    }
+
+    @Override
     public boolean verify(String verificationToken) throws VerificationTokenExpiredException, NonExistantUserException {
         Date expiration = jwtTokenUtil.getExpirationDateFromToken(verificationToken);
         if (expiration.before(new Date())) {
@@ -85,7 +94,6 @@ public class AuthService implements IAuthService {
 
 
     private User createNewUser(UserDTO userDTO) {
-
         User newUser = userDTO.toUser();
         newUser.setActive(false);
         newUser.setNonLocked(true);
@@ -96,6 +104,18 @@ public class AuthService implements IAuthService {
 
         String encodedPassword = passwordEncoder.encode(userDTO.password);
         newUser.setPassword(encodedPassword);
+        return newUser;
+    }
+
+    private User createNewOauthUser(UserDTO userDTO){
+        User newUser = userDTO.toUser();
+        newUser.setActive(true);
+        newUser.setNonLocked(true);
+        newUser.setEnabled(true);
+        newUser.setCredentialsExpiry(LocalDateTime.now().plusDays(7));
+        List<Role> roles = roleRepository.findByName("user");
+        newUser.setRoles(roles);
+        newUser.setPassword("");
         return newUser;
     }
 

@@ -1,4 +1,4 @@
-package com.websecurity.websecurity.models;
+package com.websecurity.websecurity.DTO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
