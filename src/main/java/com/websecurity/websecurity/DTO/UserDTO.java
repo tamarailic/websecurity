@@ -29,6 +29,12 @@ public class UserDTO {
         this.emailValidation = emailValidation;
     }
 
+    public UserDTO(OauthInfoDTO oauth) {
+        this.name = oauth.getFullName().split(" ")[0];
+        this.surname = oauth.getFullName().split(" ")[1];
+        this.username = oauth.getUsername();
+    }
+
     public UserDTO(String name, String surname, String username, String password) {
         this.name = name;
         this.surname = surname;

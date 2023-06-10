@@ -3,6 +3,8 @@ import NavBar from "./navBar";
 import { IAuthTokens, TokenRefreshRequest, applyAuthTokenInterceptor, getBrowserLocalStorage, getAccessToken } from 'axios-jwt'
 import axios from 'axios'
 import jwtDecode from "jwt-decode";
+import https from 'https';
+
 
 export const backUrl = 'https://localhost:8443';
 
@@ -22,7 +24,12 @@ export default function PageContainer({ children }) {
 
 
 // 1. Create an axios instance that you wish to apply the interceptor to
-export const axiosInstance = axios.create({ baseURL: backUrl })
+export const axiosInstance = axios.create({
+    baseURL: backUrl,
+    httpsAgent: new https.Agent({
+        rejectUnauthorized: false,
+    }),
+})
 
 // 2. Define token refresh function.
 const requestRefresh = (refresh) => {

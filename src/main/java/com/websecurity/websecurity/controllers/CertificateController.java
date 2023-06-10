@@ -1,6 +1,7 @@
 package com.websecurity.websecurity.controllers;
 
 import com.websecurity.websecurity.DTO.*;
+import com.websecurity.websecurity.logging.WSLogger;
 import com.websecurity.websecurity.services.ICertificateRequestService;
 import com.websecurity.websecurity.services.ICertificateValidityService;
 import com.websecurity.websecurity.services.IUploadDownloadCertificateService;
@@ -73,6 +74,7 @@ public class CertificateController {
 
     @PermitAll
     @GetMapping("/all")
+    @WSLogger
     public Page<CertificateToShowDTO> getAllCertificates(Pageable pageable) {
         return certificateRequestService.getAll(pageable);
     }

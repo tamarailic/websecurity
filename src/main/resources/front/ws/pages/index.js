@@ -3,6 +3,7 @@ import useSWR from 'swr'
 import PageContainer, { getUserId, getUserRoles, getUsername } from "@/components/pageContainer"
 import styles from "@/styles/Home.module.css"
 import Image from "next/image";
+import { useSession, signIn, signOut } from "next-auth/react"
 
 import { backUrl } from "@/components/pageContainer";
 import Spinner from "@/components/spinner";
@@ -23,16 +24,29 @@ function HomePage() {
 
   const [userId, setUserId] = useState();
   const [username, setUsername] = useState();
+  const { data: session } = useSession()
 
   useEffect(() => {
-    setUserId(getUserId());
-    setUsername(getUsername());
-  }, [])
+    if (session) {
+      setUsername(session.user.email);
+    }
+    try {
+      setUserId(getUserId());
+      setUsername(getUsername());
+    } catch {
+
+    }
+  }, [session])
 
   function showSection(i) {
     setSelectedSection(i);
     setSelectedItem(null);
   }
+
+  if (session) {
+
+  }
+
 
   return (
     <section className={styles.main_grid}>

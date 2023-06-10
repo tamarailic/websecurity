@@ -1,57 +1,62 @@
-.card{
+.card {
     margin: 0 auto;
     width: 80%;
     padding: 2rem;
 }
 
-.card > h1{
+.card a {
+    color: var(--Pending);
+}
+
+.card>h1 {
     margin-bottom: 0;
 }
 
-.cardHeader{
-   text-align: center;
+.cardHeader {
+    text-align: center;
 }
 
-.subtitle{
+.subtitle {
     font-size: var(--FontSize);
     margin-top: 0;
 }
 
-.cardBody{
-  margin: 0 auto;
-  padding: 1rem;;
-  width: 45%;
+.cardBody {
+    margin: 0 auto;
+    padding: 1rem;
+    ;
+    width: 45%;
 }
 
-.formControl{
+.formControl {
     width: 20vw;
     margin: 1rem 0 1rem 1rem;
-    border-color: 1px solid var(--DarkGray);
+    border: 1px solid var(--DarkGray);
     border-radius: 8px;
     padding: 0.5rem 1rem;
 }
 
-.formGroup{
-     display: flex;
+.formGroup {
+    display: flex;
 }
 
-.formGroup > label{
+.formGroup>label {
     margin: 1rem;
     margin-right: auto;
 }
 
 
-.isInvalid{
-   border: 1px solid red;
+.isInvalid {
+    border: 1px solid red;
     border-radius: 8px;
 }
 
-.invalidFeedback{
+.invalidFeedback {
     color: red;
     text-align: right;
 }
 
-.loginBtn{
+.loginBtn {
     font-size: var(--NavbarFontSize);
     font-weight: 500;
     text-decoration: none;
@@ -60,32 +65,80 @@
     color: #fff;
     padding: 0.25rem 1rem;
     border: 1px solid #000;
+    cursor: pointer;
+    transition: all 250ms;
 }
 
-.btnContainerLogin{
+.loginBtn:hover {
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.24);
+}
+
+.btnContainerLogin {
     margin: 1rem 0;
     display: flex;
     justify-content: flex-end;
 }
 
-.btnContainerRegistration{
+.btnContainerRegistration {
     margin: 2rem 0;
     display: flex;
 }
 
-.noLinkContainer{
+.noLinkContainer {
     margin-right: auto;
     margin-left: 1rem;
 }
 
-.noLink{
+.noLink {
     color: #000;
- }
+}
 
- .checkBox{
+.checkBox {
     margin: 1rem;
- }
+}
 
- .checkBox > input{
+.checkBox>input {
     margin-left: 2rem;
- }
+}
+
+.ouathContainer {
+    margin: auto;
+    text-align: center;
+    margin-top: 50px;
+    border-top: 1px solid rgba(0, 0, 0, .1);
+    width: 80%;
+}
+
+.ouathContainer h3 {
+    font-size: 1.4rem;
+}
+
+.recaptcha {
+    margin: 30px auto;
+    display: flex;
+    justify-content: center;
+}
+
+.git {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--DarkGray);
+    border-radius: 6px;
+    cursor: pointer;
+    gap: 10px;
+    padding: 14px 20px;
+    max-width: 300px;
+    margin: auto;
+    transition: all 250ms;
+}
+
+.git:hover {
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.24);
+}
+
+.git p {
+    font-size: 1.4rem;
+    margin: 0;
+}

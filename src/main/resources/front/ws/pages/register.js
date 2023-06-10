@@ -6,6 +6,7 @@ import styles from "@/styles/LoginRegistration.module.css"
 import { backUrl, axiosInstance } from "@/components/pageContainer";
 import { useRef, useState } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
+import Link from 'next/link';
 
 const phoneRegExp = /^[+]?[(]?[0-9]{3}[)]?[-s.]?[0-9]{3}[-s.]?[0-9]{4,6}$/
 export default Register;
@@ -108,7 +109,7 @@ function Register() {
                         />
                         <div className={styles.btnContainerRegistration}>
                             <div className={styles.noLinkContainer}>
-                                <a href="/login" className={styles.noLink}>Have an account? Login</a>
+                                <Link href="/login" className={styles.noLink}>Have an account? Login</Link>
                             </div>
                             <button disabled={formState.isSubmitting} className={styles.loginBtn}>
                                 Register

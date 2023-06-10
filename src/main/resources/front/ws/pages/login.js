@@ -7,12 +7,17 @@ import { backUrl, axiosInstance, getUserId } from "@/components/pageContainer";
 import { setAuthTokens } from "axios-jwt";
 import { useRef } from 'react';
 import styles from "@/styles/LoginRegistration.module.css"
+import { useSession, signIn, signOut } from "next-auth/react"
+import Image from 'next/image';
+import Link from 'next/link';
 
 export default Login;
 
 function Login() {
     const router = useRouter();
     const recaptchaRef = useRef();
+
+    const { data: session } = useSession();
 
     // form validation rules
     const validationSchema = Yup.object().shape({
@@ -48,6 +53,8 @@ function Login() {
         recaptchaRef.current.reset();
     }
 
+    if (session) router.replace('/');
+
     return (
         <div>
             <div className={styles.card}>
@@ -68,10 +75,13 @@ function Login() {
 
                         </div>
                         {errors.username && <div className={styles.invalidFeedback}>{errors.password?.message}</div>}
-                        <ReCAPTCHA
-                            ref={recaptchaRef}
-                            sitekey="6LfEWIMmAAAAAG_1ZepVg757CP01pC-qakTTNByI"
-                        />
+                        <div className={styles.recaptcha}>
+                            <ReCAPTCHA
+                                ref={recaptchaRef}
+                                sitekey="6LfEWIMmAAAAAG_1ZepVg757CP01pC-qakTTNByI"
+                            />
+                        </div>
+
                         <div className={styles.btnContainerLogin}>
                             <button disabled={formState.isSubmitting} className={styles.loginBtn}>
                                 Login
@@ -79,12 +89,22 @@ function Login() {
                         </div>
 
                         <div >
-                            <p>Don't have account? <a href="/register">Register</a></p>
+                            <p>Don't have account? <Link href="/register">Register</Link></p>
                         </div>
                         <div>
-                            <p>Forgot password? <a href="/forgot-password" >Reset password</a></p>
+                            <p>Forgot password? <Link href="/forgot-password" >Reset password</Link></p>
                         </div>
                     </form>
+
+                    <div className={styles.ouathContainer}>
+                        <h3>OAuth</h3>
+                        <div className={styles.git} onClick={() => signIn("github")}>
+                            <p>GitHub</p>
+                            <div>
+                                <Image src='/images/github.png' alt='GitHub' width={30} height={30} />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div >
         </div >
