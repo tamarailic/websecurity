@@ -113,6 +113,9 @@ public class CertificateRequestService implements ICertificateRequestService {
 
     @Override
     public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequestsToReview(Principal user) {
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User doesn't exist");
+        }
         User currentUser = userRepository.findUserByUsername(user.getName()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "User doesn't exist"));
         Set<Certificate> userCertificates = certificateRepository.findAllByOwnerId(currentUser.getId());
         Set<CertificateRequest> certificateRequestsToReview = new HashSet<>();

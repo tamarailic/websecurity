@@ -1,20 +1,15 @@
 import Link from 'next/link';
 import navStyle from '../styles/Navbar.module.css'
 import Image from 'next/image';
-import { useSession, signOut } from "next-auth/react"
+import { signOut } from "next-auth/react"
 import { clearAuthTokens } from "axios-jwt";
 import Router from 'next/router';
 
 export default function NavBar() {
-    const { data: session } = useSession();
-
-    async function logOut() {
-        if (session) {
-            await signOut();
-        } else {
-            clearAuthTokens();
-            localStorage.clear();
-        }
+    function logOut() {
+        signOut();
+        clearAuthTokens();
+        localStorage.clear();
         Router.push("/login");
     }
 

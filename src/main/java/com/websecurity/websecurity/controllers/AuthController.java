@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.websecurity.websecurity.DTO.*;
 import com.websecurity.websecurity.exceptions.NonExistantUserException;
 import com.websecurity.websecurity.exceptions.VerificationTokenExpiredException;
+import com.websecurity.websecurity.logging.WSLoggerAuth;
 import com.websecurity.websecurity.models.PasswordChangeRequest;
 import com.websecurity.websecurity.models.User;
 import com.websecurity.websecurity.repositories.IPasswordChangeRequestRepository;
@@ -65,46 +66,48 @@ public class AuthController {
 
     @PermitAll
     @PostMapping("/register")
-    public ResponseEntity<?> create(@RequestBody UserDTO dto) {
+    @WSLoggerAuth
+    public ResponseEntity<?> registerNewUser(@RequestBody UserDTO userDTO) {
         try {
-            LoginValidator.validateRequired(dto.getName(), "name");
-            LoginValidator.validateRequired(dto.getSurname(), "surname");
-            LoginValidator.validateRequired(dto.getUsername(), "email");
-            LoginValidator.validateRequired(dto.getPassword(), "password");
+            LoginValidator.validateRequired(userDTO.getName(), "name");
+            LoginValidator.validateRequired(userDTO.getSurname(), "surname");
+            LoginValidator.validateRequired(userDTO.getUsername(), "email");
+            LoginValidator.validateRequired(userDTO.getPassword(), "password");
 
-            LoginValidator.validateLength(dto.getName(), "name", 100);
-            LoginValidator.validateLength(dto.getSurname(), "surname", 100);
-            LoginValidator.validateLength(dto.getUsername(), "email", 100);
+            LoginValidator.validateLength(userDTO.getName(), "name", 100);
+            LoginValidator.validateLength(userDTO.getSurname(), "surname", 100);
+            LoginValidator.validateLength(userDTO.getUsername(), "email", 100);
 
-            LoginValidator.validatePattern(dto.getPassword(), "password", "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
+            LoginValidator.validatePattern(userDTO.getPassword(), "password", "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
         } catch (LoginValidatorException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
         try {
-            if (!isRecaptchaValid(dto.getRecaptcha(), request.getRemoteAddr())) {
+            if (!isRecaptchaValid(userDTO.getRecaptcha(), request.getRemoteAddr())) {
                 return new ResponseEntity<>("Invalid captcha", HttpStatus.BAD_REQUEST);
             }
         } catch (IOException e2) {
             return new ResponseEntity<>(e2.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
-        User userWithThisEmail = userRepository.findByUsername(dto.getUsername());
+        User userWithThisEmail = userRepository.findByUsername(userDTO.getUsername());
         if (userWithThisEmail != null) {
             return new ResponseEntity<>("User with that email already exists!", HttpStatus.BAD_REQUEST);
         }
 
         try {
-            authService.registerUser(dto);
+            authService.registerUser(userDTO);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        dto.password = "";
-        return new ResponseEntity<>(dto, HttpStatus.OK);
+        userDTO.password = "";
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
     @PermitAll
     @PostMapping("/login")
+    @WSLoggerAuth
     public ResponseEntity<?> login(@RequestBody CredentialsDTO credentialsDTO) {
         try {
             LoginValidator.validateRequired(credentialsDTO.getEmail(), "email");
@@ -208,7 +211,6 @@ public class AuthController {
 
         if (jwtTokenUtil.validateToken(refreshToken, user)) {
             String token = jwtTokenUtil.generateToken(user.getId(), user.getUsername(), user.getAuthorities());
-            System.out.println("Refreshed token");
             TokenDTO tokenDTO = new TokenDTO(token, refreshToken);
             return new ResponseEntity<>(tokenDTO, HttpStatus.OK);
 
@@ -261,7 +263,8 @@ public class AuthController {
 
     @PermitAll
     @PostMapping("/creteOrLogin")
-    public ResponseEntity<?> oauth(@RequestBody OauthInfoDTO oauthInfoDTO) {
+    @WSLoggerAuth
+    public ResponseEntity<?> loginWithOAuth(@RequestBody OauthInfoDTO oauthInfoDTO) {
         User user = userRepository.findByUsername(oauthInfoDTO.getUsername());
         if (user != null) {
             String token = jwtTokenUtil.generateToken(user.getId(), user.getUsername(), user.getAuthorities());

@@ -19,7 +19,6 @@ import java.io.IOException;
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-    protected final Log LOGGER = LogFactory.getLog(getClass());
     private UserDetailsService userDetailsService;
     private JwtTokenUtil tokenUtil;
 
@@ -67,13 +66,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 allowForRefreshToken(ex, request, authToken);
             }
         } catch (AuthenticationCredentialsNotFoundException ex) {
-            System.out.println(ex);
+            //throw new AuthenticationCredentialsNotFoundException("bi");
         }
         chain.doFilter(request, response);
     }
 
     private void allowForRefreshToken(ExpiredJwtException ex, HttpServletRequest request, String authToken) {
-
         UserDetails userDetails = userDetailsService.loadUserByUsername(tokenUtil.getEmailFromToken(authToken));
         // create a UsernamePasswordAuthenticationToken with null values.
         TokenBasedAuthentication authentication = new TokenBasedAuthentication(userDetails);
@@ -82,6 +80,5 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         // Set the claims so that in controller we will be using it to create
         // new JWT
         request.setAttribute("claims", ex.getClaims());
-
     }
 }
