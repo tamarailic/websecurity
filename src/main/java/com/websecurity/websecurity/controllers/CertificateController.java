@@ -8,10 +8,12 @@ import com.websecurity.websecurity.services.IUploadDownloadCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.annotation.security.PermitAll;
 import java.security.Principal;
@@ -30,23 +32,27 @@ public class CertificateController {
     private IUploadDownloadCertificateService uploadDownloadCertificateService;
 
     @PostMapping("/request")
+    @WSLogger
     public CertificateRequestResponseDTO createCertificateRequest(@RequestBody CertificateRequestDTO certificateRequestDTO, Authentication token) {
         UserDetails userDetails = (UserDetails) token.getPrincipal();
         String role = userDetails.getAuthorities().stream().collect(Collectors.toList()).get(0).getAuthority();
-        if(role.equals("admin")){
+        if (role.equals("admin")) {
             return certificateRequestService.createCertificateRequestForAdmin(userDetails.getUsername(), certificateRequestDTO);
-        }else{
+        } else {
             return certificateRequestService.createCertificateRequestForUser(userDetails.getUsername(), certificateRequestDTO);
         }
     }
 
     @GetMapping("/all-certificate-requests")
     public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequests(Authentication token) {
+        if (token == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token missing");
+        }
         UserDetails userDetails = (UserDetails) token.getPrincipal();
         String role = userDetails.getAuthorities().stream().collect(Collectors.toList()).get(0).getAuthority();
-        if(role.equals("admin")) {
+        if (role.equals("admin")) {
             return certificateRequestService.getAllCertificateRequests();
-        }else{
+        } else {
             return certificateRequestService.getAllUsersCertificateRequests(userDetails.getUsername());
         }
     }
@@ -57,12 +63,14 @@ public class CertificateController {
     }
 
     @PutMapping("/approve/{requestId}")
-    public CertificateToShowDTO approveRequest(@PathVariable String requestId) {
+    @WSLogger
+    public CertificateToShowDTO approveRequestForCertificate(@PathVariable String requestId) {
         return certificateRequestService.approveSigningRequest(requestId);
     }
 
     @PutMapping("/deny/{requestId}")
-    public void denyRequest(@PathVariable String requestId, @RequestBody ReasonDTO reasonDTO) {
+    @WSLogger
+    public void denyRequestForCertificate(@PathVariable String requestId, @RequestBody ReasonDTO reasonDTO) {
         certificateRequestService.denySigningRequest(requestId, reasonDTO);
     }
 
@@ -84,16 +92,19 @@ public class CertificateController {
     }
 
     @GetMapping("/download-certificate/{certificateSerialNumber}")
+    @WSLogger
     public DownloadCertificateDTO downloadCertificate(@PathVariable String certificateSerialNumber) {
         return uploadDownloadCertificateService.downloadCertificate(certificateSerialNumber);
     }
 
     @GetMapping("/download-privateKey/{certificateSerialNumber}")
+    @WSLogger
     public DownloadPrivateKeyDTO downloadPrivateKey(@PathVariable String certificateSerialNumber, Principal user) {
         return uploadDownloadCertificateService.downloadPrivateKey(certificateSerialNumber, user);
     }
 
     @PutMapping("/withdraw/{certificateSerialNumber}")
+    @WSLogger
     public CertificateToShowDTO withdrawCertificate(@PathVariable String certificateSerialNumber, @RequestBody ReasonDTO reason) {
         return certificateRequestService.withdrawCertificateById(certificateSerialNumber, reason);
     }

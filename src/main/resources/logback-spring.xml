@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration debug="true">
 
-    <logger name="com.websecurity.websecurity.logging.WS" level="INFO"/>
+    <logger name="com.websecurity.websecurity.logging" level="INFO"/>
 
     <property name="LOGS" value="./src/main/resources/logs"/>
     <!-- Include Spring Boot default configuration -->

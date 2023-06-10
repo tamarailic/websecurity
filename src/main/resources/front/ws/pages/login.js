@@ -4,7 +4,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 import ReCAPTCHA from "react-google-recaptcha";
 import { backUrl, axiosInstance, getUserId } from "@/components/pageContainer";
-import { setAuthTokens } from "axios-jwt";
+import { getAccessToken, setAuthTokens } from "axios-jwt";
 import { useRef } from 'react';
 import styles from "@/styles/LoginRegistration.module.css"
 import { useSession, signIn, signOut } from "next-auth/react"
@@ -53,7 +53,30 @@ function Login() {
         recaptchaRef.current.reset();
     }
 
-    if (session) router.replace('/');
+    if (session) {
+        try {
+            if (getAccessToken() == null) {
+                axiosInstance.post(`${backUrl}/api/auth/creteOrLogin`, { 'username': session.user.email, 'fullName': session.user.name })
+                    .then(resp => {
+                        if (resp.status.isError) {
+                            console.log(resp);
+                        } else {
+                            setAuthTokens({
+                                accessToken: resp.data.accessToken,
+                                refreshToken: resp.data.refreshToken
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            }
+            router.push('/');
+        } catch {
+            ;
+        }
+
+    }
 
     return (
         <div>
@@ -106,7 +129,7 @@ function Login() {
                         </div>
                     </div>
                 </div>
-            </div >
-        </div >
+            </div>
+        </div>
     );
 }

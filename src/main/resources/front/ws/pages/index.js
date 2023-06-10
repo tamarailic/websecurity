@@ -2,16 +2,25 @@ import { useEffect, useRef, useState } from "react";
 import PageContainer, { axiosInstance, getUserId, getUserRoles, getUsername } from "@/components/pageContainer"
 import styles from "@/styles/Home.module.css"
 import Image from "next/image";
-import { useSession, signIn, signOut } from "next-auth/react"
+import { useSession } from "next-auth/react"
 import { backUrl } from "@/components/pageContainer";
-
-
-const fetcher = (...args) => fetch(...args).then(res => res.json());
+import { getAccessToken } from "axios-jwt";
+import { useRouter } from "next/router";
 
 export default function Home() {
-  return (<PageContainer>
-    <HomePage />
-  </PageContainer>);
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!session && getAccessToken() == null) {
+      router.replace("/login");
+    }
+  }, [])
+
+  return (
+    <PageContainer>
+      <HomePage />
+    </PageContainer>);
 }
 
 function HomePage() {
@@ -39,11 +48,6 @@ function HomePage() {
     setSelectedSection(i);
     setSelectedItem(null);
   }
-
-  if (session) {
-
-  }
-
 
   return (
     <section className={styles.main_grid}>
@@ -214,15 +218,15 @@ function ForSigning({ requests, username, appliedFilters, setSelectedItem }) {
 }
 
 function getAllCertificates(setCertificates) {
-  axiosInstance.get(`${backUrl}/api/certificate/all`).then(response => { console.log("1", response.data); setCertificates(response.data.content) });
+  axiosInstance.get(`${backUrl}/api/certificate/all`).then(response => setCertificates(response.data.content)).catch(err => console.log("all error"));
 }
 
 function getAllUserRequests(setRequests) {
-  axiosInstance.get(`${backUrl}/api/certificate/all-certificate-requests`).then(response => { console.log("2", response.data); setRequests(response.data) });
+  axiosInstance.get(`${backUrl}/api/certificate/all-certificate-requests`).then(response => setRequests(response.data)).catch(err => console.log("all error"));
 }
 
 function getAllRequestsToReview(setReviews) {
-  axiosInstance.get(`${backUrl}/api/certificate/all-requests-to-review`).then(response => { console.log("3", response.data); setReviews(response.data) });
+  axiosInstance.get(`${backUrl}/api/certificate/all-requests-to-review`).then(response => setReviews(response.data)).catch(err => console.log("all error"));
 }
 
 function filterResults(username, data, filters) {

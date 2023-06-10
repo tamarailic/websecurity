@@ -2,7 +2,6 @@ import { axiosInstance, backUrl } from "@/components/pageContainer";
 import NextAuth from "next-auth"
 import GithubProvider from "next-auth/providers/github"
 import { setAuthTokens } from "axios-jwt";
-import Router from "next/router";
 
 export const authOptions = {
   // Configure one or more authentication providers
