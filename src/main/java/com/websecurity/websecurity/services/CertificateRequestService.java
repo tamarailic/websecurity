@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashSet;
@@ -42,8 +43,8 @@ public class CertificateRequestService implements ICertificateRequestService {
 
 
     @Override
-    public CertificateRequestResponseDTO createCertificateRequestForUser(String userId, CertificateRequestDTO certificateRequestDTO) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
+    public CertificateRequestResponseDTO createCertificateRequestForUser(String username, CertificateRequestDTO certificateRequestDTO) {
+        User user = userRepository.findUserByUsername(username).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
 
         if (!certificateRequestDTO.getCertificateType().equals("INTERMEDIATE") & !certificateRequestDTO.getCertificateType().equals("END")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid certificate type requested.");
@@ -53,7 +54,7 @@ public class CertificateRequestService implements ICertificateRequestService {
 
         validateCertificateRequest(certificateRequestDTO.getCertificateType(), certificate);
 
-        CertificateRequest certificateRequest = new CertificateRequest(certificateRequestDTO, userId, LocalDateTime.now(), "PENDING");
+        CertificateRequest certificateRequest = new CertificateRequest(certificateRequestDTO, user.getId(), LocalDateTime.now(), "PENDING");
         certificateRequestRepository.save(certificateRequest);
 
         String ownerId = certificate.getOwner().getId();
@@ -68,14 +69,14 @@ public class CertificateRequestService implements ICertificateRequestService {
     }
 
     @Override
-    public CertificateRequestResponseDTO createCertificateRequestForAdmin(String adminId, CertificateRequestDTO certificateRequestDTO) {
-        userRepository.findById(adminId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
+    public CertificateRequestResponseDTO createCertificateRequestForAdmin(String username, CertificateRequestDTO certificateRequestDTO) {
+        User user = userRepository.findUserByUsername(username).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
         if (!certificateRequestDTO.getCertificateType().equals("ROOT")) {
             Certificate certificate = certificateRepository.findById(certificateRequestDTO.getIssuerCertificateId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate with that ID doesn't exist."));
             validateCertificateRequest(certificateRequestDTO.getCertificateType(), certificate);
         }
 
-        CertificateRequest certificateRequest = new CertificateRequest(certificateRequestDTO, adminId, LocalDateTime.now(), "PENDING");
+        CertificateRequest certificateRequest = new CertificateRequest(certificateRequestDTO, user.getId(), LocalDateTime.now(), "PENDING");
         certificateRequestRepository.save(certificateRequest);
 
         approveSigningRequest(certificateRequest.getId());
@@ -100,9 +101,9 @@ public class CertificateRequestService implements ICertificateRequestService {
     }
 
     @Override
-    public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequests(String userId) {
-        userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
-        return certificateRequestRepository.findAllBySubjectId(userId).stream().map(CertificateRequestResponseDTO::new).collect(Collectors.toList());
+    public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequests(String username) {
+        User user = userRepository.findUserByUsername(username).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
+        return certificateRequestRepository.findAllBySubjectId(user.getId()).stream().map(CertificateRequestResponseDTO::new).collect(Collectors.toList());
     }
 
     @Override
@@ -111,13 +112,13 @@ public class CertificateRequestService implements ICertificateRequestService {
     }
 
     @Override
-    public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequestsToReview(String userId) {
-        Set<Certificate> userCertificates = certificateRepository.findAllByOwnerId(userId);
+    public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequestsToReview(Principal user) {
+        User currentUser = userRepository.findUserByUsername(user.getName()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "User doesn't exist"));
+        Set<Certificate> userCertificates = certificateRepository.findAllByOwnerId(currentUser.getId());
         Set<CertificateRequest> certificateRequestsToReview = new HashSet<>();
         for (Certificate certificate : userCertificates) {
             certificateRequestsToReview.addAll(certificateRequestRepository.findAllByIssuerCertificateId(certificate.getSerialNumber()));
         }
-
         return certificateRequestsToReview.stream().filter(certificateRequest -> certificateRequest.getStatus().equals("PENDING")).map(CertificateRequestResponseDTO::new).collect(Collectors.toSet());
     }
 

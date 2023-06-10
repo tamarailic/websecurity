@@ -37,10 +37,12 @@ public class CertificateValidityService implements ICertificateValidityService {
     }
 
     private boolean isWithdrawn(Certificate certificateToCheck) {
+        System.out.println("isWithdrawn " + (!certificateToCheck.getValid()));
         return !certificateToCheck.getValid();
     }
 
     private boolean hasExpired(Certificate certificate) {
+        System.out.println( "hasExpired" + (certificate.getNotBefore().isAfter(LocalDate.now()) || certificate.getNotAfter().isBefore(LocalDate.now())));
         return certificate.getNotBefore().isAfter(LocalDate.now()) || certificate.getNotAfter().isBefore(LocalDate.now());
     }
 
@@ -51,10 +53,12 @@ public class CertificateValidityService implements ICertificateValidityService {
         PublicKey issuerPublicKey = helperService.convertStringToPublicKey(issuerCertificate.getPublicKey());
         try {
             certificate.verify(issuerPublicKey);
+            System.out.println("Korumpiran false");
             return false;
         } catch (CertificateException | NoSuchAlgorithmException | InvalidKeyException | NoSuchProviderException e) {
             throw new RuntimeException(e);
         } catch (SignatureException e) {
+            System.out.println("Korumpiran true");
             return true;
         }
     }
