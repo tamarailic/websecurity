@@ -236,6 +236,10 @@ p.selected {
   margin: auto;
 }
 
+.keyPad{
+  margin-top: 1rem;
+}
+
 @media (max-width:1800px) {
 
   .preview,

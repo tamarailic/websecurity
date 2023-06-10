@@ -9,10 +9,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.PermitAll;
+import java.security.Principal;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/certificate")
@@ -25,31 +29,31 @@ public class CertificateController {
     @Autowired
     private IUploadDownloadCertificateService uploadDownloadCertificateService;
 
-    @PostMapping("/request/user/{userId}")
-    public CertificateRequestResponseDTO createCertificateRequestUser(@PathVariable String userId,
-                                                                      @RequestBody CertificateRequestDTO certificateRequestDTO) {
-        return certificateRequestService.createCertificateRequestForUser(userId, certificateRequestDTO);
-    }
-
-    @PostMapping("/request/admin/{adminId}")
-    public CertificateRequestResponseDTO createCertificateRequestAdmin(@PathVariable String adminId,
-                                                                       @RequestBody CertificateRequestDTO certificateRequestDTO) {
-        return certificateRequestService.createCertificateRequestForAdmin(adminId, certificateRequestDTO);
-    }
-
-    @GetMapping("/all-certificate-requests/{userId}")
-    public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequests(@PathVariable String userId) {
-        return certificateRequestService.getAllUsersCertificateRequests(userId);
-    }
-
-    @GetMapping("/all-requests-to-review/{userId}")
-    public Collection<CertificateRequestResponseDTO> getAllRequestsToReview(@PathVariable String userId) {
-        return certificateRequestService.getAllUsersCertificateRequestsToReview(userId);
+    @PostMapping("/request")
+    public CertificateRequestResponseDTO createCertificateRequest(@RequestBody CertificateRequestDTO certificateRequestDTO, Authentication token) {
+        UserDetails userDetails = (UserDetails) token.getPrincipal();
+        String role = userDetails.getAuthorities().stream().collect(Collectors.toList()).get(0).getAuthority();
+        if(role.equals("admin")){
+            return certificateRequestService.createCertificateRequestForAdmin(userDetails.getUsername(), certificateRequestDTO);
+        }else{
+            return certificateRequestService.createCertificateRequestForUser(userDetails.getUsername(), certificateRequestDTO);
+        }
     }
 
     @GetMapping("/all-certificate-requests")
-    public Collection<CertificateRequestResponseDTO> getAllCertificateRequests() {
-        return certificateRequestService.getAllCertificateRequests();
+    public Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequests(Authentication token) {
+        UserDetails userDetails = (UserDetails) token.getPrincipal();
+        String role = userDetails.getAuthorities().stream().collect(Collectors.toList()).get(0).getAuthority();
+        if(role.equals("admin")) {
+            return certificateRequestService.getAllCertificateRequests();
+        }else{
+            return certificateRequestService.getAllUsersCertificateRequests(userDetails.getUsername());
+        }
+    }
+
+    @GetMapping("/all-requests-to-review")
+    public Collection<CertificateRequestResponseDTO> getAllRequestsToReview(Principal user) {
+        return certificateRequestService.getAllUsersCertificateRequestsToReview(user);
     }
 
     @PutMapping("/approve/{requestId}")
@@ -81,7 +85,12 @@ public class CertificateController {
 
     @GetMapping("/download-certificate/{certificateSerialNumber}")
     public DownloadCertificateDTO downloadCertificate(@PathVariable String certificateSerialNumber) {
-        return uploadDownloadCertificateService.download(certificateSerialNumber);
+        return uploadDownloadCertificateService.downloadCertificate(certificateSerialNumber);
+    }
+
+    @GetMapping("/download-privateKey/{certificateSerialNumber}")
+    public DownloadPrivateKeyDTO downloadPrivateKey(@PathVariable String certificateSerialNumber, Principal user) {
+        return uploadDownloadCertificateService.downloadPrivateKey(certificateSerialNumber, user);
     }
 
     @PutMapping("/withdraw/{certificateSerialNumber}")
