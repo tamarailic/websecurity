@@ -3,12 +3,15 @@ package com.websecurity.websecurity.services;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
+import com.websecurity.websecurity.DTO.CredentialsDTO;
 import com.websecurity.websecurity.DTO.PreviousPasswordDTO;
 import com.websecurity.websecurity.DTO.UserDTO;
 import com.websecurity.websecurity.exceptions.NonExistantUserException;
 import com.websecurity.websecurity.exceptions.VerificationTokenExpiredException;
+import com.websecurity.websecurity.models.LoginAttempt;
 import com.websecurity.websecurity.models.PasswordChangeRequest;
 import com.websecurity.websecurity.models.User;
+import com.websecurity.websecurity.repositories.ILoginAttemptRepository;
 import com.websecurity.websecurity.repositories.IPasswordChangeRequestRepository;
 import com.websecurity.websecurity.repositories.IRoleRepository;
 import com.websecurity.websecurity.repositories.IUserRepository;
@@ -60,6 +63,8 @@ public class AuthService implements IAuthService {
     IHelperService helperService;
     @Autowired
     IPasswordChangeRequestRepository passwordChangeRequestRepository;
+    @Autowired
+    ILoginAttemptRepository loginAttemptRepository;
 
 
     @Override
@@ -93,6 +98,22 @@ public class AuthService implements IAuthService {
         actual.setEnabled(true);
         userRepository.save(actual);
         return true;
+    }
+
+    @Override
+    public void create2FA(CredentialsDTO credentialsDTO, Authentication auth) throws VerificationTokenExpiredException, NonExistantUserException, NoSuchPaddingException, IllegalBlockSizeException, IOException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+        String code = this.generateCode();
+        LoginAttempt loginAttempt = new LoginAttempt(credentialsDTO.getEmail(),passwordEncoder.encode(code));
+        loginAttemptRepository.save(loginAttempt);
+        User user = userRepository.findByUsername(credentialsDTO.getEmail());
+        if (user.getEmailValidation())
+            emailService.send2FAEmail(user,code);
+        else {
+            Twilio.init(helperService.getTwilioSID(), helperService.getTwilioToken());
+            Message.creator(new PhoneNumber(user.getPhone()),
+                    new PhoneNumber(helperService.getTwilioPhone()), "Your 2FA code is:" + code).create();
+        }
+        System.out.println(code);
     }
 
 
@@ -149,40 +170,5 @@ public class AuthService implements IAuthService {
         user.setCredentialsExpiry(LocalDateTime.now().plusDays(USER_CREDENTIALS_EXPIRY_DAYS));
         userRepository.save(user);
 
-    }
-
-    @Override
-    public byte[] encryptAuthentication(Authentication authentication, String secretKey) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        byte[] encryptedData = null;
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bos);
-        oos.writeObject(authentication);
-        byte[] serializedData = bos.toByteArray();
-
-        String encryptionAlgorithm = helperService.getEncryptAlgorithm();
-        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), encryptionAlgorithm);
-        Cipher cipher = Cipher.getInstance(encryptionAlgorithm);
-        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
-        encryptedData = cipher.doFinal(serializedData);
-
-
-        return encryptedData;
-    }
-
-    @Override
-    public Authentication dencryptAuthentication(byte[] encryptedData, String secretKey) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException {
-        Authentication decryptedObject = null;
-
-        String encryptionAlgorithm = helperService.getEncryptAlgorithm();
-        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), encryptionAlgorithm);
-        Cipher cipher = Cipher.getInstance(encryptionAlgorithm);
-
-        byte[] decryptedData = cipher.doFinal(encryptedData);
-
-        ByteArrayInputStream bis = new ByteArrayInputStream(decryptedData);
-        ObjectInputStream ois = new ObjectInputStream(bis);
-        decryptedObject = (UsernamePasswordAuthenticationToken) ois.readObject();
-
-        return decryptedObject;
     }
 }

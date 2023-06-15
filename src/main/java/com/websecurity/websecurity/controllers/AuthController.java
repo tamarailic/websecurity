@@ -111,36 +111,51 @@ public class AuthController {
         } catch (DisabledException e) {
             return new ResponseEntity<>("User is disabled!", HttpStatus.BAD_REQUEST);
         }
-        String code = authService.generateCode();
-        LoginAttempt loginAttempt = new LoginAttempt(credentialsDTO.getEmail(), authService.encryptAuthentication(auth, code));
-        loginAttemptRepository.save(loginAttempt);
+        try {
+            authService.create2FA(credentialsDTO, auth);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Something went wrong", HttpStatus.BAD_REQUEST);
+        }
 
+        return new ResponseEntity<>("Success", HttpStatus.OK);
 
     }
 
     @PermitAll
     @PostMapping("/2fa")
     public ResponseEntity<?> factorAuth(@RequestBody CodeDTO codeDTO) {
-        Authentication auth = null;
-        LoginAttempt attempt = null;
         try {
-            attempt = loginAttemptRepository.findByUserEmail(codeDTO.getEmail());
-            if (attempt.getValidUntil().isAfter(LocalDateTime.now())){
+            LoginValidator.validateRequired(codeDTO.getEmail(), "email");
+            LoginValidator.validateRequired(codeDTO.getPassword(), "password");
+            LoginValidator.validateEmail(codeDTO.getEmail(), "email");
+            LoginAttempt attempt = loginAttemptRepository.findByUserEmail(codeDTO.getEmail());
+            if (passwordEncoder.matches(codeDTO.getCode(), attempt.getCode()))
                 loginAttemptRepository.delete(attempt);
-                throw new Exception("User code expired");
-            }
-            auth = authService.dencryptAuthentication(attempt.getAuth(), codeDTO.getCode());
+            else
+                throw new Exception("Something went wrong");
+        } catch (Exception e1) {
+            return new ResponseEntity<>(e1.getMessage(), HttpStatus.BAD_REQUEST);
+        }
 
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(codeDTO.getEmail(), codeDTO.getPassword());
+
+        Authentication auth = null;
+        try {
+            auth = authenticationManager.authenticate(authReq);
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>("Wrong username or password!", HttpStatus.BAD_REQUEST);
+        } catch (DisabledException e) {
+            return new ResponseEntity<>("User is disabled!", HttpStatus.BAD_REQUEST);
         }
 
         SecurityContext sc = SecurityContextHolder.getContext();
         sc.setAuthentication(auth);
         String id = ((User) auth.getPrincipal()).getId();
-        String token = jwtTokenUtil.generateToken(id, attempt.getUserEmail(), auth.getAuthorities());
-        String refreshToken = jwtTokenUtil.generateRefreshToken(id, attempt.getUserEmail());
+        String token = jwtTokenUtil.generateToken(id, codeDTO.getEmail(), auth.getAuthorities());
+        String refreshToken = jwtTokenUtil.generateRefreshToken(id, codeDTO.getEmail());
         TokenDTO tokens = new TokenDTO(token, refreshToken);
+
+        User user = userRepository.findByUsername(codeDTO.getEmail());
 
         return new ResponseEntity<TokenDTO>(tokens, HttpStatus.OK);
     }

@@ -14,6 +14,12 @@ public class CodeDTO {
     @Indexed(unique = true)
     String email;
 
+    String password;
+
+    public String getPassword() {
+        return password;
+    }
+
     public String getCode() {
         return code;
     }

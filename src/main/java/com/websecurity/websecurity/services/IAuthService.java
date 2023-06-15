@@ -1,5 +1,6 @@
 package com.websecurity.websecurity.services;
 
+import com.websecurity.websecurity.DTO.CredentialsDTO;
 import com.websecurity.websecurity.DTO.PreviousPasswordDTO;
 import com.websecurity.websecurity.DTO.UserDTO;
 import com.websecurity.websecurity.exceptions.NonExistantUserException;
@@ -19,6 +20,8 @@ import java.security.NoSuchAlgorithmException;
 public interface IAuthService {
     User registerUser(UserDTO dto);
 
+    void create2FA(CredentialsDTO credentialsDTO, Authentication auth) throws VerificationTokenExpiredException, NonExistantUserException, NoSuchPaddingException, IllegalBlockSizeException, IOException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException;
+
     void setRoles();
 
     boolean verify(String verificationToken) throws VerificationTokenExpiredException, NonExistantUserException;
@@ -28,8 +31,4 @@ public interface IAuthService {
     String generateCode();
 
     void setNewUserPassword(User user, PreviousPasswordDTO dto) throws LoginValidatorException;
-
-    byte[] encryptAuthentication(Authentication authentication, String secretKey) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException;
-
-    Authentication dencryptAuthentication(byte[] encryptedData, String secretKey) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, ClassNotFoundException;
 }
