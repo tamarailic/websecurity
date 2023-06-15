@@ -67,8 +67,6 @@ public class JwtTokenUtil {
                 .claim("id", id)
                 .claim("role", authorities)
                 .signWith(SIGNATURE_ALGORITHM, secret).compact();
-
-
     }
 
     public String generateRefreshToken(String id, String email) {
@@ -81,8 +79,6 @@ public class JwtTokenUtil {
                 .setExpiration(generateRefreshExpirationDate())
                 .claim("id", id)
                 .signWith(SIGNATURE_ALGORITHM, secret).compact();
-
-
     }
 
     public String generateVerificationToken(String email) {
@@ -94,8 +90,6 @@ public class JwtTokenUtil {
                 .setIssuedAt(new Date())
                 .setExpiration(generateVerificationExpirationDate())
                 .signWith(SIGNATURE_ALGORITHM, secret).compact();
-
-
     }
 
     /**

@@ -1,29 +1,48 @@
-import { useRef, useState } from "react";
-import useSWR from 'swr'
-import PageContainer from "@/components/pageContainer"
+import { useEffect, useRef, useState } from "react";
+import PageContainer, { axiosInstance, getUserId, getUserRoles, getUsername } from "@/components/pageContainer"
 import styles from "@/styles/Home.module.css"
 import Image from "next/image";
-
+import { useSession } from "next-auth/react"
 import { backUrl } from "@/components/pageContainer";
-import Spinner from "@/components/spinner";
-import Error from "@/components/error";
-
-const fetcher = (...args) => fetch(...args).then(res => res.json());
-
-// Just mocked data -> should be replaced with data from JWT
-const userId = '643d966f681de87d29254e97';
-const username = 'aisling.rebyl@meantodeal.com';
+import { getAccessToken } from "axios-jwt";
+import { useRouter } from "next/router";
 
 export default function Home() {
-  return (<PageContainer>
-    <HomePage />
-  </PageContainer>);
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!session && getAccessToken() == null) {
+      router.replace("/login");
+    }
+  }, [])
+
+  return (
+    <PageContainer>
+      <HomePage />
+    </PageContainer>);
 }
 
 function HomePage() {
   const [selectedSection, setSelectedSection] = useState(0);
   const [selectedItem, setSelectedItem] = useState(null);
   const [appliedFilters, setAppliedFilters] = useState({ search: null, type: null, onlyMy: false });
+
+  const [userId, setUserId] = useState();
+  const [username, setUsername] = useState();
+  const { data: session } = useSession()
+
+  useEffect(() => {
+    if (session) {
+      setUsername(session.user.email);
+    }
+    try {
+      setUserId(getUserId());
+      setUsername(getUsername());
+    } catch {
+
+    }
+  }, [session])
 
   function showSection(i) {
     setSelectedSection(i);
@@ -32,17 +51,17 @@ function HomePage() {
 
   return (
     <section className={styles.main_grid}>
-      <AllElementsTable selectedSection={selectedSection} showSection={showSection} setSelectedItem={setSelectedItem} appliedFilters={appliedFilters} setAppliedFilters={setAppliedFilters} />
-      <OneElementPreview selectedItem={selectedItem} />
+      <AllElementsTable userId={userId} username={username} selectedSection={selectedSection} showSection={showSection} setSelectedItem={setSelectedItem} appliedFilters={appliedFilters} setAppliedFilters={setAppliedFilters} />
+      <OneElementPreview username={username} userId={userId} selectedItem={selectedItem} />
     </section >);
 }
 
-function AllElementsTable({ selectedSection, showSection, setSelectedItem, appliedFilters, setAppliedFilters }) {
+function AllElementsTable({ userId, username, selectedSection, showSection, setSelectedItem, appliedFilters, setAppliedFilters }) {
   return (
     <div className={styles.card} id="all_elements_table">
       <ToggleOptions selectedSection={selectedSection} showSection={showSection} />
       <FilterOptions appliedFilters={appliedFilters} setAppliedFilters={setAppliedFilters} />
-      <MainArea selectedSection={selectedSection} appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
+      <MainArea userId={userId} username={username} selectedSection={selectedSection} appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
     </div>
   );
 }
@@ -93,14 +112,24 @@ function FilterOptions({ appliedFilters, setAppliedFilters }) {
   );
 }
 
-function MainArea({ selectedSection, appliedFilters, setSelectedItem }) {
+function MainArea({ username, selectedSection, appliedFilters, setSelectedItem }) {
+  const [certificates, setCertificates] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [reviews, setReviews] = useState([]);
+
+  useEffect(() => {
+    getAllCertificates(setCertificates)
+    getAllUserRequests(setRequests)
+    getAllRequestsToReview(setReviews)
+  }, [])
+
   let tableToRender = null;
   if (selectedSection == 0) {
-    tableToRender = <AllCertificates appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
+    tableToRender = <AllCertificates certificates={certificates} username={username} appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
   } else if (selectedSection == 1) {
-    tableToRender = <MyRequests appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
+    tableToRender = <MyRequests requests={requests} username={username} appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
   } else if (selectedSection == 2) {
-    tableToRender = <ForSigning appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
+    tableToRender = <ForSigning requests={reviews} username={username} appliedFilters={appliedFilters} setSelectedItem={setSelectedItem} />
   }
   return (
     <div id="main_area">
@@ -109,17 +138,12 @@ function MainArea({ selectedSection, appliedFilters, setSelectedItem }) {
   );
 }
 
-function AllCertificates({ appliedFilters, setSelectedItem }) {
+function AllCertificates({ certificates, username, appliedFilters, setSelectedItem }) {
   function handleRowClick(certificate) {
     setSelectedItem(certificate);
   }
 
-  const { certificates, isLoading, isError } = getAllCertificates();
-
-  if (isLoading) return <Spinner />
-  if (isError) return <Error />
-
-  const certificatesData = filterResults(certificates.content, appliedFilters);
+  const certificatesData = filterResults(username, certificates, appliedFilters);
 
   if (certificatesData == null || certificatesData.length == 0) return null;
 
@@ -141,17 +165,12 @@ function AllCertificates({ appliedFilters, setSelectedItem }) {
 
 }
 
-function MyRequests({ appliedFilters, setSelectedItem }) {
+function MyRequests({ requests, username, appliedFilters, setSelectedItem }) {
   function handleRowClick(certificate) {
     setSelectedItem(certificate);
   }
 
-  const { requests, isLoading, isError } = getAllUserRequests(userId);
-
-  if (isLoading) return <Spinner />
-  if (isError) return <Error />
-
-  const requestsData = filterResults(requests, appliedFilters);
+  const requestsData = filterResults(username, requests, appliedFilters);
 
   if (requestsData == null || requestsData.length == 0) return null;
 
@@ -166,23 +185,18 @@ function MyRequests({ appliedFilters, setSelectedItem }) {
         </tr>
       </thead>
       <tbody>
-        {requestsData.map(item => <tr onClick={() => handleRowClick(item)} key={item['requestId']}><td>{item['status'] == 'APPROVED' ? <div className={styles.validCircle}></div> : item['status'] == 'DENIED' ? <div className={styles.invalidCircle}></div> : <div className={styles.pendingCircle}></div>}</td>{Object.keys(item).filter(column => ['requestId', 'subjectId', 'issuerCertificateId', 'requestedDate', 'certificateType'].includes(column)).map(itemKey => <td key={`${item['subjectId']}-${itemKey}`}>{itemKey != 'issuerCertificateId' ? item[itemKey] : `...${item[itemKey].slice(-5)}`}</td>)}</tr>)}
+        {requestsData.map(item => <tr onClick={() => handleRowClick(item)} key={item['requestId']}><td>{item['status'] == 'APPROVED' ? <div className={styles.validCircle}></div> : item['status'] == 'DENIED' ? <div className={styles.invalidCircle}></div> : <div className={styles.pendingCircle}></div>}</td>{Object.keys(item).filter(column => ['requestId', 'subjectId', 'issuerCertificateId', 'requestedDate', 'certificateType'].includes(column)).map(itemKey => <td key={`${item['subjectId']}-${itemKey}`}>{itemKey != 'issuerCertificateId' ? item[itemKey] : `...${item[itemKey] ? item[itemKey].slice(-5) : 'self signed'}`}</td>)}</tr>)}
       </tbody>
     </table>
   );
 }
 
-function ForSigning({ appliedFilters, setSelectedItem }) {
+function ForSigning({ requests, username, appliedFilters, setSelectedItem }) {
   function handleRowClick(certificate) {
     setSelectedItem(certificate);
   }
 
-  const { requests, isLoading, isError } = getAllRequestsToReview(userId);
-
-  if (isLoading) return <Spinner />
-  if (isError) return <Error />
-
-  const requestsData = filterResults(requests, appliedFilters);
+  const requestsData = filterResults(username, requests, appliedFilters);
 
   if (requestsData == null || requestsData.length == 0) return null;
 
@@ -203,37 +217,19 @@ function ForSigning({ appliedFilters, setSelectedItem }) {
   );
 }
 
-function getAllCertificates() {
-  const { data, error, isLoading } = useSWR(`${backUrl}/api/certificate/all`, fetcher)
-
-  return {
-    certificates: data,
-    isLoading,
-    isError: error
-  }
+function getAllCertificates(setCertificates) {
+  axiosInstance.get(`${backUrl}/api/certificate/all`).then(response => setCertificates(response.data.content)).catch(err => console.log("all error"));
 }
 
-function getAllUserRequests(userId) {
-  const { data, error, isLoading } = useSWR(`${backUrl}/api/certificate/all-certificate-requests/${userId}`, fetcher)
-
-  return {
-    requests: data,
-    isLoading,
-    isError: error
-  }
+function getAllUserRequests(setRequests) {
+  axiosInstance.get(`${backUrl}/api/certificate/all-certificate-requests`).then(response => setRequests(response.data)).catch(err => console.log("all error"));
 }
 
-function getAllRequestsToReview(userId) {
-  const { data, error, isLoading } = useSWR(`${backUrl}/api/certificate/all-requests-to-review/${userId}`, fetcher)
-
-  return {
-    requests: data,
-    isLoading,
-    isError: error
-  }
+function getAllRequestsToReview(setReviews) {
+  axiosInstance.get(`${backUrl}/api/certificate/all-requests-to-review`).then(response => setReviews(response.data)).catch(err => console.log("all error"));
 }
 
-function filterResults(data, filters) {
+function filterResults(username, data, filters) {
   let dataThatFulfillsFilters = JSON.parse(JSON.stringify(data))
   if (filters['search'] != null && filters['search'] != '') {
     for (let item of dataThatFulfillsFilters) {
@@ -258,21 +254,21 @@ function filterResults(data, filters) {
   return dataThatFulfillsFilters;
 }
 
-function OneElementPreview({ selectedItem }) {
+function OneElementPreview({ username, userId, selectedItem }) {
   if (selectedItem == undefined) {
     return null
   }
   else if (Object.keys(selectedItem).includes('serialNumber')) {
-    return <CertificatePreview selectedItem={selectedItem} />;
+    return <CertificatePreview username={username} userId={userId} selectedItem={selectedItem} />;
   }
-  else if (Object.keys(selectedItem).includes('status') && selectedItem.subjectId == userId) {
+  else if (Object.keys(selectedItem).includes('status') && (selectedItem.subjectId == userId || getUserRoles() == "admin")) {
     return <UserCertificateRequestPreview selectedItem={selectedItem} />
   } else {
     return <CertificateRequestNeedsApproval selectedItem={selectedItem} />
   }
 }
 
-function CertificatePreview({ selectedItem }) {
+function CertificatePreview({ userId, username, selectedItem }) {
   return (<div className={`${styles.card} ${styles.preview}`} id="one_element_preview">
     <h2>Certificate</h2>
     <ul className={styles.certInfo}>
@@ -283,9 +279,10 @@ function CertificatePreview({ selectedItem }) {
       <li><span className={styles.certInfoLabel}>Type: </span><span>{selectedItem.type}</span></li>
     </ul>
     <hr />
-    {selectedItem.type != 'END' && <RequestCertificateAction issuerSerialNumber={selectedItem.serialNumber} />}
+    {selectedItem.type != 'END' && <RequestCertificateAction userId={userId} issuerSerialNumber={selectedItem.serialNumber} />}
     {selectedItem.owner == username && <InvalidateButton serialNumber={selectedItem.serialNumber} />}
-    <DownloadButton serialNumber={selectedItem.serialNumber} />
+    <DownloadCertificateButton serialNumber={selectedItem.serialNumber} />
+    {selectedItem.owner == username && <DownloadPrivateKeyButton serialNumber={selectedItem.serialNumber} />}
   </div>)
 }
 
@@ -327,14 +324,9 @@ function ApproveBtn({ requestId }) {
 }
 
 async function approveCertificateRequest(requestId) {
-  const requestOptions = {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-  };
+  const response = await axiosInstance.put(`${backUrl}/api/certificate/approve/${requestId}`);
 
-  const response = await fetch(`${backUrl}/api/certificate/approve/${requestId}`, requestOptions);
-  const data = await response.json();
-  if (data.status == 200) {
+  if (response.status == 200) {
     alert("Succesfully approved certificate.")
   } else {
     alert("Something went wrong!")
@@ -377,13 +369,7 @@ function DenyBtn({ requestId }) {
 }
 
 async function denyCertificateRequest(requestId, reason) {
-  const requestOptions = {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ reason: reason })
-  };
-
-  const response = await fetch(`${backUrl}/api/certificate/deny/${requestId}`, requestOptions);
+  const response = await axiosInstance.put(`${backUrl}/api/certificate/deny/${requestId}`, { reason: reason });
   if (response.status == 200) {
     alert("Succesfully denied certificate.")
   } else {
@@ -392,7 +378,7 @@ async function denyCertificateRequest(requestId, reason) {
 }
 
 
-function RequestCertificateAction({ issuerSerialNumber }) {
+function RequestCertificateAction({ userId, issuerSerialNumber }) {
   const [selectedType, setSelectedType] = useState('INTERMEDIATE')
   const possibleCertificateTypes = ['INTERMEDIATE', 'END']
 
@@ -404,7 +390,7 @@ function RequestCertificateAction({ issuerSerialNumber }) {
     <p className={styles.certInfoLabel}>Request certificate</p>
     <div className={styles.requestCert}>
       <select className={styles.requestType} name="certType" id="certType" onChange={changedRequestType}>
-        {possibleCertificateTypes.map(type => <option id={type} value={type}>{type}</option>)}
+        {possibleCertificateTypes.map(type => <option key={type} id={type} value={type}>{type}</option>)}
       </select>
       <div className={styles.requestBtn} onClick={() => { requestNewCertificate(userId, selectedType, issuerSerialNumber) }}>
         <div>
@@ -419,21 +405,15 @@ function RequestCertificateAction({ issuerSerialNumber }) {
 }
 
 async function requestNewCertificate(userId, certificateType, issuerCertificateId) {
-  const requestOptions = {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      issuerCertificateId: issuerCertificateId,
-      certificateType: certificateType
-    })
-  };
-
-  const response = await fetch(`${backUrl}/api/certificate/request/user/${userId}`, requestOptions);
+  const response = await axiosInstance.post(`${backUrl}/api/certificate/request`, {
+    issuerCertificateId: issuerCertificateId,
+    certificateType: certificateType
+  });
   if (response.status.isError) {
     alert("Error in request")
   } else {
-    const data = await response.json();
-    alert(data.status)
+    const data = await response.data;
+    alert(data)
   }
 }
 
@@ -471,13 +451,7 @@ function InvalidateButton({ serialNumber }) {
 }
 
 async function invalidateCertificateRequest(serialNumber, reason) {
-  const requestOptions = {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ reason: reason })
-  };
-
-  const response = await fetch(`${backUrl}/api/certificate/withdraw/${serialNumber}`, requestOptions);
+  const response = await axiosInstance.put(`${backUrl}/api/certificate/withdraw/${serialNumber}`, { reason: reason });
   if (response.status == 200) {
     alert("Succesfully withdrawn certificate.")
   } else {
@@ -485,9 +459,18 @@ async function invalidateCertificateRequest(serialNumber, reason) {
   }
 }
 
-function DownloadButton({ serialNumber }) {
+function DownloadCertificateButton({ serialNumber }) {
   return <div className={styles.accentBtn} onClick={() => downloadCertificate(serialNumber)}>
-    <a>Download</a>
+    <a>Download certificate</a>
+    <div className={styles.imgDiv}>
+      <Image src="/images/downloadCertificateIcon.png" width={24} height={24} alt="downloadIcon"></Image>
+    </div>
+  </div>
+}
+
+function DownloadPrivateKeyButton({ serialNumber }) {
+  return <div className={`${styles.accentBtn} ${styles.keyPad} `} onClick={() => downloadPrivateKey(serialNumber)}>
+    <a>Download private key</a>
     <div className={styles.imgDiv}>
       <Image src="/images/downloadCertificateIcon.png" width={24} height={24} alt="downloadIcon"></Image>
     </div>
@@ -495,16 +478,11 @@ function DownloadButton({ serialNumber }) {
 }
 
 async function downloadCertificate(serialNumber) {
-  const requestOptions = {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' }
-  };
-
-  const response = await fetch(`${backUrl}/api/certificate/download-certificate/${serialNumber}`, requestOptions);
+  const response = await axiosInstance.get(`${backUrl}/api/certificate/download-certificate/${serialNumber}`);
   if (response.status.isError) {
     alert("Error in request")
   } else {
-    const data = await response.json();
+    const data = await response.data;
     const certData = atob(data.certificateContent);
     const fileBlob = new Blob([certData], { type: 'application/octet-stream' }); // Create a Blob object from the byte array
     const fileURL = URL.createObjectURL(fileBlob); // Create a URL for the Blob object
@@ -515,7 +493,24 @@ async function downloadCertificate(serialNumber) {
     document.body.appendChild(link);
     link.click();
   }
+}
 
+async function downloadPrivateKey(serialNumber) {
+  const response = await axiosInstance.get(`${backUrl}/api/certificate/download-privateKey/${serialNumber}`);
+  if (response.status.isError) {
+    alert("Error in request")
+  } else {
+    const data = await response.data;
+    const keyData = atob(data.keyContent);
+    const fileBlob = new Blob([keyData], { type: 'application/octet-stream' }); // Create a Blob object from the byte array
+    const fileURL = URL.createObjectURL(fileBlob); // Create a URL for the Blob object
+
+    const link = document.createElement('a');
+    link.href = fileURL;
+    link.download = `${serialNumber}.key`;
+    document.body.appendChild(link);
+    link.click();
+  }
 }
 
 

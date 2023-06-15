@@ -27,15 +27,11 @@ public class EmailService implements IEmailService {
     @Override
     public void sendText(String to, String subject, String body) {
         Response response = sendEmail(to, subject, new Content("text/plain", body));
-        System.out.println("Status Code: " + response.getStatusCode() + ", Body: " + response.getBody() + ", Headers: "
-                + response.getHeaders());
     }
 
     @Override
     public void sendHTML(String to, String subject, String body) {
         Response response = sendEmail(to, subject, new Content("text/html", body));
-        System.out.println("Status Code: " + response.getStatusCode() + ", Body: " + response.getBody() + ", Headers: "
-                + response.getHeaders());
     }
 
     private Response sendEmail(String to, String subject, Content content) {
@@ -50,7 +46,7 @@ public class EmailService implements IEmailService {
             request.setBody(mail.build());
             response = this.sendGridClient.api(request);
         } catch (IOException ex) {
-            System.out.println(ex.getMessage());
+
         }
         return response;
     }
@@ -65,7 +61,7 @@ public class EmailService implements IEmailService {
                 + "Please click the link below to verify your registration:<br>"
                 + "<h3><a href=\"[[URL]]\" target=\"_self\">VERIFY</a></h3>"
                 + "Thank you,<br>"
-                + "Shuttle";
+                + "WEBSECURITY";
 
         content = content.replace("[[name]]", user.getFirstName());
         content = content.replace("[[URL]]", url);
@@ -81,8 +77,7 @@ public class EmailService implements IEmailService {
                 + "Your password change code is:<br>"
                 + "<h3>[[code]]</h3>"
                 + "Thank you,<br>"
-                + "Shuttle";
-
+                + "WEBSECURITY";
         content = content.replace("[[name]]", user.getFirstName());
         content = content.replace("[[code]]", code);
         sendHTML(toAddress, subject, content);

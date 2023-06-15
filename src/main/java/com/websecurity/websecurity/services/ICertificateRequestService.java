@@ -7,6 +7,7 @@ import com.websecurity.websecurity.DTO.ReasonDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.security.Principal;
 import java.util.Collection;
 
 public interface ICertificateRequestService {
@@ -20,7 +21,7 @@ public interface ICertificateRequestService {
 
     Collection<CertificateRequestResponseDTO> getAllCertificateRequests();
 
-    Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequestsToReview(String userId);
+    Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequestsToReview(Principal user);
 
     CertificateToShowDTO approveSigningRequest(String requestId);
 

@@ -49,6 +49,14 @@ p.selected {
   color: rgba(255, 255, 255, 0.9);
 }
 
+.filter_options input,
+.filter_options select {
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.24);
+}
+
 .main_table {
   border: 1px solid transparent;
   color: white;
@@ -85,7 +93,7 @@ p.selected {
   list-style-type: none;
 }
 
-.certInfo li{
+.certInfo li {
   margin-bottom: 1.5rem;
 }
 
@@ -224,24 +232,34 @@ p.selected {
   border-radius: 50%;
   width: 5px;
   height: 5px;
-  background-color: var(--Invalid);
+  background-color: var(--Pending);
   margin: auto;
 }
 
-@media (max-width:1800px ){
- .preview, .requestCert>*, .main_table{
+.keyPad{
+  margin-top: 1rem;
+}
+
+@media (max-width:1800px) {
+
+  .preview,
+  .requestCert>*,
+  .main_table {
     font-size: var(--FontSizeSmaller);
   }
 
-  .card{
+  .card {
     padding: 25px;
   }
 
-  .requestBtn, .approveBtn, .denyBtn, .accentBtn{
+  .requestBtn,
+  .approveBtn,
+  .denyBtn,
+  .accentBtn {
     font-size: 14px;
   }
 
-  .main_table td{
+  .main_table td {
     padding: 5px;
   }
 

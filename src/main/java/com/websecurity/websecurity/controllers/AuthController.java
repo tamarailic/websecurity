@@ -1,9 +1,11 @@
 package com.websecurity.websecurity.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.websecurity.websecurity.DTO.*;
 import com.websecurity.websecurity.exceptions.NonExistantUserException;
 import com.websecurity.websecurity.exceptions.VerificationTokenExpiredException;
 import com.websecurity.websecurity.models.LoginAttempt;
+import com.websecurity.websecurity.logging.WSLoggerAuth;
 import com.websecurity.websecurity.models.PasswordChangeRequest;
 import com.websecurity.websecurity.models.User;
 import com.websecurity.websecurity.repositories.ILoginAttemptRepository;
@@ -11,9 +13,13 @@ import com.websecurity.websecurity.repositories.IPasswordChangeRequestRepository
 import com.websecurity.websecurity.repositories.IUserRepository;
 import com.websecurity.websecurity.security.jwt.JwtTokenUtil;
 import com.websecurity.websecurity.services.IAuthService;
+import com.websecurity.websecurity.services.RecaptchaHelper;
 import com.websecurity.websecurity.services.email.EmailService;
 import com.websecurity.websecurity.validators.LoginValidator;
 import com.websecurity.websecurity.validators.LoginValidatorException;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -29,6 +35,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.PermitAll;
+import javax.servlet.http.HttpServletRequest;
 import javax.websocket.server.PathParam;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -55,6 +62,10 @@ public class AuthController {
     PasswordEncoder passwordEncoder;
     @Autowired
     ILoginAttemptRepository loginAttemptRepository;
+    @Autowired
+    RecaptchaHelper recaptchaHelper;
+    @Autowired
+    private HttpServletRequest request;
 
 
     @PermitAll
@@ -91,6 +102,7 @@ public class AuthController {
 
     @PermitAll
     @PostMapping("/login")
+    @WSLoggerAuth
     public ResponseEntity<?> login(@RequestBody CredentialsDTO credentialsDTO) {
         try {
             LoginValidator.validateRequired(credentialsDTO.getEmail(), "email");
@@ -99,6 +111,13 @@ public class AuthController {
             LoginValidator.validateEmail(credentialsDTO.getEmail(), "email");
         } catch (LoginValidatorException e1) {
             return new ResponseEntity<>(e1.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        try {
+            if (!isRecaptchaValid(credentialsDTO.getRecaptcha(), request.getRemoteAddr())) {
+                return new ResponseEntity<>("Invalid captcha", HttpStatus.BAD_REQUEST);
+            }
+        } catch (IOException e2) {
+            return new ResponseEntity<>(e2.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
         UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(credentialsDTO.getEmail(), credentialsDTO.getPassword());
@@ -160,6 +179,20 @@ public class AuthController {
         return new ResponseEntity<TokenDTO>(tokens, HttpStatus.OK);
     }
 
+    private boolean isRecaptchaValid(String value, String clientIP) throws IOException {
+        Request request = new Request.Builder()
+                .url(String.format("https://www.google.com/recaptcha/api/siteverify?secret=%s&response=%s&remoteip=%s", recaptchaHelper.getSecret(), value, clientIP))
+                .build();
+        OkHttpClient client = new OkHttpClient();
+
+        try (Response response = client.newCall(request).execute()) {
+            String responseString = response.body().string();
+            ObjectMapper objectMapper = new ObjectMapper();
+            CaptchaResponseDTO captcha = objectMapper.readValue(responseString, CaptchaResponseDTO.class);
+            return captcha.isSuccess();
+        }
+    }
+
     @GetMapping("/verify")
     public ResponseEntity<?> verifyUser(@RequestParam("token") String code) {
         boolean verified = false;
@@ -199,7 +232,7 @@ public class AuthController {
 
     @PermitAll
     @PostMapping(value = "/refreshToken")
-    public ResponseEntity<TokenDTO> refreshtoken(@RequestBody String refreshToken) throws Exception {
+    public ResponseEntity<TokenDTO> refreshToken(@RequestBody String refreshToken) throws Exception {
         // From the HttpRequest get the claims
         refreshToken = refreshToken.replace("\"", "");
         refreshToken = refreshToken.replace("{", "");
@@ -286,10 +319,22 @@ public class AuthController {
 
     @PermitAll
     @GetMapping
-    public ResponseEntity<?> create() {
+    public ResponseEntity<?> createNew() {
         authService.setRoles();
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PermitAll
+    @PostMapping("/creteOrLogin")
+    @WSLoggerAuth
+    public ResponseEntity<?> loginWithOAuth(@RequestBody OauthInfoDTO oauthInfoDTO) {
+        User user = userRepository.findByUsername(oauthInfoDTO.getUsername());
+        if (user != null) {
+            String token = jwtTokenUtil.generateToken(user.getId(), user.getUsername(), user.getAuthorities());
+            String refreshToken = jwtTokenUtil.generateRefreshToken(user.getId(), user.getUsername());
+            TokenDTO tokens = new TokenDTO(token, refreshToken);
+
+            return new ResponseEntity<TokenDTO>(tokens, HttpStatus.OK);
+        }
 
 }
