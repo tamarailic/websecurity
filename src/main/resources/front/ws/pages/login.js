@@ -41,14 +41,20 @@ function Login() {
                 if (resp.status.isError) {
                     alert("Error in request");
                 } else {
-                    setAuthTokens({
-                        accessToken: resp.data.accessToken,
-                        refreshToken: resp.data.refreshToken
-                    });
-                    router.replace('/')
+                    localStorage.setItem('username', JSON.stringify(username));
+                    localStorage.setItem('password', JSON.stringify(password));
+                    router.push("/f2a");
                 }
             }).catch(err => {
-                alert("Error in request");
+                if (err.response.data.message)
+                if (err.response.data.message.includes("expired")){
+                    localStorage.setItem('username', JSON.stringify(username));
+
+                    router.replace('/refresh-password');
+                }
+                else {
+                    alert(err);
+                }
             });
         recaptchaRef.current.reset();
     }
