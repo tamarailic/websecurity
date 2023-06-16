@@ -12,10 +12,6 @@ public class UserDTO {
 
     boolean emailValidation;
 
-    public User toUser() {
-        return new User(name, surname, username, password, emailValidation, phone);
-    }
-
     public UserDTO() {
     }
 
@@ -42,8 +38,8 @@ public class UserDTO {
         this.password = password;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public User toUser() {
+        return new User(name, surname, username, password, emailValidation, phone);
     }
 
     public String getRecaptcha() {
@@ -54,48 +50,52 @@ public class UserDTO {
         this.recaptcha = recaptcha;
     }
 
-    public void setEmailValidation(boolean emailValidation) {
-        this.emailValidation = emailValidation;
+    public String getName() {
+        return name;
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
-    public void setSurname(String surname) {
-        this.surname = surname;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getName() {
-        return name;
-    }
-
     public String getSurname() {
         return surname;
+    }
+
+    public void setSurname(String surname) {
+        this.surname = surname;
     }
 
     public String getUsername() {
         return username;
     }
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public String getPassword() {
         return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getPhone() {
         return phone;
     }
 
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
     public boolean isEmailValidation() {
         return emailValidation;
+    }
+
+    public void setEmailValidation(boolean emailValidation) {
+        this.emailValidation = emailValidation;
     }
 }
 

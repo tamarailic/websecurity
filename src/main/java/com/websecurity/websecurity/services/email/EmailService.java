@@ -98,5 +98,4 @@ public class EmailService implements IEmailService {
         content = content.replace("[[code]]", code);
         sendHTML(toAddress, subject, content);
     }
-
 }

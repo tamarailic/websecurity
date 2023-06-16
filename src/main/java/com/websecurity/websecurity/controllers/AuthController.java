@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.websecurity.websecurity.DTO.*;
 import com.websecurity.websecurity.exceptions.NonExistantUserException;
 import com.websecurity.websecurity.exceptions.VerificationTokenExpiredException;
-import com.websecurity.websecurity.models.LoginAttempt;
 import com.websecurity.websecurity.logging.WSLoggerAuth;
+import com.websecurity.websecurity.models.LoginAttempt;
 import com.websecurity.websecurity.models.PasswordChangeRequest;
 import com.websecurity.websecurity.models.User;
 import com.websecurity.websecurity.repositories.ILoginAttemptRepository;
@@ -51,10 +51,6 @@ public class AuthController {
     @Autowired
     IAuthService authService;
     @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
-    @Autowired
     EmailService emailService;
     @Autowired
     IPasswordChangeRequestRepository passwordChangeRequestRepository;
@@ -65,40 +61,52 @@ public class AuthController {
     @Autowired
     RecaptchaHelper recaptchaHelper;
     @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
+    @Autowired
     private HttpServletRequest request;
 
 
     @PermitAll
     @WSLoggerAuth
     @PostMapping("/register")
-    public ResponseEntity<?> create(@RequestBody UserDTO dto) {
+    public ResponseEntity<?> create(@RequestBody UserDTO userDTO) {
         try {
-            LoginValidator.validateRequired(dto.getName(), "name");
-            LoginValidator.validateRequired(dto.getSurname(), "surname");
-            LoginValidator.validateRequired(dto.getUsername(), "email");
-            LoginValidator.validateRequired(dto.getPassword(), "password");
+            LoginValidator.validateRequired(userDTO.getName(), "name");
+            LoginValidator.validateRequired(userDTO.getSurname(), "surname");
+            LoginValidator.validateRequired(userDTO.getUsername(), "email");
+            LoginValidator.validateRequired(userDTO.getPassword(), "password");
 
-            LoginValidator.validateLength(dto.getName(), "name", 100);
-            LoginValidator.validateLength(dto.getSurname(), "surname", 100);
-            LoginValidator.validateLength(dto.getUsername(), "email", 100);
+            LoginValidator.validateLength(userDTO.getName(), "name", 100);
+            LoginValidator.validateLength(userDTO.getSurname(), "surname", 100);
+            LoginValidator.validateLength(userDTO.getUsername(), "email", 100);
 
-            LoginValidator.validatePattern(dto.getPassword(), "password", "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
+            LoginValidator.validatePattern(userDTO.getPassword(), "password", "^(?=.[A-Za-z])(?=.\\d)(?=.[@$!%#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
         } catch (LoginValidatorException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
-        User userWithThisEmail = userRepository.findByUsername(dto.getUsername());
+        try {
+            if (!isRecaptchaValid(userDTO.getRecaptcha(), request.getRemoteAddr())) {
+                return new ResponseEntity<>("Invalid captcha", HttpStatus.BAD_REQUEST);
+            }
+        } catch (IOException e2) {
+            return new ResponseEntity<>(e2.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
+        User userWithThisEmail = userRepository.findByUsername(userDTO.getUsername());
         if (userWithThisEmail != null) {
             return new ResponseEntity<>("User with that email already exists!", HttpStatus.BAD_REQUEST);
         }
 
         try {
-            authService.registerUser(dto);
+            authService.registerUser(userDTO);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        dto.password = "";
-        return new ResponseEntity<>(dto, HttpStatus.OK);
+        userDTO.password = "";
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
     @PermitAll
@@ -142,7 +150,6 @@ public class AuthController {
     }
 
     @PermitAll
-    @WSLoggerAuth
     @PostMapping("/2fa")
     public ResponseEntity<?> factorAuth(@RequestBody CodeDTO codeDTO) {
         try {
@@ -175,8 +182,6 @@ public class AuthController {
         String token = jwtTokenUtil.generateToken(id, codeDTO.getEmail(), auth.getAuthorities());
         String refreshToken = jwtTokenUtil.generateRefreshToken(id, codeDTO.getEmail());
         TokenDTO tokens = new TokenDTO(token, refreshToken);
-
-        User user = userRepository.findByUsername(codeDTO.getEmail());
 
         return new ResponseEntity<TokenDTO>(tokens, HttpStatus.OK);
     }
@@ -258,8 +263,8 @@ public class AuthController {
     @PermitAll
     @WSLoggerAuth
     @GetMapping("/change")
-    public ResponseEntity<?> changePassword(@PathParam("username") String username) {
-        User user = userRepository.findByUsername(username);
+    public ResponseEntity<?> changePassword(@PathParam("username") String usernameToChangePassword) {
+        User user = userRepository.findByUsername(usernameToChangePassword);
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
@@ -269,7 +274,6 @@ public class AuthController {
     }
 
     @PermitAll
-    @WSLoggerAuth
     @PostMapping("/change")
     public ResponseEntity<?> resetPassword(@RequestBody PasswordChangeDTO dto) {
         List<PasswordChangeRequest> requests = passwordChangeRequestRepository.findAll();
@@ -295,23 +299,23 @@ public class AuthController {
     @PermitAll
     @WSLoggerAuth
     @PostMapping("/refresh-password")
-    public ResponseEntity<?> refreshPassword(@RequestBody PreviousPasswordDTO dto) {
+    public ResponseEntity<?> refreshPassword(@RequestBody PreviousPasswordDTO previousPasswordDTO) {
         try {
 
-            LoginValidator.validateRequired(dto.username, "username");
-            LoginValidator.validateRequired(dto.oldPassword, "previousPassword");
-            LoginValidator.validateRequired(dto.password, "password");
+            LoginValidator.validateRequired(previousPasswordDTO.getUsername(), "username");
+            LoginValidator.validateRequired(previousPasswordDTO.getOldPassword(), "previousPassword");
+            LoginValidator.validateRequired(previousPasswordDTO.getPassword(), "password");
 
         } catch (LoginValidatorException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
-        User user = userRepository.findByUsername(dto.username);
+        User user = userRepository.findByUsername(previousPasswordDTO.getUsername());
         if (user == null) return new ResponseEntity<>("Something went wrong", HttpStatus.BAD_REQUEST);
         if (!user.isCredentialsNonExpired()) {
-            if (passwordEncoder.matches(dto.oldPassword, user.getPassword())) {
+            if (passwordEncoder.matches(previousPasswordDTO.getOldPassword(), user.getPassword())) {
                 try {
-                    LoginValidator.validatePattern(dto.password, "password", "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
-                    authService.setNewUserPassword(user, dto);
+                    LoginValidator.validatePattern(previousPasswordDTO.getPassword(), "password", "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
+                    authService.setNewUserPassword(user, previousPasswordDTO);
                     return new ResponseEntity<>("Password changed successfully", HttpStatus.OK);
                 } catch (LoginValidatorException e) {
                     return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -319,7 +323,6 @@ public class AuthController {
             }
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.BAD_REQUEST);
-
     }
 
     @PermitAll

@@ -5,10 +5,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document("PasswordChangeRequest")
 public class PasswordChangeRequest {
-    @Id
-    private String id;
     User user;
     String code;
+    @Id
+    private String id;
 
     public PasswordChangeRequest(User user, String code) {
         this.user = user;

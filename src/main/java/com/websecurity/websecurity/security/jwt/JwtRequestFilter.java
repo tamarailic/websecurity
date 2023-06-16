@@ -1,8 +1,6 @@
 package com.websecurity.websecurity.security.jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;

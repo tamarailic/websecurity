@@ -13,7 +13,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.Principal;
 import java.util.Base64;
 import java.util.Objects;
@@ -43,7 +42,8 @@ public class UploadDownloadCertificateService implements IUploadDownloadCertific
     public DownloadPrivateKeyDTO downloadPrivateKey(String serialNumber, Principal user) {
         Certificate certificate = certificateRepository.findById(serialNumber).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificate with that serialNumber doesn't exist"));
         User currentUser = userRepository.findUserByUsername(user.getName()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "User with that username doesn't exist"));
-        if(!Objects.equals(currentUser.getId(), certificate.getOwner().getId())) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User isn't owner of the certificate.");
+        if (!Objects.equals(currentUser.getId(), certificate.getOwner().getId()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User isn't owner of the certificate.");
         try {
             FileInputStream fis = new FileInputStream("src/main/java/com/websecurity/websecurity/security/keys/" + serialNumber + ".key");
             byte[] certificateContent = Base64.getEncoder().encode(fis.readAllBytes());

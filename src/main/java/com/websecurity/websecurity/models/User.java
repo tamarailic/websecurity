@@ -172,7 +172,7 @@ public class User implements UserDetails {
         previousPasswords.add(this.password);
     }
 
-    public void refreshExpirationDate(){
+    public void refreshExpirationDate() {
         this.credentialsExpiry = LocalDateTime.now().plusDays(CREDENTIAL_EXPIRY_DAYS);
     }
 }

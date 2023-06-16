@@ -1,4 +1,4 @@
 package com.websecurity.websecurity.exceptions;
 
-public class NonExistantUserException extends Exception{
+public class NonExistantUserException extends Exception {
 }

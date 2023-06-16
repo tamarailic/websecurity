@@ -25,7 +25,9 @@ public interface IAuthService {
     void setRoles();
 
     boolean verify(String verificationToken) throws VerificationTokenExpiredException, NonExistantUserException;
+
     void generatePasswordChangeRequest(User user);
+
     User registerOauthUser(UserDTO dto);
 
     String generateCode();

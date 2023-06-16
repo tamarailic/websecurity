@@ -1,4 +1,4 @@
 package com.websecurity.websecurity.exceptions;
 
-public class VerificationTokenExpiredException extends Exception{
+public class VerificationTokenExpiredException extends Exception {
 }

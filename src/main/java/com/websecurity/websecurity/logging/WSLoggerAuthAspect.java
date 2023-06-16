@@ -2,6 +2,7 @@ package com.websecurity.websecurity.logging;
 
 import com.websecurity.websecurity.DTO.CredentialsDTO;
 import com.websecurity.websecurity.DTO.OauthInfoDTO;
+import com.websecurity.websecurity.DTO.PreviousPasswordDTO;
 import com.websecurity.websecurity.DTO.UserDTO;
 import com.websecurity.websecurity.security.jwt.JwtTokenUtil;
 import org.aspectj.lang.JoinPoint;
@@ -23,30 +24,38 @@ public class WSLoggerAuthAspect {
 
     @Before("@annotation(WSLoggerAuth)")
     public void logActivity(JoinPoint joinPoint) {
-        Object[] args = joinPoint.getArgs();
-        String[] parameterNames = ((MethodSignature) joinPoint.getSignature()).getParameterNames();
+        try {
+            Object[] args = joinPoint.getArgs();
+            String[] parameterNames = ((MethodSignature) joinPoint.getSignature()).getParameterNames();
 
-        String importantParam = parameterNames[0];
-        Object importantArgument = args[0];
+            String importantParam = parameterNames[0];
+            Object importantArgument = args[0];
 
-        String who;
-        String action = joinPoint.toShortString().split("\\.")[1].replace("(", "");
+            String who;
+            String action = joinPoint.toShortString().split("\\.")[1].replace("(", "");
 
-        switch (importantParam) {
-            case "userDTO":
-                who = ((UserDTO) importantArgument).username;
-                break;
-            case "credentialsDTO":
-                who = ((CredentialsDTO) importantArgument).getEmail();
-                break;
-            case "oauthInfoDTO":
-                who = ((OauthInfoDTO) importantArgument).getUsername();
-                break;
-            default:
-                return;
+            switch (importantParam) {
+                case "userDTO":
+                    who = ((UserDTO) importantArgument).username;
+                    break;
+                case "credentialsDTO":
+                    who = ((CredentialsDTO) importantArgument).getEmail();
+                    break;
+                case "oauthInfoDTO":
+                    who = ((OauthInfoDTO) importantArgument).getUsername();
+                    break;
+                case "usernameToChangePassword":
+                    who = (String) importantArgument;
+                    break;
+                case "previousPasswordDTO":
+                    who = ((PreviousPasswordDTO) importantArgument).getUsername();
+                    break;
+                default:
+                    return;
+            }
+
+            logger.info(String.format("User %s has %s", who, action));
+        } catch (Exception ignored) {
         }
-
-        logger.info(String.format("User %s has %s", who, action));
-
     }
 }

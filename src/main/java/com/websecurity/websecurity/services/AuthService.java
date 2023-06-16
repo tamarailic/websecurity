@@ -22,17 +22,14 @@ import com.websecurity.websecurity.services.email.EmailService;
 import com.websecurity.websecurity.validators.LoginValidatorException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.*;
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
@@ -45,7 +42,12 @@ import java.util.Random;
 public class AuthService implements IAuthService {
     private static final int USER_CREDENTIALS_EXPIRY_DAYS = 7;
     private static final int UPPER_BOUND = 10000000;
-
+    @Autowired
+    IHelperService helperService;
+    @Autowired
+    IPasswordChangeRequestRepository passwordChangeRequestRepository;
+    @Autowired
+    ILoginAttemptRepository loginAttemptRepository;
     @Autowired
     private IRoleRepository roleRepository;
     @Autowired
@@ -60,13 +62,6 @@ public class AuthService implements IAuthService {
     private String IP;
     @Value("${server.port}")
     private int PORT;
-    @Autowired
-    IHelperService helperService;
-    @Autowired
-    IPasswordChangeRequestRepository passwordChangeRequestRepository;
-    @Autowired
-    ILoginAttemptRepository loginAttemptRepository;
-
 
     @Override
     public User registerUser(UserDTO dto) {
@@ -168,7 +163,7 @@ public class AuthService implements IAuthService {
         boolean emailValidation = user.getEmailValidation();
         String code = generateCode();
         PasswordChangeRequest request = passwordChangeRequestRepository.findByUser(user);
-        if (request!= null)
+        if (request != null)
             passwordChangeRequestRepository.delete(request);
         passwordChangeRequestRepository.save(new PasswordChangeRequest(user, passwordEncoder.encode(code)));
         if (emailValidation) {
@@ -191,10 +186,10 @@ public class AuthService implements IAuthService {
         user.addPreviousPassword();
         for (String password :
                 user.getPreviousPasswords()) {
-            if (passwordEncoder.matches(dto.password, password))
+            if (passwordEncoder.matches(dto.getPassword(), password))
                 throw new LoginValidatorException("Password matches one of the previous ones!");
         }
-        user.setPassword(passwordEncoder.encode(dto.password));
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setCredentialsExpiry(LocalDateTime.now().plusDays(USER_CREDENTIALS_EXPIRY_DAYS));
         userRepository.save(user);
 
