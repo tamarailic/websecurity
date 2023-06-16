@@ -8,6 +8,7 @@ import com.websecurity.websecurity.DTO.PreviousPasswordDTO;
 import com.websecurity.websecurity.DTO.UserDTO;
 import com.websecurity.websecurity.exceptions.NonExistantUserException;
 import com.websecurity.websecurity.exceptions.VerificationTokenExpiredException;
+import com.websecurity.websecurity.logging.WSLoggerAuth;
 import com.websecurity.websecurity.models.LoginAttempt;
 import com.websecurity.websecurity.models.PasswordChangeRequest;
 import com.websecurity.websecurity.models.User;
@@ -75,11 +76,11 @@ public class AuthService implements IAuthService {
         String verificationToken = jwtTokenUtil.generateVerificationToken(newUser.getUsername());
 
         if (dto.isEmailValidation())
-            emailService.sendVerificationEmail(newUser, "http://localhost:" + PORT + "/api/auth/verify?token=" + verificationToken);
+            emailService.sendVerificationEmail(newUser, "https://localhost:" + PORT + "/api/auth/verify?token=" + verificationToken);
         else {
             Twilio.init(helperService.getTwilioSID(), helperService.getTwilioToken());
             Message.creator(new PhoneNumber(dto.getPhone()),
-                    new PhoneNumber(helperService.getTwilioPhone()), "http://" + IP + ":" + PORT + "/api/auth/verify?token=" + verificationToken).create();
+                    new PhoneNumber(helperService.getTwilioPhone()), "https://" + IP + ":" + PORT + "/api/auth/verify?token=" + verificationToken).create();
         }
         return newUser;
     }
@@ -112,11 +113,14 @@ public class AuthService implements IAuthService {
     @Override
     public void create2FA(CredentialsDTO credentialsDTO, Authentication auth) throws VerificationTokenExpiredException, NonExistantUserException, NoSuchPaddingException, IllegalBlockSizeException, IOException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         String code = this.generateCode();
-        LoginAttempt loginAttempt = new LoginAttempt(credentialsDTO.getEmail(),passwordEncoder.encode(code));
+        LoginAttempt loginAttempt = loginAttemptRepository.findByUserEmail(credentialsDTO.getEmail());
+        if (loginAttempt != null)
+            loginAttemptRepository.delete(loginAttempt);
+        loginAttempt = new LoginAttempt(credentialsDTO.getEmail(), passwordEncoder.encode(code));
         loginAttemptRepository.save(loginAttempt);
         User user = userRepository.findByUsername(credentialsDTO.getEmail());
         if (user.getEmailValidation())
-            emailService.send2FAEmail(user,code);
+            emailService.send2FAEmail(user, code);
         else {
             Twilio.init(helperService.getTwilioSID(), helperService.getTwilioToken());
             Message.creator(new PhoneNumber(user.getPhone()),
@@ -140,7 +144,7 @@ public class AuthService implements IAuthService {
         return newUser;
     }
 
-    private User createNewOauthUser(UserDTO userDTO){
+    private User createNewOauthUser(UserDTO userDTO) {
         User newUser = userDTO.toUser();
         newUser.setActive(true);
         newUser.setNonLocked(true);
@@ -159,11 +163,14 @@ public class AuthService implements IAuthService {
     }
 
     @Override
+    @WSLoggerAuth
     public void generatePasswordChangeRequest(User user) {
         boolean emailValidation = user.getEmailValidation();
         String code = generateCode();
+        PasswordChangeRequest request = passwordChangeRequestRepository.findByUser(user);
+        if (request!= null)
+            passwordChangeRequestRepository.delete(request);
         passwordChangeRequestRepository.save(new PasswordChangeRequest(user, passwordEncoder.encode(code)));
-
         if (emailValidation) {
             emailService.sendPasswordChangeEmail(user, code);
         } else {
@@ -179,6 +186,7 @@ public class AuthService implements IAuthService {
     }
 
     @Override
+    @WSLoggerAuth
     public void setNewUserPassword(User user, PreviousPasswordDTO dto) throws LoginValidatorException {
         user.addPreviousPassword();
         for (String password :

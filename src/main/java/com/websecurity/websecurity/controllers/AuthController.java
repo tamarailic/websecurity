@@ -69,6 +69,7 @@ public class AuthController {
 
 
     @PermitAll
+    @WSLoggerAuth
     @PostMapping("/register")
     public ResponseEntity<?> create(@RequestBody UserDTO dto) {
         try {
@@ -141,6 +142,7 @@ public class AuthController {
     }
 
     @PermitAll
+    @WSLoggerAuth
     @PostMapping("/2fa")
     public ResponseEntity<?> factorAuth(@RequestBody CodeDTO codeDTO) {
         try {
@@ -254,6 +256,7 @@ public class AuthController {
     }
 
     @PermitAll
+    @WSLoggerAuth
     @GetMapping("/change")
     public ResponseEntity<?> changePassword(@PathParam("username") String username) {
         User user = userRepository.findByUsername(username);
@@ -266,6 +269,7 @@ public class AuthController {
     }
 
     @PermitAll
+    @WSLoggerAuth
     @PostMapping("/change")
     public ResponseEntity<?> resetPassword(@RequestBody PasswordChangeDTO dto) {
         List<PasswordChangeRequest> requests = passwordChangeRequestRepository.findAll();
@@ -289,6 +293,7 @@ public class AuthController {
     }
 
     @PermitAll
+    @WSLoggerAuth
     @PostMapping("/refresh-password")
     public ResponseEntity<?> refreshPassword(@RequestBody PreviousPasswordDTO dto) {
         try {
