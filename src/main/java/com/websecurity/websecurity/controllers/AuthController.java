@@ -37,9 +37,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.security.PermitAll;
 import javax.servlet.http.HttpServletRequest;
 import javax.websocket.server.PathParam;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -294,7 +294,7 @@ public class AuthController {
         try {
 
             LoginValidator.validateRequired(dto.username, "username");
-            LoginValidator.validateRequired(dto.previousPassword, "previousPassword");
+            LoginValidator.validateRequired(dto.oldPassword, "previousPassword");
             LoginValidator.validateRequired(dto.password, "password");
 
         } catch (LoginValidatorException e) {
@@ -303,7 +303,7 @@ public class AuthController {
         User user = userRepository.findByUsername(dto.username);
         if (user == null) return new ResponseEntity<>("Something went wrong", HttpStatus.BAD_REQUEST);
         if (!user.isCredentialsNonExpired()) {
-            if (passwordEncoder.matches(dto.previousPassword, user.getPassword())) {
+            if (passwordEncoder.matches(dto.oldPassword, user.getPassword())) {
                 try {
                     LoginValidator.validatePattern(dto.password, "password", "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
                     authService.setNewUserPassword(user, dto);
@@ -337,4 +337,16 @@ public class AuthController {
             return new ResponseEntity<TokenDTO>(tokens, HttpStatus.OK);
         }
 
+        try {
+            user = authService.registerOauthUser(new UserDTO(oauthInfoDTO));
+        } catch (Exception e) {
+            return new ResponseEntity<>("Invalid data", HttpStatus.BAD_REQUEST);
+        }
+
+        String token = jwtTokenUtil.generateToken(user.getId(), user.getUsername(), user.getAuthorities());
+        String refreshToken = jwtTokenUtil.generateRefreshToken(user.getId(), user.getUsername());
+        TokenDTO tokens = new TokenDTO(token, refreshToken);
+
+        return new ResponseEntity<TokenDTO>(tokens, HttpStatus.OK);
+    }
 }
