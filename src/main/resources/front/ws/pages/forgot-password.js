@@ -1,10 +1,10 @@
-import { useRouter } from "next/router";
-import { useState } from "react";
+import {useRouter} from "next/router";
+import {useState} from "react";
 import * as Yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { useForm } from "react-hook-form";
+import {yupResolver} from "@hookform/resolvers/yup";
+import {useForm} from "react-hook-form";
 import styles from "@/styles/LoginRegistration.module.css"
-import { axiosInstance, backUrl } from "@/components/pageContainer";
+import {axiosInstance, backUrl} from "@/components/pageContainer";
 import Link from "next/link";
 
 export default ChangePw;
@@ -17,14 +17,23 @@ function ChangePw() {
         username: Yup.string()
             .required('Email is required').email(),
     });
-    const formOptions = { resolver: yupResolver(validationSchema) };
+    const formOptions = {resolver: yupResolver(validationSchema)};
 
     // get functions to build form with useForm() hook
-    const { register, handleSubmit, formState } = useForm(formOptions);
-    const { errors } = formState;
+    const {register, handleSubmit, formState} = useForm(formOptions);
+    const {errors} = formState;
 
     function onSubmit(formData) {
-        axiosInstance.get(`${backUrl}/api/auth/change`, { params: { username: formData.username } }).then().catch();
+        axiosInstance.get(`${backUrl}/api/auth/change`, {params: {username: formData.username}}).then(resp => {
+                if (resp.status.isError) {
+                    alert("Error in request");
+                } else {
+                    router.push("/reset-password");
+                }
+            }
+        ).catch(err => {
+            alert(err.response.data);
+        });
     }
 
     return (
@@ -36,7 +45,7 @@ function ChangePw() {
                         <div className={styles.formGroup}>
                             <label>E-mail</label>
                             <input name="username" type="text" {...register('username')}
-                                className={`${styles.formControl} ${errors.username ? styles.isInvalid : ''}`} />
+                                   className={`${styles.formControl} ${errors.username ? styles.isInvalid : ''}`}/>
                         </div>
                         {errors.username && <div className={styles.invalidFeedback}>{errors.username?.message}</div>}
                         <div className={styles.btnContainerRegistration}>

@@ -157,10 +157,11 @@ public class AuthController {
             LoginValidator.validateRequired(codeDTO.getPassword(), "password");
             LoginValidator.validateEmail(codeDTO.getEmail(), "email");
             LoginAttempt attempt = loginAttemptRepository.findByUserEmail(codeDTO.getEmail());
-            if (passwordEncoder.matches(codeDTO.getCode(), attempt.getCode()))
+            if (attempt != null) {
                 loginAttemptRepository.delete(attempt);
-            else
-                throw new Exception("Something went wrong");
+                if (!passwordEncoder.matches(codeDTO.getCode(), attempt.getCode()))
+                    throw new Exception("Something went wrong");
+            }
         } catch (Exception e1) {
             return new ResponseEntity<>(e1.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -268,7 +269,11 @@ public class AuthController {
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-        authService.generatePasswordChangeRequest(user);
+        try {
+            authService.generatePasswordChangeRequest(user);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
 
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }

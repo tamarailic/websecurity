@@ -46,17 +46,22 @@ function Login() {
                     router.push("/f2a");
                 }
             }).catch(err => {
-                if (err.response.data.message){
+                try {
+                    if (err.response.data)
+                        if (err.response.data.message)
+                            if (err.response.data.message.includes("expired")){
+                                localStorage.setItem('username', JSON.stringify(username));
 
-                  if (err.response.data.message.includes("expired")) {
-                      localStorage.setItem('username', JSON.stringify(username));
-
-                      router.replace('/refresh-password');
-                  }
-                  else {
-                      alert(err);
-                  }
+                                router.replace('/refresh-password');
+                            }
+                            else {
+                                alert(err);
+                            }
                 }
+                catch (e){
+                    alert(err);
+                }
+
             });
         recaptchaRef.current.reset();
     }

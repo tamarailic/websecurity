@@ -6,7 +6,6 @@ import styles from "@/styles/LoginRegistration.module.css"
 import { backUrl, axiosInstance } from "@/components/pageContainer";
 import Link from 'next/link';
 
-const codeRegExp = /^[0-9]{7}$/
 export default Register;
 
 
@@ -16,7 +15,7 @@ function Register() {
     // form validation rules
     const validationSchema = Yup.object().shape({
         code: Yup.string()
-            .required('Code is required').matches(codeRegExp),
+            .required('Code is required'),
         password: Yup.string()
             .required('Password is required')
             .min(8, 'Password must be at least 8 characters').max(15, 'Password cant be longer than 15 characters').matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
@@ -30,7 +29,15 @@ function Register() {
     const { errors } = formState;
 
     function onSubmit(formData) {
-        axiosInstance.post(`${backUrl}/api/auth/change`, formData).then().catch();
+        axiosInstance.post(`${backUrl}/api/auth/change`, formData).then(resp => {
+            if (resp.status.isError) {
+                alert("Error in request");
+            } else {
+                router.push("/reset-password");
+            }
+        }).catch(err => {
+            alert(err.response.data);
+        });
     }
 
     return (
