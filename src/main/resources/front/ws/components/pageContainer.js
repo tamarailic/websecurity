@@ -11,20 +11,22 @@ import {
 import axios from 'axios'
 import jwtDecode from "jwt-decode";
 import https from 'https';
-import {router} from "next/client";
+import {useRouter} from 'next/router';
 
 
 export const backUrl = 'https://localhost:8443';
 
-export default function PageContainer({ children }) {
+export default function PageContainer({children}) {
     return (
         <>
             <Head>
-                <link rel="preconnect" href="https://fonts.googleapis.com" />
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin />
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+                <link rel="preconnect" href="https://fonts.googleapis.com"/>
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin/>
+                <link
+                    href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
+                    rel="stylesheet"/>
             </Head>
-            <NavBar />
+            <NavBar/>
             {children}
         </>
     );
@@ -42,8 +44,8 @@ export const axiosInstance = axios.create({
 // 2. Define token refresh function.
 const requestRefresh = (refresh) => {
     // Notice that this is the global axios instance, not the axiosInstance!  <-- important
-    return axios.post(`${backUrl}/api/auth/refreshToken`, { refresh })
-        .then(response => ({ accessToken: response.data.accessToken, refreshToken: response.data.refreshToken }));
+    return axios.post(`${backUrl}/api/auth/refreshToken`, {refresh})
+        .then(response => ({accessToken: response.data.accessToken, refreshToken: response.data.refreshToken}));
 };
 
 export function getUserRoles() {
@@ -58,23 +60,30 @@ export function getUsername() {
     return jwtDecode(getAccessToken()).sub;
 }
 
-function isJwtExpired(){
-    const decodedToken = jwtDecode(getRefreshToken());
-    const expiryDate = new Date(decodedToken.exp * 1000); // Multiply by 1000 to convert seconds to milliseconds
+function isJwtExpired() {
+    let token = getRefreshToken();
+    if (token) {
 
-    return expiryDate < new Date();
-}
-axios.interceptors.request.use(
-    function (config) {
-        if (isJwtExpired()){
-            localStorage.clear();
-            router.push("/login");
+        let decodedToken = jwtDecode(token);
+        if (decodedToken) {
+            const expiryDate = new Date(decodedToken.exp * 1000);
+            if (expiryDate < new Date()) {
+                localStorage.clear();
+                window.location = "/login";
+            }
+
         }
+    }
+}
+
+axiosInstance.interceptors.request.use(
+    function (config) {
+
+        isJwtExpired();
         return config;
     },
 );
 
 
-
-applyAuthTokenInterceptor(axiosInstance, { requestRefresh });  // Notice that this uses the axiosInstance instance.  <-- important
+applyAuthTokenInterceptor(axiosInstance, {requestRefresh});  // Notice that this uses the axiosInstance instance.  <-- important
 

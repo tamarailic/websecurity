@@ -52,7 +52,7 @@ function Register() {
     return (
         <div>
             <div className={styles.card}>
-                <h1 className={styles.cardHeader}>Reset password</h1>
+                <h1 className={styles.cardHeader}>2 Factor auth</h1>
                 <div className={styles.cardBody}>
                     <form onSubmit={handleSubmit(onSubmit)}>
                         <div className={styles.formGroup}>
@@ -63,7 +63,7 @@ function Register() {
                         {errors.code && <div className={styles.invalidFeedback}>{errors.code?.message}</div>}
                         <div className={styles.btnContainerRegistration}>
                             <button disabled={formState.isSubmitting} className={styles.loginBtn}>
-                                Reset password
+                                Confirm
                             </button>
                         </div>
                     </form>

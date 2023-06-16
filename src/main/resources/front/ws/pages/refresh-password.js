@@ -6,7 +6,7 @@ import {yupResolver} from "@hookform/resolvers/yup";
 import {useForm} from "react-hook-form";
 import {axiosInstance, backUrl} from "@/components/pageContainer";
 
-const codeRegExp = /^[0-9]{7}$/
+
 export default Refresh;
 
 function Refresh() {
