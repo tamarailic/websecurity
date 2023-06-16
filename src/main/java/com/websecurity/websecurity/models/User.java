@@ -8,11 +8,15 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 @Document("user")
 public class User implements UserDetails {
+    static final int PREVIOUS_PASSWORDS_COUNT = 5;
+    static final int CREDENTIAL_EXPIRY_DAYS = 7;
+
     List<Role> roles;
     @Id
     private String id;
@@ -28,16 +32,20 @@ public class User implements UserDetails {
     private Boolean nonLocked;
     private Boolean emailValidation;
 
-    public User(String firstName, String lastName, String username, String password,boolean emailValidation,String phone) {
+    private List<String> previousPasswords;
+
+    public User(String firstName, String lastName, String username, String password, boolean emailValidation, String phone) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.username = username;
         this.password = password;
         this.emailValidation = emailValidation;
         this.phone = phone;
+        previousPasswords = new ArrayList<>();
     }
 
     public User() {
+        previousPasswords = new ArrayList<>();
     }
 
     public String getId() {
@@ -151,5 +159,20 @@ public class User implements UserDetails {
 
     public String getPhone() {
         return phone;
+    }
+
+    public List<String> getPreviousPasswords() {
+        return previousPasswords;
+    }
+
+    public void addPreviousPassword() {
+        if (previousPasswords.size() >= PREVIOUS_PASSWORDS_COUNT) {
+            previousPasswords.remove(0);
+        }
+        previousPasswords.add(this.password);
+    }
+
+    public void refreshExpirationDate(){
+        this.credentialsExpiry = LocalDateTime.now().plusDays(CREDENTIAL_EXPIRY_DAYS);
     }
 }

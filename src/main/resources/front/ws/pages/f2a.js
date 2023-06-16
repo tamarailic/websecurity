@@ -52,6 +52,7 @@ function Register() {
     return (
         <div>
             <div className={styles.card}>
+                <h1 className={styles.cardHeader}>Reset password</h1>
                 <h1 className={styles.cardHeader}>2 Factor auth</h1>
                 <div className={styles.cardBody}>
                     <form onSubmit={handleSubmit(onSubmit)}>

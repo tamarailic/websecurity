@@ -50,6 +50,7 @@ export function getUsername() {
     return jwtDecode(getAccessToken()).sub;
 }
 
+
 function isJwtExpired() {
     const decodedToken = jwtDecode(getRefreshToken());
     const expiryDate = new Date(decodedToken.exp * 1000); // Multiply by 1000 to convert seconds to milliseconds

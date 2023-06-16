@@ -82,4 +82,21 @@ public class EmailService implements IEmailService {
         content = content.replace("[[code]]", code);
         sendHTML(toAddress, subject, content);
     }
+
+    @Override
+    public void send2FAEmail(User user, String code) {
+        String toAddress = user.getUsername();
+
+        String subject = "Please verify your registration";
+        String content = "Dear [[name]],<br>"
+                + "Your 2FA code is:<br>"
+                + "<h3>[[code]]</h3>"
+                + "Thank you,<br>"
+                + "Shuttle";
+
+        content = content.replace("[[name]]", user.getFirstName());
+        content = content.replace("[[code]]", code);
+        sendHTML(toAddress, subject, content);
+    }
+
 }

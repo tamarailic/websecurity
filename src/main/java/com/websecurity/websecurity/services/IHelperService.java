@@ -41,4 +41,6 @@ public interface IHelperService {
     String getTwilioToken();
 
     String getTwilioSID();
+
+    String getEncryptAlgorithm();
 }

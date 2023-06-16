@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.websecurity.websecurity.DTO.*;
 import com.websecurity.websecurity.exceptions.NonExistantUserException;
 import com.websecurity.websecurity.exceptions.VerificationTokenExpiredException;
+import com.websecurity.websecurity.models.LoginAttempt;
 import com.websecurity.websecurity.logging.WSLoggerAuth;
 import com.websecurity.websecurity.models.PasswordChangeRequest;
 import com.websecurity.websecurity.models.User;
+import com.websecurity.websecurity.repositories.ILoginAttemptRepository;
 import com.websecurity.websecurity.repositories.IPasswordChangeRequestRepository;
 import com.websecurity.websecurity.repositories.IUserRepository;
 import com.websecurity.websecurity.security.jwt.JwtTokenUtil;
@@ -59,50 +61,44 @@ public class AuthController {
     @Autowired
     PasswordEncoder passwordEncoder;
     @Autowired
+    ILoginAttemptRepository loginAttemptRepository;
+    @Autowired
     RecaptchaHelper recaptchaHelper;
     @Autowired
     private HttpServletRequest request;
 
 
     @PermitAll
-    @PostMapping("/register")
     @WSLoggerAuth
-    public ResponseEntity<?> registerNewUser(@RequestBody UserDTO userDTO) {
+    @PostMapping("/register")
+    public ResponseEntity<?> create(@RequestBody UserDTO dto) {
         try {
-            LoginValidator.validateRequired(userDTO.getName(), "name");
-            LoginValidator.validateRequired(userDTO.getSurname(), "surname");
-            LoginValidator.validateRequired(userDTO.getUsername(), "email");
-            LoginValidator.validateRequired(userDTO.getPassword(), "password");
+            LoginValidator.validateRequired(dto.getName(), "name");
+            LoginValidator.validateRequired(dto.getSurname(), "surname");
+            LoginValidator.validateRequired(dto.getUsername(), "email");
+            LoginValidator.validateRequired(dto.getPassword(), "password");
 
-            LoginValidator.validateLength(userDTO.getName(), "name", 100);
-            LoginValidator.validateLength(userDTO.getSurname(), "surname", 100);
-            LoginValidator.validateLength(userDTO.getUsername(), "email", 100);
+            LoginValidator.validateLength(dto.getName(), "name", 100);
+            LoginValidator.validateLength(dto.getSurname(), "surname", 100);
+            LoginValidator.validateLength(dto.getUsername(), "email", 100);
 
-            LoginValidator.validatePattern(userDTO.getPassword(), "password", "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
+            LoginValidator.validatePattern(dto.getPassword(), "password", "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
         } catch (LoginValidatorException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
-        try {
-            if (!isRecaptchaValid(userDTO.getRecaptcha(), request.getRemoteAddr())) {
-                return new ResponseEntity<>("Invalid captcha", HttpStatus.BAD_REQUEST);
-            }
-        } catch (IOException e2) {
-            return new ResponseEntity<>(e2.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-
-        User userWithThisEmail = userRepository.findByUsername(userDTO.getUsername());
+        User userWithThisEmail = userRepository.findByUsername(dto.getUsername());
         if (userWithThisEmail != null) {
             return new ResponseEntity<>("User with that email already exists!", HttpStatus.BAD_REQUEST);
         }
 
         try {
-            authService.registerUser(userDTO);
+            authService.registerUser(dto);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        userDTO.password = "";
-        return new ResponseEntity<>(userDTO, HttpStatus.OK);
+        dto.password = "";
+        return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
     @PermitAll
@@ -135,13 +131,52 @@ public class AuthController {
         } catch (DisabledException e) {
             return new ResponseEntity<>("User is disabled!", HttpStatus.BAD_REQUEST);
         }
+        try {
+            authService.create2FA(credentialsDTO, auth);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Something went wrong", HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<>("Success", HttpStatus.OK);
+
+    }
+
+    @PermitAll
+    @WSLoggerAuth
+    @PostMapping("/2fa")
+    public ResponseEntity<?> factorAuth(@RequestBody CodeDTO codeDTO) {
+        try {
+            LoginValidator.validateRequired(codeDTO.getEmail(), "email");
+            LoginValidator.validateRequired(codeDTO.getPassword(), "password");
+            LoginValidator.validateEmail(codeDTO.getEmail(), "email");
+            LoginAttempt attempt = loginAttemptRepository.findByUserEmail(codeDTO.getEmail());
+            if (passwordEncoder.matches(codeDTO.getCode(), attempt.getCode()))
+                loginAttemptRepository.delete(attempt);
+            else
+                throw new Exception("Something went wrong");
+        } catch (Exception e1) {
+            return new ResponseEntity<>(e1.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
+        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(codeDTO.getEmail(), codeDTO.getPassword());
+
+        Authentication auth = null;
+        try {
+            auth = authenticationManager.authenticate(authReq);
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>("Wrong username or password!", HttpStatus.BAD_REQUEST);
+        } catch (DisabledException e) {
+            return new ResponseEntity<>("User is disabled!", HttpStatus.BAD_REQUEST);
+        }
 
         SecurityContext sc = SecurityContextHolder.getContext();
         sc.setAuthentication(auth);
         String id = ((User) auth.getPrincipal()).getId();
-        String token = jwtTokenUtil.generateToken(id, credentialsDTO.getEmail(), auth.getAuthorities());
-        String refreshToken = jwtTokenUtil.generateRefreshToken(id, credentialsDTO.getEmail());
+        String token = jwtTokenUtil.generateToken(id, codeDTO.getEmail(), auth.getAuthorities());
+        String refreshToken = jwtTokenUtil.generateRefreshToken(id, codeDTO.getEmail());
         TokenDTO tokens = new TokenDTO(token, refreshToken);
+
+        User user = userRepository.findByUsername(codeDTO.getEmail());
 
         return new ResponseEntity<TokenDTO>(tokens, HttpStatus.OK);
     }
@@ -211,6 +246,7 @@ public class AuthController {
 
         if (jwtTokenUtil.validateToken(refreshToken, user)) {
             String token = jwtTokenUtil.generateToken(user.getId(), user.getUsername(), user.getAuthorities());
+            System.out.println("Refreshed token");
             TokenDTO tokenDTO = new TokenDTO(token, refreshToken);
             return new ResponseEntity<>(tokenDTO, HttpStatus.OK);
 
@@ -220,6 +256,7 @@ public class AuthController {
     }
 
     @PermitAll
+    @WSLoggerAuth
     @GetMapping("/change")
     public ResponseEntity<?> changePassword(@PathParam("username") String username) {
         User user = userRepository.findByUsername(username);
@@ -232,6 +269,7 @@ public class AuthController {
     }
 
     @PermitAll
+    @WSLoggerAuth
     @PostMapping("/change")
     public ResponseEntity<?> resetPassword(@RequestBody PasswordChangeDTO dto) {
         List<PasswordChangeRequest> requests = passwordChangeRequestRepository.findAll();
@@ -252,6 +290,36 @@ public class AuthController {
         userRepository.save(currentRequest.getUser());
         passwordChangeRequestRepository.delete(currentRequest);
         return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @PermitAll
+    @WSLoggerAuth
+    @PostMapping("/refresh-password")
+    public ResponseEntity<?> refreshPassword(@RequestBody PreviousPasswordDTO dto) {
+        try {
+
+            LoginValidator.validateRequired(dto.username, "username");
+            LoginValidator.validateRequired(dto.oldPassword, "previousPassword");
+            LoginValidator.validateRequired(dto.password, "password");
+
+        } catch (LoginValidatorException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        User user = userRepository.findByUsername(dto.username);
+        if (user == null) return new ResponseEntity<>("Something went wrong", HttpStatus.BAD_REQUEST);
+        if (!user.isCredentialsNonExpired()) {
+            if (passwordEncoder.matches(dto.oldPassword, user.getPassword())) {
+                try {
+                    LoginValidator.validatePattern(dto.password, "password", "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
+                    authService.setNewUserPassword(user, dto);
+                    return new ResponseEntity<>("Password changed successfully", HttpStatus.OK);
+                } catch (LoginValidatorException e) {
+                    return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+        return new ResponseEntity<>("Something went wrong", HttpStatus.BAD_REQUEST);
+
     }
 
     @PermitAll

@@ -10,4 +10,6 @@ public interface IEmailService {
     void sendVerificationEmail(User user, String url);
 
     void sendPasswordChangeEmail(User user, String code);
+
+    void send2FAEmail(User user, String code);
 }
