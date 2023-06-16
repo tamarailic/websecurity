@@ -1,10 +1,10 @@
 import Head from "next/head";
 import NavBar from "./navBar";
-import { IAuthTokens, TokenRefreshRequest, applyAuthTokenInterceptor, getBrowserLocalStorage, getAccessToken } from 'axios-jwt'
+import { IAuthTokens, TokenRefreshRequest, applyAuthTokenInterceptor, getBrowserLocalStorage, getAccessToken, getRefreshToken } from 'axios-jwt'
 import axios from 'axios'
 import jwtDecode from "jwt-decode";
 import https from 'https';
-
+import Router from "next/router";
 
 export const backUrl = 'https://localhost:8443';
 
@@ -49,6 +49,23 @@ export function getUserId() {
 export function getUsername() {
     return jwtDecode(getAccessToken()).sub;
 }
+
+function isJwtExpired() {
+    const decodedToken = jwtDecode(getRefreshToken());
+    const expiryDate = new Date(decodedToken.exp * 1000); // Multiply by 1000 to convert seconds to milliseconds
+
+    return expiryDate < new Date();
+}
+
+axios.interceptors.request.use(
+    function (config) {
+        if (isJwtExpired()) {
+            localStorage.clear();
+            Router.push("/login");
+        }
+        return config;
+    },
+);
 
 applyAuthTokenInterceptor(axiosInstance, { requestRefresh });  // Notice that this uses the axiosInstance instance.  <-- important
 
