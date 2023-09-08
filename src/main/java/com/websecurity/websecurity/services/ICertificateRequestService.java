@@ -2,9 +2,12 @@ package com.websecurity.websecurity.services;
 
 import com.websecurity.websecurity.DTO.CertificateRequestDTO;
 import com.websecurity.websecurity.DTO.CertificateRequestResponseDTO;
+import com.websecurity.websecurity.DTO.CertificateToShowDTO;
 import com.websecurity.websecurity.DTO.ReasonDTO;
-import com.websecurity.websecurity.models.Certificate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
+import java.security.Principal;
 import java.util.Collection;
 
 public interface ICertificateRequestService {
@@ -16,8 +19,16 @@ public interface ICertificateRequestService {
 
     Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequests(String userId);
 
-    Certificate approveSigningRequest(String requestId);
+    Collection<CertificateRequestResponseDTO> getAllCertificateRequests();
+
+    Collection<CertificateRequestResponseDTO> getAllUsersCertificateRequestsToReview(Principal user);
+
+    CertificateToShowDTO approveSigningRequest(String requestId);
 
     void denySigningRequest(String requestId, ReasonDTO denyReason);
+
+    Page<CertificateToShowDTO> getAll(Pageable pageable);
+
+    CertificateToShowDTO withdrawCertificateById(String certificateSerialNumber, ReasonDTO reason);
 
 }

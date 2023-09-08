@@ -1,0 +1,37 @@
+/* GLOBAL */
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --DarkGray: #333;
+  --DarkGrayHover: #252525;
+  --LightGray: #f4f4f4;
+  --Valid: #68CC45;
+  --Pending: #FFBF00;
+  --Invalid: #BF3030;
+  --NavbarFontSize: 24px;
+  --FontSize: 1.2rem;
+  --FontSizeSmaller: 1rem;
+  --AccentColor: #007aff
+}
+
+body {
+  background-color: var(--LightGray);
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+  color: var(--DarkGray);
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* Header */
+@media (max-width:1069px) {
+
+  /* TABLET size*/
+}
+
+@media (max-width:768px) {
+
+  /* PHONE size*/
+}

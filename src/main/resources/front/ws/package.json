@@ -1,0 +1,30 @@
+{
+  "name": "ws",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "node server.js",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.1.0",
+    "@next/swc-linux-x64-gnu": "^13.4.5",
+    "@next/swc-linux-x64-musl": "^13.4.5",
+    "axios": "^1.4.0",
+    "axios-jwt": "^3.0.2",
+    "https": "^1.0.0",
+    "jwt-decode": "^3.1.2",
+    "next": "13.2.4",
+    "next-auth": "^4.22.1",
+    "next-connect": "^1.0.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-google-recaptcha": "^3.1.0",
+    "react-hook-form": "^7.43.9",
+    "rxjs": "^7.8.1",
+    "swr": "^2.1.2",
+    "yup": "^1.1.1"
+  }
+}

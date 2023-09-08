@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 @ControllerAdvice
 @EnableWebMvc
 public class ControllerAdvisor extends ResponseEntityExceptionHandler {
-    @ExceptionHandler({ ExpiredJwtException.class, AuthenticationCredentialsNotFoundException.class })
+    @ExceptionHandler({ExpiredJwtException.class, AuthenticationCredentialsNotFoundException.class})
     public ResponseEntity<Object> handleException(final Exception e, final HttpServletRequest request) {
         return new ResponseEntity<>("Unauthorized!", HttpStatus.UNAUTHORIZED);
     }

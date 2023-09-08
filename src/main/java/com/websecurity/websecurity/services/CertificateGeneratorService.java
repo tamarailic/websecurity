@@ -66,17 +66,20 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
         User requester = userRepository.findById(request.getSubjectId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User with that id does not exist."));
         LocalDate startDate = LocalDate.now();
         LocalDate endDate = helperService.calculateExpirationDate(startDate, request.getCertificateType());
-        String serialNumber = UUID.randomUUID().toString();
+        String serialNumber = String.valueOf(helperService.convertUUIDtoBigInteger(UUID.randomUUID().toString()));
         String publicKeyString = helperService.convertKeyToString(subjectPublicKey);
         if (request.getCertificateType().equals("ROOT")) {
             return new Certificate(serialNumber, serialNumber, publicKeyString, new CertificateOwner(requester.getId(), requester.getUsername(), requester.getFirstName(), requester.getLastName()), new CertificateIssuer(requester.getId(), requester.getUsername(), requester.getFirstName(), requester.getLastName()), false, startDate, endDate, (String) helperService.getConfigValue("CERTIFICATE_VERSION"), (String) helperService.getConfigValue("SIGNATURE_ALGORITHM"), true);
         }
         Certificate issuerCertificate = certificateRepository.findById(request.getIssuerCertificateId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Certificate with that id does not exist."));
+        issuerCertificate.getHaveSigned().add(serialNumber);
+        certificateRepository.save(issuerCertificate);
         User issuer = userRepository.findById(issuerCertificate.getOwner().getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User with that id does not exist."));
-
+        if (endDate.isAfter(issuerCertificate.getNotAfter())) {
+            endDate = issuerCertificate.getNotAfter();
+        }
         return new Certificate(serialNumber, request.getIssuerCertificateId(), publicKeyString, new CertificateOwner(requester.getId(), requester.getUsername(), requester.getFirstName(), requester.getLastName()), new CertificateIssuer(issuer.getId(), issuer.getUsername(), issuer.getFirstName(), issuer.getLastName()), request.getCertificateType().equals("END"), startDate, endDate, (String) helperService.getConfigValue("CERTIFICATE_VERSION"), (String) helperService.getConfigValue("SIGNATURE_ALGORITHM"), true);
     }
-
 
 
     private SubjectData getSubjectData(Certificate certificate) {
@@ -96,11 +99,12 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
         builder.addRDN(BCStyle.SURNAME, certificate.getIssuer().getLastName());
         builder.addRDN(BCStyle.GIVENNAME, certificate.getIssuer().getFirstName());
         builder.addRDN(BCStyle.UID, String.valueOf(certificate.getIssuer().getId()));
+        builder.addRDN(BCStyle.SN, certificate.getSigningCertificateSerialNumber());
 
-        if (Objects.equals(certificate.getOwner().getId(), certificate.getIssuer().getId())) {
+        if (Objects.equals(certificate.getSerialNumber(), certificate.getSigningCertificateSerialNumber())) {
             issuerKey = subjectPrivateKey;
         } else {
-            issuerKey = helperService.getPrivateKey(certificate.getSigningCertificateSerialNumber());
+            issuerKey = helperService.getPrivateKeyForCertificate(certificate.getSigningCertificateSerialNumber());
         }
         return new IssuerData(issuerKey, builder.build());
     }
@@ -148,7 +152,7 @@ public class CertificateGeneratorService implements ICertificateGeneratorService
 
             X509v3CertificateBuilder certGen = new JcaX509v3CertificateBuilder(
                     issuerData.getX500name(),
-                    new BigInteger(subjectData.getSerialNumber().replace("-", ""), 16),
+                    new BigInteger(subjectData.getSerialNumber()),
                     helperService.convertLocalDateToDate(subjectData.getStartDate()),
                     helperService.convertLocalDateToDate(subjectData.getEndDate()),
                     subjectData.getX500name(),

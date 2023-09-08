@@ -2,14 +2,17 @@ package com.websecurity.websecurity.DTO;
 
 import com.websecurity.websecurity.models.CertificateRequest;
 
-import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class CertificateRequestResponseDTO {
+
+    private String requestId;
+
     private String subjectId;
 
     private String issuerCertificateId;
 
-    private LocalDateTime requestedDate;
+    private String requestedDate;
 
     private String certificateType;
 
@@ -22,12 +25,21 @@ public class CertificateRequestResponseDTO {
     }
 
     public CertificateRequestResponseDTO(CertificateRequest certificateRequest) {
+        this.requestId = certificateRequest.getId();
         this.subjectId = certificateRequest.getSubjectId();
         this.issuerCertificateId = certificateRequest.getIssuerCertificateId();
-        this.requestedDate = certificateRequest.getRequestedDate();
+        this.requestedDate = certificateRequest.getRequestedDate().format(DateTimeFormatter.ISO_DATE_TIME);
         this.certificateType = certificateRequest.getCertificateType();
         this.status = certificateRequest.getStatus();
         this.denyReason = certificateRequest.getDenyReason();
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 
     public String getSubjectId() {
@@ -46,11 +58,11 @@ public class CertificateRequestResponseDTO {
         this.issuerCertificateId = issuerCertificateId;
     }
 
-    public LocalDateTime getRequestedDate() {
+    public String getRequestedDate() {
         return requestedDate;
     }
 
-    public void setRequestedDate(LocalDateTime requestedDate) {
+    public void setRequestedDate(String requestedDate) {
         this.requestedDate = requestedDate;
     }
 

@@ -1,8 +1,6 @@
 package com.websecurity.websecurity.security.jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,10 +18,7 @@ import java.io.IOException;
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     private UserDetailsService userDetailsService;
-
     private JwtTokenUtil tokenUtil;
-
-    protected final Log LOGGER = LogFactory.getLog(getClass());
 
     public JwtRequestFilter(JwtTokenUtil tokenHelper, UserDetailsService userDetailsService) {
         this.tokenUtil = tokenHelper;
@@ -69,13 +64,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 allowForRefreshToken(ex, request, authToken);
             }
         } catch (AuthenticationCredentialsNotFoundException ex) {
-            System.out.println(ex);
+            //throw new AuthenticationCredentialsNotFoundException("bi");
         }
         chain.doFilter(request, response);
     }
 
     private void allowForRefreshToken(ExpiredJwtException ex, HttpServletRequest request, String authToken) {
-
         UserDetails userDetails = userDetailsService.loadUserByUsername(tokenUtil.getEmailFromToken(authToken));
         // create a UsernamePasswordAuthenticationToken with null values.
         TokenBasedAuthentication authentication = new TokenBasedAuthentication(userDetails);
@@ -84,6 +78,5 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         // Set the claims so that in controller we will be using it to create
         // new JWT
         request.setAttribute("claims", ex.getClaims());
-
     }
 }

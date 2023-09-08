@@ -4,6 +4,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Document("certificate")
 public class Certificate {
@@ -20,6 +22,8 @@ public class Certificate {
     private String version;
     private String signatureAlgorithm;
     private Boolean valid;
+    private List<String> haveSigned;
+    private String withdrawReason;
 
     public Certificate() {
     }
@@ -36,6 +40,8 @@ public class Certificate {
         this.version = version;
         this.signatureAlgorithm = signatureAlgorithm;
         this.valid = valid;
+        this.haveSigned = new ArrayList<>();
+        this.withdrawReason = "";
     }
 
     public String getSerialNumber() {
@@ -86,11 +92,11 @@ public class Certificate {
         this.issuer = issuer;
     }
 
-    public Boolean getEndCertificate() {
+    public Boolean isEndCertificate() {
         return endCertificate;
     }
 
-    public void setEndCertificate(Boolean endCertificate) {
+    public void setIsEndCertificate(Boolean endCertificate) {
         this.endCertificate = endCertificate;
     }
 
@@ -124,5 +130,29 @@ public class Certificate {
 
     public void setValid(Boolean valid) {
         this.valid = valid;
+    }
+
+    public Boolean getEndCertificate() {
+        return endCertificate;
+    }
+
+    public void setEndCertificate(Boolean endCertificate) {
+        this.endCertificate = endCertificate;
+    }
+
+    public List<String> getHaveSigned() {
+        return haveSigned;
+    }
+
+    public void setHaveSigned(List<String> haveSigned) {
+        this.haveSigned = haveSigned;
+    }
+
+    public String getWithdrawReason() {
+        return withdrawReason;
+    }
+
+    public void setWithdrawReason(String withdrawReason) {
+        this.withdrawReason = withdrawReason;
     }
 }

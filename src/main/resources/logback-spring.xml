@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="true">
+
+    <logger name="com.websecurity.websecurity.logging" level="INFO"/>
+
+    <property name="LOGS" value="./src/main/resources/logs"/>
+    <!-- Include Spring Boot default configuration -->
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+    <!-- Add an appender for WS class -->
+    <appender name="WS_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder
+                class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>%d %p - %m%n</Pattern>
+        </encoder>
+        <file>${LOGS}/ws.log</file>
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- rollover daily and when the file reaches 10 MegaBytes -->
+            <fileNamePattern>${LOGS}/archived/spring-boot-logger-%d{yyyy-MM-dd}.%i.log
+            </fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Add a logger for WS class and assign the appender -->
+    <logger name="com.websecurity.websecurity.logging" level="INFO" additivity="false">
+        <appender-ref ref="WS_FILE"/>
+    </logger>
+
+</configuration>

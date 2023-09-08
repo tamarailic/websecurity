@@ -1,10 +1,12 @@
 package com.websecurity.websecurity.security.jwt;
 
 import com.websecurity.websecurity.models.User;
+import com.websecurity.websecurity.services.HelperService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,9 +19,13 @@ import java.util.Date;
 @Component
 public class JwtTokenUtil {
 
+    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
+    private static final String AUDIENCE_WEB = "web";
+    @Autowired
+    private HelperService helperService;
+
     @Value("Shuttle-back")
     private String APP_NAME;
-    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
     @Value("${jwt.secret}")
     private String secret;
     @Value("${jwt.expirationDateInMs}")
@@ -32,11 +38,11 @@ public class JwtTokenUtil {
     @Value("${jwt.refreshExpirationDateInMs}")
     private int REFRESH_EXPIRATION;
 
+
     //	private static final String AUDIENCE_UNKNOWN = "unknown";
     //	private static final String AUDIENCE_MOBILE = "mobile";
     //	private static final String AUDIENCE_TABLET = "tablet";
 
-    private static final String AUDIENCE_WEB = "web";
 
     private SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS512;
 
@@ -61,8 +67,6 @@ public class JwtTokenUtil {
                 .claim("id", id)
                 .claim("role", authorities)
                 .signWith(SIGNATURE_ALGORITHM, secret).compact();
-
-
     }
 
     public String generateRefreshToken(String id, String email) {
@@ -75,8 +79,17 @@ public class JwtTokenUtil {
                 .setExpiration(generateRefreshExpirationDate())
                 .claim("id", id)
                 .signWith(SIGNATURE_ALGORITHM, secret).compact();
+    }
 
+    public String generateVerificationToken(String email) {
 
+        return Jwts.builder()
+                .setIssuer(APP_NAME)
+                .setSubject(email)
+                .setAudience(generateAudience())
+                .setIssuedAt(new Date())
+                .setExpiration(generateVerificationExpirationDate())
+                .signWith(SIGNATURE_ALGORITHM, secret).compact();
     }
 
     /**
@@ -107,6 +120,10 @@ public class JwtTokenUtil {
 
     private Date generateRefreshExpirationDate() {
         return new Date(new Date().getTime() + REFRESH_EXPIRATION);
+    }
+
+    private Date generateVerificationExpirationDate() {
+        return new Date(new Date().getTime() + helperService.getVerificationExpiration());
     }
 
     /**
